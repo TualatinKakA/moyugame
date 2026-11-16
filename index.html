@@ -462,16 +462,17 @@
       const cap = state.upgrades.includes("ghost") ? 5 : 3;
       return Math.min(cap, 1 + idleSeconds / (state.upgrades.includes("ghost") ? 15 : 30));
     };
-    const buildingOutput = b => {
-      const count = state.buildings[b.id];
+    const facilityMultiplier = () => multiplier()
+      * (state.upgrades.includes("okR") ? 2 : 1)
+      * (state.build === "automation" ? 1.5 : 1);
+    const buildingOutput = (b, count = state.buildings[b.id]) => {
       const milestone = Math.pow(2, Math.floor(count / 10));
       const serverBoost = state.upgrades.includes("server") ? (b.id === "avatar" ? 3 : b.id === "script" ? 2 : 1) : 1;
       return count * b.rate * milestone * serverBoost;
     };
+    const buildingGain = (b, qty) => (buildingOutput(b, state.buildings[b.id] + qty) - buildingOutput(b)) * facilityMultiplier();
     const incomePerSecond = () => buildings.reduce((sum, b) => sum + buildingOutput(b), 0)
-      * multiplier()
-      * (state.upgrades.includes("okR") ? 2 : 1)
-      * (state.build === "automation" ? 1.5 : 1)
+      * facilityMultiplier()
       * idleMultiplier()
       * (state.deadline > 0 ? 2 : 1)
       * (state.fishing > 0 ? 4 : 1);
@@ -742,10 +743,11 @@
           const quote = getBuildingQuote(b);
           const count = state.buildings[b.id];
           const nextMilestone = (Math.floor(count / 10) + 1) * 10;
-          const steadyOutput = buildingOutput(b) * multiplier() * (state.upgrades.includes("okR") ? 2 : 1) * (state.build === "automation" ? 1.5 : 1);
+          const gain = buildingGain(b, quote.qty);
+          const afterOutput = buildingOutput(b, count + quote.qty) * facilityMultiplier();
           const disabled = !quote.qty || state.cash < quote.cost || (buyAmount !== "max" && quote.qty !== buyAmount);
           return `<button class="shop-item" data-building="${b.id}" ${disabled ? "disabled" : ""}>
-            <span class="item-icon"><img src="assets/images/${b.icon}.png" alt=""></span><span><span class="item-name">${b.name} <small>× ${count}</small></span><span class="item-desc">总基础产出 ${format(steadyOutput)} / 秒 · <span class="milestone">${nextMilestone - count} 个后翻倍</span></span></span>
+            <span class="item-icon"><img src="assets/images/${b.icon}.png" alt=""></span><span><span class="item-name">${b.name} <small>× ${count}</small></span><span class="item-desc">本批基础 <span class="milestone">+${format(gain)} / 秒</span> · 买后设施 ${format(afterOutput)} / 秒<br><span class="milestone">${nextMilestone - count} 个后翻倍</span></span></span>
             <span class="item-price">¥ ${format(quote.cost)}<small>购买 ${buyAmount === "max" ? quote.qty : buyAmount} 个</small></span></button>`;
         }).join("");
         const upgradeMarkup = list => list.map(u => {
