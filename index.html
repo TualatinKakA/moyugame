@@ -252,6 +252,40 @@
       .work-zone.impact, .work-btn.pressed .monitor-shell, .wallet.bump #cash, .shop-item.bought { animation: none; }
       .cash-particle { animation-duration: .01s; }
     }
+    .build-panel { margin-top: 20px; }
+    .build-current { margin: 0 0 10px; color: var(--green); font-size: 11px; line-height: 1.6; }
+    .build-list { display: grid; gap: 7px; }
+    .build-option { padding: 9px 10px; text-align: left; color: var(--text); background: var(--panel); border: 1px solid var(--line); cursor: pointer; }
+    .build-option:hover:not(:disabled) { border-color: #718063; background: #242b21; }
+    .build-option.selected { border-color: var(--green); background: var(--green-dark); }
+    .build-option:disabled:not(.selected) { opacity: .42; cursor: not-allowed; }
+    .build-option.selected:disabled { opacity: 1; cursor: default; }
+    .build-option b { display: flex; justify-content: space-between; font-size: 11px; }
+    .build-option b span { color: var(--green); font: 9px Consolas, monospace; }
+    .build-option small { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+    .skill-deck { margin: 0 0 18px; padding: 12px; border: 1px solid var(--line); background: var(--panel); }
+    .energy-line { display: flex; justify-content: space-between; margin-bottom: 7px; color: var(--muted); font-size: 10px; }
+    .energy-line strong { color: var(--green); font: 11px Consolas, monospace; }
+    .energy-bar { height: 5px; margin-bottom: 11px; background: #30352f; }
+    .energy-bar div { height: 100%; background: linear-gradient(90deg, #70b7a0, var(--green)); transition: width .2s; }
+    .skill-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .skill-btn { min-height: 64px; padding: 8px; color: var(--text); text-align: left; background: #222820; border: 1px solid #3c4637; cursor: pointer; }
+    .skill-btn:hover:not(:disabled) { border-color: var(--green); }
+    .skill-btn.active { border-color: var(--yellow); background: #3c3520; box-shadow: inset 0 0 15px #e7ca7411; }
+    .skill-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .skill-btn b { display: block; margin-bottom: 5px; font-size: 11px; }
+    .skill-btn small { display: block; color: var(--muted); font-size: 9px; line-height: 1.5; }
+    .skill-btn em { display: block; margin-top: 4px; color: var(--green); font: normal 9px Consolas, monospace; }
+    .buy-controls { display: flex; gap: 3px; }
+    .buy-controls button { padding: 3px 7px; color: var(--muted); background: #202420; border: 1px solid var(--line); cursor: pointer; font: 10px Consolas, monospace; }
+    .buy-controls button.active { color: #17200f; background: var(--green); border-color: var(--green); }
+    .milestone { color: var(--green); }
+    .effect-text { color: var(--yellow); }
+    @media (max-width: 620px) {
+      .skill-deck { padding: 10px; }
+      .skill-btn { padding: 7px; }
+      .build-panel { margin-top: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -296,6 +330,11 @@
         <button class="loop-btn" id="loopBtn" disabled>提交离职申请</button>
         <p class="loop-hint" id="loopHint">本轮总收入达到 2,500 后解锁</p>
       </section>
+      <section class="build-panel">
+        <div class="section-label">本轮构筑 / BUILD</div>
+        <p class="build-current" id="buildCurrent">尚未选择，可随时入职一个部门</p>
+        <div class="build-list" id="buildList"></div>
+      </section>
       <section class="log-wrap">
         <div class="section-label">公司内网 / 实时记录</div>
         <ul class="log" id="log"></ul>
@@ -311,6 +350,15 @@
         <div class="stat"><small>本轮总收入</small><b>¥ <span id="totalEarned">0</span></b></div>
         <div class="stat"><small>已轮回</small><b><span id="loops">0</span> 次</b></div>
       </div>
+      <section class="skill-deck">
+        <div class="energy-line"><span>精力 / 每秒自然恢复</span><strong><span id="energy">100</span> / 100</strong></div>
+        <div class="energy-bar"><div id="energyProgress"></div></div>
+        <div class="skill-row">
+          <button class="skill-btn" data-skill="deadline"><b>Deadline 降临</b><small>点击 ×4，设施 ×2</small><em id="deadlineStatus">30 精力 · 18 秒</em></button>
+          <button class="skill-btn" data-skill="copy"><b>复制粘贴</b><small>立即获得 60 秒产出</small><em>20 精力 · 瞬发</em></button>
+          <button class="skill-btn" data-skill="fishing"><b>带薪摸鱼</b><small>设施产出 ×4</small><em id="fishingStatus">40 精力 · 20 秒</em></button>
+        </div>
+      </section>
       <section class="work-zone" id="workZone">
         <div class="office-window"><div class="window-view"><div class="city"></div></div></div>
         <div class="wall-poster"><b>自愿奋斗</b><span>公司就是你家<br>下班就是搬家</span></div>
@@ -331,11 +379,13 @@
     </main>
 
     <aside class="shop">
-      <div class="shop-head"><h2>行政采购</h2><span>花工资，买自由</span></div>
-      <div class="shop-group">自动化设施 / 每秒产出</div>
+      <div class="shop-head"><h2>行政采购</h2><div class="buy-controls" id="buyControls"><button data-buy="1" class="active">1</button><button data-buy="10">10</button><button data-buy="max">MAX</button></div></div>
+      <div class="shop-group">自动化设施 / 每 10 个产量 ×2</div>
       <div id="buildingList"></div>
-      <div class="shop-group">一次性强化 / 本轮有效</div>
+      <div class="shop-group">通用强化 / 本轮有效</div>
       <div id="upgradeList"></div>
+      <div class="shop-group" id="buildUpgradeLabel">构筑专属强化 / 选择后解锁</div>
+      <div id="buildUpgradeList"></div>
     </aside>
   </div>
   <div class="toast" id="toast" role="status"></div>
@@ -361,8 +411,19 @@
       { id: "okR", icon: "cash", name: "反向画饼", desc: "所有设施产出 × 2", cost: 750 },
       { id: "union", icon: "headphones", name: "摸鱼互助会", desc: "搬砖额外获得秒收入 × 10%", cost: 1800 }
     ];
+    const builds = [
+      { id: "click", code: "CLICK", name: "键盘修会", desc: "点击基础 ×2；连击继续增幅，最高 ×3", detail: "主动连点流 · Deadline 持续 +50%" },
+      { id: "automation", code: "AUTO", name: "效率部", desc: "设施 ×1.5，涨价更慢；点击 ×0.5", detail: "采购挂机流 · 强化脚本与替身" },
+      { id: "slack", code: "IDLE", name: "隐身摸鱼办", desc: "停手后产出逐渐 ×3；点击 ×0.75", detail: "放置流 · 离线 100%，精力恢复更快" }
+    ];
+    const buildUpgrades = {
+      click: [{ id: "wrist", icon: "keyboard", name: "腕豪附体", desc: "点击收入再 ×3，连击收益核心", cost: 2400 }],
+      automation: [{ id: "server", icon: "tower", name: "服务器集群", desc: "脚本 ×2，数字替身 ×3", cost: 2400 }],
+      slack: [{ id: "ghost", icon: "headphones", name: "精神离职", desc: "停手加成最高 ×5，离线收益 ×1.5", cost: 2400 }]
+    };
     const freshState = () => ({
       cash: 0, totalEarned: 0, lifetime: 0, clicks: 0, loops: 0, muted: false,
+      build: null, energy: 100, deadline: 0, fishing: 0,
       buildings: { intern: 0, coffee: 0, script: 0, avatar: 0 },
       upgrades: [], logs: [], lastSave: Date.now()
     });
@@ -373,6 +434,7 @@
     let lastWorkAt = 0;
     let comboTimer;
     let lastCoinSound = 0;
+    let buyAmount = 1;
     const soundPaths = {
       buy: "assets/audio/register-buy.wav",
       upgrade: "assets/audio/register-upgrade.wav",
@@ -393,12 +455,50 @@
       return unit ? (n / unit[0]).toFixed(n / unit[0] < 10 ? 2 : 1) + unit[1] : String(Math.floor(n));
     };
     const multiplier = () => 1 + state.loops * 0.35;
-    const buildingCost = b => Math.ceil(b.baseCost * Math.pow(1.15, state.buildings[b.id]));
-    const incomePerSecond = () => buildings.reduce((sum, b) => sum + state.buildings[b.id] * b.rate, 0) * multiplier() * (state.upgrades.includes("okR") ? 2 : 1);
+    const buildingCost = (b, offset = state.buildings[b.id]) => Math.ceil(b.baseCost * Math.pow(state.build === "automation" ? 1.14 : 1.15, offset));
+    const idleMultiplier = () => {
+      if (state.build !== "slack") return 1;
+      const idleSeconds = Math.min(60, Math.max(0, (performance.now() - lastWorkAt) / 1000));
+      const cap = state.upgrades.includes("ghost") ? 5 : 3;
+      return Math.min(cap, 1 + idleSeconds / (state.upgrades.includes("ghost") ? 15 : 30));
+    };
+    const buildingOutput = b => {
+      const count = state.buildings[b.id];
+      const milestone = Math.pow(2, Math.floor(count / 10));
+      const serverBoost = state.upgrades.includes("server") ? (b.id === "avatar" ? 3 : b.id === "script" ? 2 : 1) : 1;
+      return count * b.rate * milestone * serverBoost;
+    };
+    const incomePerSecond = () => buildings.reduce((sum, b) => sum + buildingOutput(b), 0)
+      * multiplier()
+      * (state.upgrades.includes("okR") ? 2 : 1)
+      * (state.build === "automation" ? 1.5 : 1)
+      * idleMultiplier()
+      * (state.deadline > 0 ? 2 : 1)
+      * (state.fishing > 0 ? 4 : 1);
     const clickPower = () => {
       const base = 1 + (state.upgrades.includes("union") ? incomePerSecond() * 0.1 : 0);
-      return base * multiplier() * (state.upgrades.includes("keyboard") ? 5 : 1);
+      const comboBoost = state.build === "click" ? 2 * (1 + Math.min(combo, 100) * 0.02) : 1;
+      const buildPenalty = state.build === "automation" ? 0.5 : state.build === "slack" ? 0.75 : 1;
+      return base * multiplier()
+        * (state.upgrades.includes("keyboard") ? 5 : 1)
+        * (state.upgrades.includes("wrist") ? 3 : 1)
+        * (state.deadline > 0 ? 4 : 1)
+        * comboBoost * buildPenalty;
     };
+
+    function getBuildingQuote(b) {
+      const exact = buyAmount !== "max";
+      const target = exact ? buyAmount : 1000;
+      let qty = 0;
+      let cost = 0;
+      while (qty < target) {
+        const next = buildingCost(b, state.buildings[b.id] + qty);
+        if (!Number.isFinite(next) || (buyAmount === "max" && cost + next > state.cash)) break;
+        cost += next;
+        qty++;
+      }
+      return { qty, cost };
+    }
 
     function playSound(name, volume = 0.25, pitch = 1) {
       if (state.muted || !soundPools[name]) return;
@@ -438,6 +538,7 @@
       state.clicks++;
       combo = now - lastWorkAt < 950 ? combo + 1 : 1;
       lastWorkAt = now;
+      state.energy = Math.min(100, state.energy + (state.build === "click" ? 0.6 : 0.15));
       clearTimeout(comboTimer);
       comboTimer = setTimeout(() => {
         combo = 0;
@@ -480,15 +581,62 @@
       render();
     }
 
+    function selectBuild(id) {
+      if (state.build === id) return;
+      if (state.build) {
+        toast("本轮构筑已锁定，轮回后可以重新选择");
+        return;
+      }
+      const build = builds.find(b => b.id === id);
+      if (!build) return;
+      state.build = id;
+      lastWorkAt = performance.now();
+      playSound("upgrade", 0.25);
+      addLog(`构筑确定：${build.name}。本轮入职合同不可更改。`);
+      toast(`已加入 ${build.name}，解锁专属强化`);
+      render();
+      save();
+    }
+
+    function setBuyAmount(amount) {
+      buyAmount = amount === "max" ? "max" : Number(amount);
+      render();
+    }
+
+    function castSkill(id) {
+      const costs = { deadline: 30, copy: 20, fishing: 40 };
+      if (!(id in costs) || state.energy < costs[id]) return;
+      if ((id === "deadline" && state.deadline > 0) || (id === "fishing" && state.fishing > 0)) return;
+      state.energy -= costs[id];
+      if (id === "deadline") {
+        state.deadline = state.build === "click" ? 27 : 18;
+        toast("Deadline 降临：点击 ×4，设施 ×2");
+      } else if (id === "fishing") {
+        state.fishing = state.build === "slack" ? 40 : 20;
+        toast("带薪摸鱼：设施产出 ×4");
+      } else {
+        const amount = Math.max(incomePerSecond() * 60, clickPower() * 10);
+        earn(amount);
+        playCoinShower(14);
+        replayClass(document.querySelector(".wallet"), "bump", 210);
+        toast(`复制粘贴成功：立即入账 ¥${format(amount)}`);
+      }
+      playSound("upgrade", 0.28);
+      render();
+      save();
+    }
+
     function buyBuilding(id) {
       const item = buildings.find(b => b.id === id);
-      const cost = buildingCost(item);
-      if (state.cash < cost) return;
-      state.cash -= cost;
-      state.buildings[id]++;
+      const quote = getBuildingQuote(item);
+      if (!quote.qty || state.cash < quote.cost || (buyAmount !== "max" && quote.qty !== buyAmount)) return;
+      const oldMilestone = Math.floor(state.buildings[id] / 10);
+      state.cash -= quote.cost;
+      state.buildings[id] += quote.qty;
+      const newMilestone = Math.floor(state.buildings[id] / 10);
       playSound("buy", 0.3);
-      addLog(`采购完成：${item.name} 已加入固定资产。`);
-      toast(`${item.name} 开始为你打工`);
+      addLog(`采购完成：${item.name} ×${quote.qty} 已加入固定资产。`);
+      toast(newMilestone > oldMilestone ? `${item.name} 达成 ${newMilestone * 10} 个里程碑，产量翻倍！` : `${item.name} ×${quote.qty} 开始为你打工`);
       render();
       const button = document.querySelector(`[data-building="${id}"]`);
       if (button) replayClass(button, "bought", 300);
@@ -496,8 +644,8 @@
     }
 
     function buyUpgrade(id) {
-      const item = upgrades.find(u => u.id === id);
-      if (state.cash < item.cost || state.upgrades.includes(id)) return;
+      const item = [...upgrades, ...(buildUpgrades[state.build] || [])].find(u => u.id === id);
+      if (!item || state.cash < item.cost || state.upgrades.includes(id)) return;
       state.cash -= item.cost;
       state.upgrades.push(id);
       playSound("upgrade", 0.3);
@@ -549,6 +697,7 @@
       const chapterIndex = state.loops % chapters.length;
       const chapter = chapters[chapterIndex];
       const income = incomePerSecond();
+      const activeBuild = builds.find(b => b.id === state.build);
       $("chapterNo").textContent = `FLOOR ${String(state.loops + 1).padStart(2, "0")}`;
       $("chapterTitle").textContent = chapter.title;
       $("chapterStory").textContent = chapter.story;
@@ -562,27 +711,52 @@
       $("goalText").textContent = `${format(state.totalEarned)} / ${format(GOAL)}`;
       $("goalProgress").style.width = Math.min(100, state.totalEarned / GOAL * 100) + "%";
       $("loopBtn").disabled = state.totalEarned < GOAL;
-      $("loopHint").textContent = state.totalEarned >= GOAL ? "可进入下一层 · 永久产能 +35%" : `还差 ${format(GOAL - state.totalEarned)}，本轮总收入达到 ${format(GOAL)} 后解锁`;
+      $("loopHint").textContent = state.totalEarned >= GOAL ? "可进入下一层 · 永久产能 +35% · 重选构筑" : `还差 ${format(GOAL - state.totalEarned)}，本轮总收入达到 ${format(GOAL)} 后解锁`;
       $("soundLabel").textContent = state.muted ? "声音 关" : "声音 开";
       $("soundBtn").setAttribute("aria-label", state.muted ? "打开声音" : "关闭声音");
       $("speakerIcon").setAttribute("d", state.muted ? "M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.2-2.2-1.4-1.4-2.2 2.2L13 8.4v2.8l.8.8-.8.8v2.8l2.2-2.2 2.2 2.2 1.4-1.4-2.2-2.2z" : "M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zm-2.5-8.77v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z");
 
-      const nextShopKey = JSON.stringify([state.loops, state.buildings, state.upgrades, buildings.map(b => state.cash >= buildingCost(b)), upgrades.map(u => state.cash >= u.cost)]);
+      $("buildCurrent").textContent = activeBuild ? `${activeBuild.name} · ${activeBuild.detail}${state.build === "slack" ? ` · 当前停手 ×${idleMultiplier().toFixed(2)}` : ""}` : "尚未选择，可随时入职一个部门";
+      if (render.buildKey !== state.build) {
+        render.buildKey = state.build;
+        $("buildList").innerHTML = builds.map(b => `<button class="build-option ${state.build === b.id ? "selected" : ""}" data-build="${b.id}" ${state.build ? "disabled" : ""}><b>${b.name}<span>${b.code}</span></b><small>${b.desc}</small></button>`).join("");
+        document.querySelectorAll("[data-build]").forEach(btn => btn.addEventListener("click", () => selectBuild(btn.dataset.build)));
+      }
+      $("energy").textContent = Math.floor(state.energy);
+      $("energyProgress").style.width = state.energy + "%";
+      document.querySelectorAll("[data-buy]").forEach(btn => btn.classList.toggle("active", String(buyAmount) === btn.dataset.buy));
+      const deadlineButton = document.querySelector('[data-skill="deadline"]');
+      const fishingButton = document.querySelector('[data-skill="fishing"]');
+      deadlineButton.disabled = state.energy < 30 || state.deadline > 0;
+      fishingButton.disabled = state.energy < 40 || state.fishing > 0;
+      document.querySelector('[data-skill="copy"]').disabled = state.energy < 20;
+      deadlineButton.classList.toggle("active", state.deadline > 0);
+      fishingButton.classList.toggle("active", state.fishing > 0);
+      $("deadlineStatus").textContent = state.deadline > 0 ? `生效中 · ${state.deadline.toFixed(1)} 秒` : `30 精力 · ${state.build === "click" ? 27 : 18} 秒`;
+      $("fishingStatus").textContent = state.fishing > 0 ? `生效中 · ${state.fishing.toFixed(1)} 秒` : `40 精力 · ${state.build === "slack" ? 40 : 20} 秒`;
+
+      const nextShopKey = JSON.stringify([state.loops, state.build, state.buildings, state.upgrades, buyAmount, buildings.map(b => { const quote = getBuildingQuote(b); return { ...quote, affordable: state.cash >= quote.cost }; }), [...upgrades, ...(buildUpgrades[state.build] || [])].map(u => state.cash >= u.cost)]);
       if (nextShopKey !== render.shopKey) {
         render.shopKey = nextShopKey;
         $("buildingList").innerHTML = buildings.map(b => {
-          const cost = buildingCost(b);
+          const quote = getBuildingQuote(b);
           const count = state.buildings[b.id];
-          return `<button class="shop-item" data-building="${b.id}" ${state.cash < cost ? "disabled" : ""}>
-            <span class="item-icon"><img src="assets/images/${b.icon}.png" alt=""></span><span><span class="item-name">${b.name} <small>× ${count}</small></span><span class="item-desc">${format(b.rate * multiplier() * (state.upgrades.includes("okR") ? 2 : 1))} / 秒 · ${b.desc}</span></span>
-            <span class="item-price">¥ ${format(cost)}<small>购买</small></span></button>`;
+          const nextMilestone = (Math.floor(count / 10) + 1) * 10;
+          const steadyOutput = buildingOutput(b) * multiplier() * (state.upgrades.includes("okR") ? 2 : 1) * (state.build === "automation" ? 1.5 : 1);
+          const disabled = !quote.qty || state.cash < quote.cost || (buyAmount !== "max" && quote.qty !== buyAmount);
+          return `<button class="shop-item" data-building="${b.id}" ${disabled ? "disabled" : ""}>
+            <span class="item-icon"><img src="assets/images/${b.icon}.png" alt=""></span><span><span class="item-name">${b.name} <small>× ${count}</small></span><span class="item-desc">总基础产出 ${format(steadyOutput)} / 秒 · <span class="milestone">${nextMilestone - count} 个后翻倍</span></span></span>
+            <span class="item-price">¥ ${format(quote.cost)}<small>购买 ${buyAmount === "max" ? quote.qty : buyAmount} 个</small></span></button>`;
         }).join("");
-        $("upgradeList").innerHTML = upgrades.map(u => {
+        const upgradeMarkup = list => list.map(u => {
           const owned = state.upgrades.includes(u.id);
           return `<button class="shop-item ${owned ? "owned" : ""}" data-upgrade="${u.id}" ${owned || state.cash < u.cost ? "disabled" : ""}>
             <span class="item-icon">${owned ? '<span class="item-check">✓</span>' : `<img src="assets/images/${u.icon}.png" alt="">`}</span><span><span class="item-name">${u.name}</span><span class="item-desc">${u.desc}</span></span>
             <span class="item-price">${owned ? "已生效" : "¥ " + format(u.cost)}<small>${owned ? "本轮" : "强化"}</small></span></button>`;
         }).join("");
+        $("upgradeList").innerHTML = upgradeMarkup(upgrades);
+        $("buildUpgradeList").innerHTML = activeBuild ? upgradeMarkup(buildUpgrades[state.build]) : '<p class="loop-hint">选择构筑后显示专属强化</p>';
+        $("buildUpgradeLabel").textContent = activeBuild ? `${activeBuild.name} / 专属强化` : "构筑专属强化 / 选择后解锁";
         document.querySelectorAll("[data-building]").forEach(btn => btn.addEventListener("click", () => buyBuilding(btn.dataset.building)));
         document.querySelectorAll("[data-upgrade]").forEach(btn => btn.addEventListener("click", () => buyUpgrade(btn.dataset.upgrade)));
       }
@@ -609,12 +783,18 @@
         if (saved && saved.buildings && Array.isArray(saved.upgrades)) {
           state = Object.assign(freshState(), saved);
           state.buildings = Object.assign(freshState().buildings, saved.buildings);
-          const away = Math.min(7200, Math.max(0, (Date.now() - (state.lastSave || Date.now())) / 1000));
+          if (!builds.some(b => b.id === state.build)) state.build = null;
+          state.energy = Math.max(0, Math.min(100, Number(state.energy) || 0));
+          state.deadline = 0;
+          state.fishing = 0;
+          const away = Math.min(state.build === "slack" ? 14400 : 7200, Math.max(0, (Date.now() - (state.lastSave || Date.now())) / 1000));
           if (away > 10 && incomePerSecond() > 0) {
-            const offline = incomePerSecond() * away * 0.5;
+            const efficiency = state.build === "slack" ? (state.upgrades.includes("ghost") ? 1.5 : 1) : 0.5;
+            const offline = incomePerSecond() * away * efficiency;
             earn(offline);
             toast(`数字替身离线工作 ${Math.floor(away / 60)} 分钟，带回 ¥${format(offline)}`);
           }
+          lastWorkAt = performance.now();
           if (state.clicks > 0 || state.lifetime > 0) $("intro").classList.add("hidden");
         }
       } catch (e) { /* 损坏的存档不影响新游戏 */ }
@@ -623,6 +803,8 @@
 
     $("workBtn").addEventListener("click", work);
     $("loopBtn").addEventListener("click", enterLoop);
+    document.querySelectorAll("[data-skill]").forEach(btn => btn.addEventListener("click", () => castSkill(btn.dataset.skill)));
+    document.querySelectorAll("[data-buy]").forEach(btn => btn.addEventListener("click", () => setBuyAmount(btn.dataset.buy)));
     $("startBtn").addEventListener("click", () => {
       $("intro").classList.add("hidden");
       playSound("buy", 0.22);
@@ -658,7 +840,11 @@
       const now = performance.now();
       const delta = Math.min((now - lastTick) / 1000, 1);
       lastTick = now;
-      if (incomePerSecond() > 0) earn(incomePerSecond() * delta);
+      state.energy = Math.min(100, state.energy + (state.build === "slack" ? 2.4 : 1.2) * delta);
+      state.deadline = Math.max(0, state.deadline - delta);
+      state.fishing = Math.max(0, state.fishing - delta);
+      const income = incomePerSecond();
+      if (income > 0) earn(income * delta);
       render();
     }, 200);
   </script>
