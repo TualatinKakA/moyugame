@@ -30,6 +30,7 @@
     }
     button { font: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
     .scene-content { display: contents; }
+    .skill-guide { display: none; }
     button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
     .topbar {
       height: 72px;
@@ -418,20 +419,19 @@
       .work-caption { display: none; }
     }
     @media (max-width: 900px) {
-      .skill-deck {
+      .skill-guide {
         position: fixed; z-index: 35; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom));
         display: block; width: 100%; max-height: 72vh; max-height: 72dvh; margin: 0; padding: 14px;
         overflow-y: auto; overscroll-behavior: contain; border: 1px solid #526048; border-bottom: 0;
         background: #141714; box-shadow: 0 -15px 45px #000b; transform: translateY(110%);
         visibility: hidden; transition: transform .2s ease, visibility 0s .2s;
       }
-      .skill-deck.mobile-open { transform: translateY(0); visibility: visible; transition: transform .2s ease, visibility 0s; }
-      .skill-deck .mobile-panel-head { display: flex; }
-      .skill-deck .skill-row { grid-template-columns: 1fr; gap: 8px; }
-      .skill-deck .skill-btn { min-height: 64px; padding: 10px 12px; }
-      .skill-deck .skill-btn b { font-size: 12px; }
-      .skill-deck .skill-btn small { display: block; font-size: 10px; }
-      .skill-deck .skill-btn em { font-size: 10px; }
+      .skill-guide.mobile-open { transform: translateY(0); visibility: visible; transition: transform .2s ease, visibility 0s; }
+      .skill-guide .mobile-panel-head { display: flex; }
+      .skill-guide-tip { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+      .skill-guide-item { padding: 12px; margin-bottom: 8px; border: 1px solid var(--line); background: var(--panel); }
+      .skill-guide-item b { color: var(--green); font-size: 12px; }
+      .skill-guide-item p { margin: 6px 0 0; color: #c4c9bf; font-size: 11px; line-height: 1.7; }
     }
   </style>
 </head>
@@ -501,7 +501,6 @@
         <div class="stat"><small>已轮回</small><b><span id="loops">0</span> 次</b></div>
       </div>
       <section class="skill-deck" id="skillDeck">
-        <div class="mobile-panel-head"><b>主动技能</b><button class="mobile-panel-close" data-close-panel aria-label="关闭技能">×</button></div>
         <div class="energy-line"><span>精力 / 每秒自然恢复</span><strong><span id="energy">100</span> / 100</strong></div>
         <div class="energy-bar"><div id="energyProgress"></div></div>
         <div class="skill-row">
@@ -530,6 +529,14 @@
         <div class="work-caption">今日待办：∞　　距离下班：--:--　　工位状态：<span id="workStatus">勉强清醒</span></div>
       </section>
     </main>
+
+    <section class="skill-guide" id="skillGuide" aria-label="技能说明">
+      <div class="mobile-panel-head"><b>技能说明</b><button class="mobile-panel-close" data-close-panel aria-label="关闭技能说明">×</button></div>
+      <p class="skill-guide-tip">顶部技能栏可直接释放技能，此处查看完整效果。</p>
+      <div class="skill-guide-item"><b>Deadline 降临</b><p>30 精力 · 点击 ×4、设施 ×2，持续 18 秒；键盘修会延长至 27 秒。</p></div>
+      <div class="skill-guide-item"><b>复制粘贴</b><p>20 精力 · 立即获得 60 秒被动产出或 10 次点击收入中的较高者。</p></div>
+      <div class="skill-guide-item"><b>带薪摸鱼</b><p>40 精力 · 设施产出 ×4，持续 20 秒；隐身摸鱼办延长至 40 秒。</p></div>
+    </section>
 
     <aside class="shop">
       <div class="shop-head"><h2>行政采购</h2><div class="buy-controls" id="buyControls"><button data-buy="1" class="active">1</button><button data-buy="10">10</button><button data-buy="max">MAX</button></div><button class="mobile-panel-close" data-close-panel aria-label="关闭采购">×</button></div>
@@ -976,7 +983,7 @@
 
     const compactMedia = window.matchMedia("(max-width: 900px)");
     function closeMobilePanels() {
-      document.querySelectorAll(".sidebar, .shop, .skill-deck").forEach(panel => panel.classList.remove("mobile-open"));
+      document.querySelectorAll(".sidebar, .shop, .skill-guide").forEach(panel => panel.classList.remove("mobile-open"));
       document.querySelectorAll("[data-mobile-panel]").forEach(btn => btn.classList.toggle("active", btn.dataset.mobilePanel === "work"));
     }
     function toggleMobilePanel(name) {
@@ -985,7 +992,7 @@
         closeMobilePanels();
         return;
       }
-      const target = document.querySelector(name === "shop" ? ".shop" : name === "skills" ? "#skillDeck" : ".sidebar");
+      const target = document.querySelector(name === "shop" ? ".shop" : name === "skills" ? "#skillGuide" : ".sidebar");
       const shouldOpen = !target.classList.contains("mobile-open");
       closeMobilePanels();
       if (shouldOpen) {
