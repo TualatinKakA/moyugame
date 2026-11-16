@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111311">
+  <title>无限工时 · 打工无限流 Demo</title>
+  <style>
+    :root {
+      --bg: #111311;
+      --panel: #191c19;
+      --panel-2: #202420;
+      --line: #343a34;
+      --text: #eceee8;
+      --muted: #92998f;
+      --green: #b7ef72;
+      --green-dark: #26371d;
+      --red: #ff765f;
+      --yellow: #e7ca74;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      font-size: 14px;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+    .topbar {
+      height: 72px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: #151715;
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      background: var(--green); color: #17200f; font-weight: 900; font-size: 20px;
+      transform: rotate(-4deg);
+    }
+    .brand h1 { margin: 0; font-size: 20px; letter-spacing: 4px; }
+    .brand small { display: block; color: var(--muted); margin-top: 3px; letter-spacing: 1px; }
+    .top-actions { display: flex; align-items: center; gap: 18px; }
+    .save-status { color: var(--muted); font-size: 12px; }
+    .save-status::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 7px; }
+    .text-btn { color: var(--muted); background: none; border: 0; cursor: pointer; font-size: 12px; }
+    .text-btn:hover { color: var(--text); }
+    .layout {
+      display: grid;
+      grid-template-columns: 250px minmax(360px, 1fr) 340px;
+      max-width: 1440px;
+      min-height: calc(100vh - 72px);
+      margin: auto;
+    }
+    .sidebar { padding: 26px 22px; border-right: 1px solid var(--line); }
+    .shop { padding: 26px 22px; border-left: 1px solid var(--line); }
+    .eyebrow { color: var(--green); font: 11px/1.4 Consolas, monospace; letter-spacing: 2px; text-transform: uppercase; }
+    .chapter-title { margin: 9px 0 16px; font-size: 22px; line-height: 1.45; }
+    .story { color: #b6bbb2; line-height: 1.9; font-size: 13px; margin: 0 0 24px; }
+    .section-label { color: var(--muted); font-size: 11px; letter-spacing: 2px; margin: 26px 0 12px; }
+    .mission { padding: 16px; border: 1px solid var(--line); background: var(--panel); }
+    .mission-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 11px; font-size: 12px; }
+    .mission-row span:last-child { color: var(--green); font-family: Consolas, monospace; }
+    .progress { height: 5px; background: #30352f; overflow: hidden; }
+    .progress > div { height: 100%; width: 0; background: var(--green); transition: width .2s; }
+    .loop-btn {
+      width: 100%; margin-top: 14px; padding: 12px 8px; border: 1px solid var(--green);
+      color: #17200f; background: var(--green); font-weight: 700; cursor: pointer;
+    }
+    .loop-btn:disabled { border-color: var(--line); color: #686e65; background: #262a25; cursor: not-allowed; }
+    .loop-hint { margin: 9px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; text-align: center; }
+    .log { list-style: none; padding: 0; margin: 0; }
+    .log li { padding: 9px 0 9px 13px; border-left: 1px solid var(--line); color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .log li:first-child { color: #cdd2c8; border-left-color: var(--green); }
+    .log time { display: block; color: #646b62; font: 10px Consolas, monospace; }
+    .main { padding: 30px 36px; min-width: 0; }
+    .wallet-label { color: var(--muted); font-size: 12px; letter-spacing: 2px; }
+    .wallet { margin: 7px 0 4px; font: 700 clamp(34px, 4vw, 54px)/1.2 Consolas, "Microsoft YaHei", sans-serif; }
+    .wallet span { color: var(--green); }
+    .income { color: var(--muted); font-size: 12px; }
+    .income strong { color: var(--green); font-weight: 500; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 25px 0; background: var(--line); border: 1px solid var(--line); }
+    .stat { padding: 13px 15px; background: var(--panel); }
+    .stat small { display: block; color: var(--muted); font-size: 10px; margin-bottom: 5px; }
+    .stat b { font: 16px Consolas, monospace; }
+    .work-zone {
+      position: relative; min-height: 335px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; overflow: hidden;
+      border: 1px solid var(--line); background: radial-gradient(circle at 50% 50%, #242b20 0, #171a17 65%);
+    }
+    .work-zone::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
+      background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .work-btn {
+      position: relative; width: 190px; height: 190px; border-radius: 50%; cursor: pointer;
+      border: 1px solid #526448; background: #20281d; color: var(--text);
+      box-shadow: 0 0 0 12px #1b2019, 0 0 0 13px #394334, 0 15px 45px #0008;
+      transition: transform .08s, background .15s; user-select: none; -webkit-user-select: none;
+    }
+    .work-btn:hover { background: #293423; }
+    .work-btn:active, .work-btn.pressed { transform: scale(.96); }
+    .work-btn .key { display: block; color: var(--green); font: 11px Consolas, monospace; letter-spacing: 3px; margin-bottom: 10px; }
+    .work-btn strong { display: block; font-size: 26px; letter-spacing: 5px; }
+    .work-btn small { display: block; color: var(--muted); margin-top: 10px; }
+    .float-cash { position: absolute; pointer-events: none; color: var(--green); font: bold 20px Consolas, monospace; animation: float-up .85s ease-out forwards; z-index: 3; }
+    @keyframes float-up { to { transform: translateY(-85px); opacity: 0; } }
+    .work-caption { position: relative; margin-top: 30px; color: var(--muted); font-size: 11px; letter-spacing: 1px; }
+    .shop-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+    .shop h2 { margin: 0; font-size: 16px; letter-spacing: 2px; }
+    .shop-head span { color: var(--muted); font-size: 10px; }
+    .shop-group { color: var(--muted); font-size: 10px; letter-spacing: 2px; margin: 20px 0 10px; }
+    .shop-item {
+      width: 100%; display: grid; grid-template-columns: 38px 1fr auto; gap: 11px; align-items: center;
+      padding: 12px 10px; margin-bottom: 8px; text-align: left; color: var(--text);
+      background: var(--panel); border: 1px solid var(--line); cursor: pointer; transition: border-color .15s, background .15s;
+    }
+    .shop-item:hover:not(:disabled) { border-color: #718063; background: var(--panel-2); }
+    .shop-item:disabled { opacity: .46; cursor: not-allowed; }
+    .item-icon { width: 38px; height: 38px; display: grid; place-items: center; background: #292e28; color: var(--green); font: bold 15px Consolas, monospace; }
+    .item-name { display: block; font-size: 13px; margin-bottom: 5px; }
+    .item-desc { display: block; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .item-price { text-align: right; color: var(--yellow); font: 12px Consolas, monospace; white-space: nowrap; }
+    .item-price small { display: block; color: var(--muted); font: 10px "Microsoft YaHei", sans-serif; margin-top: 5px; }
+    .shop-item.owned { border-color: #526448; }
+    .shop-item.owned .item-price { color: var(--green); }
+    .toast {
+      position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); z-index: 20;
+      max-width: calc(100% - 32px); padding: 12px 20px; color: var(--text); background: #2a3027;
+      border: 1px solid #65775a; box-shadow: 0 8px 30px #0008; opacity: 0; pointer-events: none; transition: .25s;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .intro {
+      position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px;
+      background: #0c0e0ceb; backdrop-filter: blur(8px);
+    }
+    .intro.hidden { display: none; }
+    .intro-card { width: min(520px, 100%); padding: 42px; border: 1px solid #4a5544; background: var(--panel); box-shadow: 0 30px 100px #000; }
+    .intro-card h2 { margin: 12px 0; font-size: 38px; letter-spacing: 6px; }
+    .intro-card .quote { color: var(--red); font-size: 13px; margin: 20px 0; }
+    .intro-card p { color: #b8bdb4; line-height: 1.9; }
+    .start-btn { width: 100%; padding: 14px; margin-top: 16px; border: 0; background: var(--green); color: #17200f; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
+    .intro-foot { text-align: center; color: var(--muted) !important; font-size: 10px; }
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 210px 1fr 300px; }
+      .main { padding: 25px 22px; }
+      .sidebar, .shop { padding: 22px 16px; }
+    }
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr 300px; }
+      .sidebar { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+      .sidebar .log-wrap { display: none; }
+      .section-label { margin-top: 0; }
+      .chapter-title { margin-bottom: 8px; }
+      .story { margin-bottom: 0; }
+    }
+    @media (max-width: 620px) {
+      .topbar { height: 62px; padding: 0 16px; }
+      .brand h1 { font-size: 17px; }
+      .brand small, .save-status { display: none; }
+      .layout { display: flex; flex-direction: column; }
+      .main { order: -1; padding: 24px 16px; }
+      .work-zone { min-height: 310px; }
+      .work-btn { width: 165px; height: 165px; }
+      .sidebar { display: block; padding: 22px 16px; }
+      .sidebar .mission { margin-top: 20px; }
+      .shop { border-left: 0; border-top: 1px solid var(--line); padding: 22px 16px; }
+      .stats { margin: 20px 0; }
+      .stat { padding: 11px 9px; }
+      .intro-card { padding: 28px; }
+      .intro-card h2 { font-size: 30px; }
+    }
+    .brand-mark { background: #232a20; border: 1px solid #475440; }
+    .brand-mark img { width: 31px; height: 31px; object-fit: contain; transform: rotate(4deg); }
+    .sound-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); background: #202420; border: 1px solid var(--line); padding: 7px 10px; cursor: pointer; }
+    .sound-btn:hover { color: var(--green); border-color: #59664f; }
+    .sound-btn svg { width: 15px; height: 15px; fill: currentColor; }
+    .work-zone {
+      min-height: 390px; display: block; background: linear-gradient(#343b32 0 68%, #20251f 68%);
+      border-color: #465041; box-shadow: inset 0 0 60px #0b0e0a88;
+    }
+    .work-zone::before { inset: auto 0 32% 0; height: 2px; opacity: 1; background: #151915; }
+    .work-zone::after { content: ""; position: absolute; left: 25%; right: 25%; top: 0; height: 7px; background: #d9edba; box-shadow: 0 8px 35px #d9edba33; }
+    .office-window { position: absolute; left: 24px; top: 28px; width: 140px; height: 126px; padding: 7px; background: #1c231d; border: 2px solid #596555; box-shadow: 5px 6px 0 #181d17; }
+    .window-view { position: relative; width: 100%; height: 100%; overflow: hidden; background: linear-gradient(#91a99b, #cfce9e); }
+    .window-view::before { content: ""; position: absolute; width: 24px; height: 24px; right: 15px; top: 13px; border-radius: 50%; background: #fff2b3; box-shadow: 0 0 18px #fff2b3; }
+    .city { position: absolute; inset: auto 0 0; height: 64%; background: linear-gradient(90deg, #52635b 0 14%, transparent 14% 17%, #68756b 17% 34%, transparent 34% 37%, #43584f 37% 59%, transparent 59% 62%, #617168 62% 80%, transparent 80% 83%, #475b52 83%); }
+    .city::after { content: ""; position: absolute; inset: 10px 6px 5px; opacity: .55; background: repeating-linear-gradient(0deg, transparent 0 9px, #e9dda0 9px 12px), repeating-linear-gradient(90deg, transparent 0 12px, #e9dda0 12px 16px); }
+    .wall-poster { position: absolute; right: 24px; top: 34px; width: 120px; padding: 12px 9px; color: #282a23; background: #ded9bb; transform: rotate(2deg); box-shadow: 3px 5px 0 #1b211b66; text-align: center; }
+    .wall-poster::before { content: ""; position: absolute; width: 42px; height: 10px; left: 38px; top: -5px; background: #a9b39a99; }
+    .wall-poster b { display: block; color: #a54e3d; font-size: 12px; letter-spacing: 2px; }
+    .wall-poster span { display: block; margin-top: 7px; font-size: 9px; line-height: 1.6; }
+    .work-btn { position: absolute; z-index: 5; left: 50%; top: 82px; width: 220px; height: 205px; margin-left: -110px; border: 0; border-radius: 0; background: transparent; box-shadow: none; transition: filter .12s; }
+    .work-btn:hover { background: transparent; filter: brightness(1.13); }
+    .work-btn:active, .work-btn.pressed { transform: none; }
+    .monitor-shell { position: relative; display: block; width: 220px; height: 177px; filter: drop-shadow(0 11px 7px #080b08aa); transform-origin: 50% 85%; }
+    .monitor-img { display: block; width: 220px; height: 177px; object-fit: contain; }
+    .monitor-screen { position: absolute; left: 30px; top: 19px; width: 160px; height: 104px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; color: #d5f9ac; background: radial-gradient(circle, #293c24, #121a13); }
+    .monitor-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0 3px, #0003 3px 4px); }
+    .monitor-screen small { margin: 0; color: #86a779; font: 8px Consolas, monospace; letter-spacing: 2px; }
+    .monitor-screen strong { margin: 1px 0 -2px; color: var(--green); font: 50px/1.1 Consolas, monospace; text-shadow: 0 0 14px #b7ef7255; }
+    .monitor-screen em { color: #a6b69d; font: normal 9px "Microsoft YaHei", sans-serif; }
+    .work-btn.pressed .monitor-shell { animation: monitor-hit .16s ease-out; }
+    .work-btn.pressed .monitor-screen { background: #39532c; }
+    .work-label { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); padding: 6px 13px; white-space: nowrap; color: #dce7d3; background: #1a2118; border: 1px solid #53634a; font-size: 10px; letter-spacing: 2px; box-shadow: 3px 3px 0 #0c0f0b; }
+    .tower-img { position: absolute; z-index: 3; left: calc(50% + 120px); top: 157px; width: 60px; height: 100px; object-fit: contain; filter: drop-shadow(5px 7px 4px #1118); }
+    .headphones-img { position: absolute; z-index: 4; left: calc(50% - 185px); top: 172px; width: 72px; height: 72px; object-fit: contain; transform: rotate(-18deg); filter: drop-shadow(4px 5px 3px #1118); }
+    .desk-edge { position: absolute; z-index: 4; left: 0; right: 0; bottom: 40px; height: 82px; border-top: 12px solid #827355; background: linear-gradient(#544b39, #342f26); box-shadow: 0 -5px 15px #1117; }
+    .keyboard-img { position: absolute; z-index: 7; left: 50%; bottom: 76px; width: 165px; height: 52px; margin-left: -82px; object-fit: contain; filter: drop-shadow(4px 5px 3px #1119); pointer-events: none; }
+    .coffee-img { position: absolute; z-index: 7; right: calc(50% - 190px); bottom: 80px; width: 55px; height: 65px; object-fit: contain; filter: drop-shadow(4px 5px 3px #1118); }
+    .work-caption { position: absolute; z-index: 5; left: 0; right: 0; bottom: 13px; margin: 0; text-align: center; color: #a5ad9f; }
+    .work-zone.impact { animation: impact .13s linear; }
+    .float-cash { z-index: 12; text-shadow: 0 2px 3px #000; }
+    .cash-particle { position: absolute; z-index: 11; width: 30px; height: 32px; object-fit: contain; pointer-events: none; animation: cash-fly .72s cubic-bezier(.15,.65,.3,1) forwards; filter: drop-shadow(2px 3px 2px #0006); }
+    .wallet.bump #cash { display: inline-block; animation: wallet-bump .2s ease-out; }
+    .shop-item { transform-origin: center; }
+    .shop-item:active:not(:disabled) { transform: scale(.975); }
+    .shop-item.bought { animation: purchase-pop .28s ease-out; }
+    .item-icon { width: 42px; height: 42px; background: #262c24; border: 1px solid #3b4437; }
+    .item-icon img { width: 33px; height: 33px; object-fit: contain; filter: drop-shadow(2px 2px 1px #0006); }
+    .item-check { color: var(--green); font-weight: bold; }
+    body.loop-flash::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none; background: var(--green); animation: loop-flash .55s ease-out forwards; }
+    @keyframes monitor-hit { 0% { transform: scale(1); } 35% { transform: scale(.9) rotate(-2deg); } 70% { transform: scale(1.04) rotate(1deg); } 100% { transform: scale(1); } }
+    @keyframes impact { 0%,100% { transform: translate(0); } 25% { transform: translate(-3px, 2px); } 50% { transform: translate(3px, -1px); } 75% { transform: translate(-1px, -2px); } }
+    @keyframes cash-fly { 0% { transform: translate(0,0) rotate(0) scale(.5); opacity: 0; } 18% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--spin)) scale(1.1); opacity: 0; } }
+    @keyframes wallet-bump { 40% { transform: scale(1.16); color: #efffc8; } }
+    @keyframes purchase-pop { 45% { transform: scale(1.035); border-color: var(--green); background: #2d3b25; } }
+    @keyframes loop-flash { from { opacity: .8; } to { opacity: 0; } }
+    @media (max-width: 620px) {
+      .top-actions { gap: 8px; }
+      .sound-btn { padding: 7px; }
+      .sound-btn span { display: none; }
+      .work-zone { min-height: 350px; }
+      .work-btn { top: 78px; width: 205px; height: 190px; margin-left: -102px; }
+      .monitor-shell, .monitor-img { width: 205px; height: 165px; }
+      .monitor-screen { left: 28px; top: 18px; width: 149px; height: 96px; }
+      .office-window { left: 15px; top: 22px; width: 100px; height: 96px; }
+      .wall-poster { display: none; }
+      .tower-img { left: calc(50% + 98px); top: 145px; width: 48px; }
+      .headphones-img { left: calc(50% - 157px); width: 57px; }
+      .coffee-img { right: calc(50% - 157px); width: 46px; }
+      .keyboard-img { width: 150px; margin-left: -75px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .work-zone.impact, .work-btn.pressed .monitor-shell, .wallet.bump #cash, .shop-item.bought { animation: none; }
+      .cash-particle { animation-duration: .01s; }
+    }
+  </style>
+</head>
+<body>
+  <div class="intro" id="intro">
+    <section class="intro-card">
+      <div class="eyebrow">AN INFINITE WORKPLACE STORY</div>
+      <h2>无限工时</h2>
+      <div class="quote">“恭喜您，已被永不下班有限公司录取。”</div>
+      <p>周一早上 8:59，你在工位醒来。电脑上的待办事项每隔一秒自动增加，而离职申请需要一笔你根本存不下的工资。</p>
+      <p>赚钱、购置设备、招募替身。攒够离职补偿后，你会发现：<strong>离开这家公司，只是进入下一个职场副本。</strong></p>
+      <button class="start-btn" id="startBtn">打卡，进入第 <span id="introLoop">01</span> 层</button>
+      <p class="intro-foot">点击或按空格工作 · 自动保存 · 无外部依赖</p>
+    </section>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><img src="assets/images/cash.png" alt=""></div>
+      <div><h1>无限工时</h1><small>ENDLESS SHIFT / DEMO 0.2</small></div>
+    </div>
+    <div class="top-actions">
+      <span class="save-status" id="saveStatus">本地存档已就绪</span>
+      <button class="sound-btn" id="soundBtn" aria-label="关闭声音" title="声音开关">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path id="speakerIcon" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zm-2.5-8.77v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>
+        <span id="soundLabel">声音 开</span>
+      </button>
+      <button class="text-btn" id="resetSave">清除存档</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <section>
+        <div class="eyebrow" id="chapterNo">FLOOR 01</div>
+        <h2 class="chapter-title" id="chapterTitle"></h2>
+        <p class="story" id="chapterStory"></p>
+      </section>
+      <section class="mission">
+        <div class="section-label">当前主线</div>
+        <div class="mission-row"><span>攒够离职补偿</span><span id="goalText">0 / 2,500</span></div>
+        <div class="progress"><div id="goalProgress"></div></div>
+        <button class="loop-btn" id="loopBtn" disabled>提交离职申请</button>
+        <p class="loop-hint" id="loopHint">本轮总收入达到 2,500 后解锁</p>
+      </section>
+      <section class="log-wrap">
+        <div class="section-label">公司内网 / 实时记录</div>
+        <ul class="log" id="log"></ul>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="wallet-label">可用工资 / CNY</div>
+      <div class="wallet">¥ <span id="cash">0</span></div>
+      <div class="income">被动收入 <strong>+<span id="income">0</strong> / 秒</strong>　永久绩效加成 <strong>×<span id="multiplier">1.00</span></strong></div>
+      <div class="stats">
+        <div class="stat"><small>每次搬砖</small><b>¥ <span id="clickPower">1</span></b></div>
+        <div class="stat"><small>本轮总收入</small><b>¥ <span id="totalEarned">0</span></b></div>
+        <div class="stat"><small>已轮回</small><b><span id="loops">0</span> 次</b></div>
+      </div>
+      <section class="work-zone" id="workZone">
+        <div class="office-window"><div class="window-view"><div class="city"></div></div></div>
+        <div class="wall-poster"><b>自愿奋斗</b><span>公司就是你家<br>下班就是搬家</span></div>
+        <img class="tower-img" src="assets/images/tower.png" alt="">
+        <img class="headphones-img" src="assets/images/headphones.png" alt="">
+        <button class="work-btn" id="workBtn" aria-label="点击显示器搬砖赚钱">
+          <span class="monitor-shell">
+            <img class="monitor-img" src="assets/images/monitor.png" alt="">
+            <span class="monitor-screen"><small>TASKS REMAINING</small><strong>∞</strong><em id="combo">点击显示器搬砖</em></span>
+          </span>
+          <span class="work-label">点击 / SPACE 搬砖</span>
+        </button>
+        <div class="desk-edge"></div>
+        <img class="keyboard-img" src="assets/images/keyboard.png" alt="">
+        <img class="coffee-img" src="assets/images/coffee.png" alt="">
+        <div class="work-caption">今日待办：∞　　距离下班：--:--　　工位状态：<span id="workStatus">勉强清醒</span></div>
+      </section>
+    </main>
+
+    <aside class="shop">
+      <div class="shop-head"><h2>行政采购</h2><span>花工资，买自由</span></div>
+      <div class="shop-group">自动化设施 / 每秒产出</div>
+      <div id="buildingList"></div>
+      <div class="shop-group">一次性强化 / 本轮有效</div>
+      <div id="upgradeList"></div>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const GOAL = 2500;
+    const SAVE_KEY = "endless-shift-demo-v1";
+    const chapters = [
+      { title: "试用期无休", story: "你的合同只有一行字：乙方自愿将明天也视为今天。人事说，攒够 2,500 元，就批准你的离职。" },
+      { title: "需求坟场", story: "上一层的离职证明，是这一层的入职通知。产品经理微笑着走来：“只是个小需求，顺便改一下底层逻辑。”" },
+      { title: "团建孤岛", story: "全公司被传送到无人岛，唯独钉钉仍有信号。老板宣布：本次团建采取自愿原则，缺席者自愿离职。" },
+      { title: "绩效审判庭", story: "评委是你历代的周报。它们一致认为你缺乏主人翁精神，并判处你继续优化自己，直到产生剩余价值。" },
+      { title: "老板之梦", story: "你终于坐上老板的位置，却发现窗外仍是那间办公室。工位上的你抬起头，说：“这个需求很简单。”" }
+    ];
+    const buildings = [
+      { id: "intern", icon: "id-card", name: "见习牛马", desc: "不会抱怨，偶尔跑错需求", baseCost: 15, rate: 0.5 },
+      { id: "coffee", icon: "coffee", name: "续命咖啡机", desc: "把睡眠时间折算成产能", baseCost: 100, rate: 3 },
+      { id: "script", icon: "keyboard", name: "自动化脚本", desc: "写代码让代码替你上班", baseCost: 1100, rate: 14 },
+      { id: "avatar", icon: "laptop", name: "数字替身", desc: "它在开会，你在假装开会", baseCost: 12000, rate: 90 }
+    ];
+    const upgrades = [
+      { id: "keyboard", icon: "keyboard", name: "人体工学键盘", desc: "每次搬砖收入 × 5", cost: 100 },
+      { id: "okR", icon: "cash", name: "反向画饼", desc: "所有设施产出 × 2", cost: 750 },
+      { id: "union", icon: "headphones", name: "摸鱼互助会", desc: "搬砖额外获得秒收入 × 10%", cost: 1800 }
+    ];
+    const freshState = () => ({
+      cash: 0, totalEarned: 0, lifetime: 0, clicks: 0, loops: 0, muted: false,
+      buildings: { intern: 0, coffee: 0, script: 0, avatar: 0 },
+      upgrades: [], logs: [], lastSave: Date.now()
+    });
+    let state = freshState();
+    let lastTick = performance.now();
+    let toastTimer;
+    let combo = 0;
+    let lastWorkAt = 0;
+    let comboTimer;
+    let lastCoinSound = 0;
+    const soundPaths = {
+      buy: "assets/audio/register-buy.wav",
+      upgrade: "assets/audio/register-upgrade.wav",
+      loop: "assets/audio/loop.ogg",
+      ...Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`coin-${String(i + 1).padStart(2, "0")}`, `assets/audio/coin-${String(i + 1).padStart(2, "0")}.ogg`]))
+    };
+    const soundPools = {};
+    Object.entries(soundPaths).forEach(([name, path]) => {
+      soundPools[name] = Array.from({ length: 4 }, () => { const audio = new Audio(path); audio.preload = "auto"; return audio; });
+      soundPools[name].index = 0;
+    });
+
+    const $ = id => document.getElementById(id);
+    const format = n => {
+      if (n < 1000) return n < 10 && n % 1 !== 0 ? n.toFixed(1) : Math.floor(n).toLocaleString("zh-CN");
+      const units = [[1e12, "T"], [1e9, "B"], [1e6, "M"], [1e3, "K"]];
+      const unit = units.find(([v]) => n >= v);
+      return unit ? (n / unit[0]).toFixed(n / unit[0] < 10 ? 2 : 1) + unit[1] : String(Math.floor(n));
+    };
+    const multiplier = () => 1 + state.loops * 0.35;
+    const buildingCost = b => Math.ceil(b.baseCost * Math.pow(1.15, state.buildings[b.id]));
+    const incomePerSecond = () => buildings.reduce((sum, b) => sum + state.buildings[b.id] * b.rate, 0) * multiplier() * (state.upgrades.includes("okR") ? 2 : 1);
+    const clickPower = () => {
+      const base = 1 + (state.upgrades.includes("union") ? incomePerSecond() * 0.1 : 0);
+      return base * multiplier() * (state.upgrades.includes("keyboard") ? 5 : 1);
+    };
+
+    function playSound(name, volume = 0.25, pitch = 1) {
+      if (state.muted || !soundPools[name]) return;
+      const pool = soundPools[name];
+      const audio = pool[pool.index++ % pool.length];
+      audio.currentTime = 0;
+      audio.volume = volume;
+      audio.playbackRate = pitch;
+      audio.play().catch(() => {});
+    }
+
+    function playCoinShower(particleCount) {
+      const layerCount = particleCount < 5 ? 1 : particleCount < 8 ? 2 : 4;
+      for (let i = 0; i < layerCount; i++) {
+        const variant = String(1 + Math.floor(Math.random() * 8)).padStart(2, "0");
+        setTimeout(() => playSound(`coin-${variant}`, 0.1 + Math.min(0.08, particleCount * 0.006), 0.92 + Math.random() * 0.3), i * 45);
+      }
+    }
+
+    function replayClass(element, className, duration) {
+      element.classList.remove(className);
+      void element.offsetWidth;
+      element.classList.add(className);
+      setTimeout(() => element.classList.remove(className), duration);
+    }
+
+    function earn(amount) {
+      state.cash += amount;
+      state.totalEarned += amount;
+      state.lifetime += amount;
+    }
+
+    function work(event) {
+      const amount = clickPower();
+      const now = performance.now();
+      earn(amount);
+      state.clicks++;
+      combo = now - lastWorkAt < 950 ? combo + 1 : 1;
+      lastWorkAt = now;
+      clearTimeout(comboTimer);
+      comboTimer = setTimeout(() => {
+        combo = 0;
+        $("combo").textContent = "点击显示器搬砖";
+        $("workStatus").textContent = "勉强清醒";
+      }, 1300);
+      $("combo").textContent = combo >= 3 ? `${combo} 连击 · 输出拉满` : "需求处理中...";
+      $("workStatus").textContent = combo >= 20 ? "键盘冒火" : combo >= 8 ? "逐渐上头" : "被迫营业";
+      replayClass($("workBtn"), "pressed", 170);
+      replayClass($("workZone"), "impact", 140);
+      replayClass(document.querySelector(".wallet"), "bump", 210);
+      const rect = $("workZone").getBoundingClientRect();
+      const x = event && event.clientX ? event.clientX - rect.left : rect.width / 2 + (Math.random() - 0.5) * 80;
+      const y = event && event.clientY ? event.clientY - rect.top : 145;
+      const floater = document.createElement("span");
+      floater.className = "float-cash";
+      floater.textContent = "+¥" + format(amount);
+      floater.style.left = x + "px";
+      floater.style.top = y + "px";
+      $("workZone").appendChild(floater);
+      setTimeout(() => floater.remove(), 900);
+      const particleCount = Math.min(14, 3 + Math.floor(Math.log10(amount + 1) * 2) + Math.floor(combo / 5));
+      if (now - lastCoinSound > 85) {
+        playCoinShower(particleCount);
+        lastCoinSound = now;
+      }
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement("img");
+        particle.className = "cash-particle";
+        particle.src = `assets/images/${Math.random() > 0.25 ? "coin" : "cash"}.png`;
+        particle.alt = "";
+        particle.style.left = (x + (Math.random() - 0.5) * 30) + "px";
+        particle.style.top = (y + (Math.random() - 0.5) * 20) + "px";
+        particle.style.setProperty("--dx", (Math.random() - 0.5) * 180 + "px");
+        particle.style.setProperty("--dy", (-70 - Math.random() * 100) + "px");
+        particle.style.setProperty("--spin", (Math.random() - 0.5) * 500 + "deg");
+        $("workZone").appendChild(particle);
+        setTimeout(() => particle.remove(), 750);
+      }
+      render();
+    }
+
+    function buyBuilding(id) {
+      const item = buildings.find(b => b.id === id);
+      const cost = buildingCost(item);
+      if (state.cash < cost) return;
+      state.cash -= cost;
+      state.buildings[id]++;
+      playSound("buy", 0.3);
+      addLog(`采购完成：${item.name} 已加入固定资产。`);
+      toast(`${item.name} 开始为你打工`);
+      render();
+      const button = document.querySelector(`[data-building="${id}"]`);
+      if (button) replayClass(button, "bought", 300);
+      save();
+    }
+
+    function buyUpgrade(id) {
+      const item = upgrades.find(u => u.id === id);
+      if (state.cash < item.cost || state.upgrades.includes(id)) return;
+      state.cash -= item.cost;
+      state.upgrades.push(id);
+      playSound("upgrade", 0.3);
+      addLog(`强化生效：${item.name}。希望这次不是智商税。`);
+      toast(`已获得强化：${item.name}`);
+      render();
+      const button = document.querySelector(`[data-upgrade="${id}"]`);
+      if (button) replayClass(button, "bought", 300);
+      save();
+    }
+
+    function enterLoop() {
+      if (state.totalEarned < GOAL) return;
+      if (!confirm("离职申请已批准。确定进入下一层职场副本吗？\n本轮工资、设施和强化将清空，永久产能 +35%。")) return;
+      const logs = state.logs;
+      const lifetime = state.lifetime;
+      const loops = state.loops + 1;
+      const muted = state.muted;
+      playSound("loop", 0.4);
+      replayClass(document.body, "loop-flash", 600);
+      state = freshState();
+      state.loops = loops;
+      state.lifetime = lifetime;
+      state.logs = logs;
+      state.muted = muted;
+      combo = 0;
+      $("combo").textContent = "点击显示器搬砖";
+      $("workStatus").textContent = "似曾相识";
+      addLog(`第 ${String(loops).padStart(2, "0")} 层通关。永久绩效倍率提升至 ×${multiplier().toFixed(2)}。`);
+      addLog(`新副本载入：${chapters[loops % chapters.length].title}。`);
+      toast("轮回完成：永久产能 +35%，你已抵达下一层");
+      render();
+      save();
+    }
+
+    function addLog(text) {
+      state.logs.unshift({ text, time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }) });
+      state.logs = state.logs.slice(0, 6);
+    }
+
+    function toast(text) {
+      clearTimeout(toastTimer);
+      $("toast").textContent = text;
+      $("toast").classList.add("show");
+      toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
+    }
+
+    function render() {
+      const chapterIndex = state.loops % chapters.length;
+      const chapter = chapters[chapterIndex];
+      const income = incomePerSecond();
+      $("chapterNo").textContent = `FLOOR ${String(state.loops + 1).padStart(2, "0")}`;
+      $("chapterTitle").textContent = chapter.title;
+      $("chapterStory").textContent = chapter.story;
+      $("introLoop").textContent = String(state.loops + 1).padStart(2, "0");
+      $("cash").textContent = format(state.cash);
+      $("income").textContent = format(income);
+      $("multiplier").textContent = multiplier().toFixed(2);
+      $("clickPower").textContent = format(clickPower());
+      $("totalEarned").textContent = format(state.totalEarned);
+      $("loops").textContent = state.loops;
+      $("goalText").textContent = `${format(state.totalEarned)} / ${format(GOAL)}`;
+      $("goalProgress").style.width = Math.min(100, state.totalEarned / GOAL * 100) + "%";
+      $("loopBtn").disabled = state.totalEarned < GOAL;
+      $("loopHint").textContent = state.totalEarned >= GOAL ? "可进入下一层 · 永久产能 +35%" : `还差 ${format(GOAL - state.totalEarned)}，本轮总收入达到 ${format(GOAL)} 后解锁`;
+      $("soundLabel").textContent = state.muted ? "声音 关" : "声音 开";
+      $("soundBtn").setAttribute("aria-label", state.muted ? "打开声音" : "关闭声音");
+      $("speakerIcon").setAttribute("d", state.muted ? "M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.2-2.2-1.4-1.4-2.2 2.2L13 8.4v2.8l.8.8-.8.8v2.8l2.2-2.2 2.2 2.2 1.4-1.4-2.2-2.2z" : "M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zm-2.5-8.77v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z");
+
+      const nextShopKey = JSON.stringify([state.loops, state.buildings, state.upgrades, buildings.map(b => state.cash >= buildingCost(b)), upgrades.map(u => state.cash >= u.cost)]);
+      if (nextShopKey !== render.shopKey) {
+        render.shopKey = nextShopKey;
+        $("buildingList").innerHTML = buildings.map(b => {
+          const cost = buildingCost(b);
+          const count = state.buildings[b.id];
+          return `<button class="shop-item" data-building="${b.id}" ${state.cash < cost ? "disabled" : ""}>
+            <span class="item-icon"><img src="assets/images/${b.icon}.png" alt=""></span><span><span class="item-name">${b.name} <small>× ${count}</small></span><span class="item-desc">${format(b.rate * multiplier() * (state.upgrades.includes("okR") ? 2 : 1))} / 秒 · ${b.desc}</span></span>
+            <span class="item-price">¥ ${format(cost)}<small>购买</small></span></button>`;
+        }).join("");
+        $("upgradeList").innerHTML = upgrades.map(u => {
+          const owned = state.upgrades.includes(u.id);
+          return `<button class="shop-item ${owned ? "owned" : ""}" data-upgrade="${u.id}" ${owned || state.cash < u.cost ? "disabled" : ""}>
+            <span class="item-icon">${owned ? '<span class="item-check">✓</span>' : `<img src="assets/images/${u.icon}.png" alt="">`}</span><span><span class="item-name">${u.name}</span><span class="item-desc">${u.desc}</span></span>
+            <span class="item-price">${owned ? "已生效" : "¥ " + format(u.cost)}<small>${owned ? "本轮" : "强化"}</small></span></button>`;
+        }).join("");
+        document.querySelectorAll("[data-building]").forEach(btn => btn.addEventListener("click", () => buyBuilding(btn.dataset.building)));
+        document.querySelectorAll("[data-upgrade]").forEach(btn => btn.addEventListener("click", () => buyUpgrade(btn.dataset.upgrade)));
+      }
+      const nextLogKey = JSON.stringify(state.logs);
+      if (nextLogKey !== render.logKey) {
+        render.logKey = nextLogKey;
+        $("log").innerHTML = state.logs.map(item => `<li><time>${item.time}</time>${item.text}</li>`).join("");
+      }
+    }
+
+    function save() {
+      state.lastSave = Date.now();
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+        $("saveStatus").textContent = "已自动保存";
+      } catch (e) {
+        $("saveStatus").textContent = "本地存档不可用";
+      }
+    }
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+        if (saved && saved.buildings && Array.isArray(saved.upgrades)) {
+          state = Object.assign(freshState(), saved);
+          state.buildings = Object.assign(freshState().buildings, saved.buildings);
+          const away = Math.min(7200, Math.max(0, (Date.now() - (state.lastSave || Date.now())) / 1000));
+          if (away > 10 && incomePerSecond() > 0) {
+            const offline = incomePerSecond() * away * 0.5;
+            earn(offline);
+            toast(`数字替身离线工作 ${Math.floor(away / 60)} 分钟，带回 ¥${format(offline)}`);
+          }
+          if (state.clicks > 0 || state.lifetime > 0) $("intro").classList.add("hidden");
+        }
+      } catch (e) { /* 损坏的存档不影响新游戏 */ }
+      if (!state.logs.length) addLog("打卡成功。系统提示：请勿寻找公司的出口。");
+    }
+
+    $("workBtn").addEventListener("click", work);
+    $("loopBtn").addEventListener("click", enterLoop);
+    $("startBtn").addEventListener("click", () => {
+      $("intro").classList.add("hidden");
+      playSound("buy", 0.22);
+      save();
+    });
+    $("soundBtn").addEventListener("click", () => {
+      state.muted = !state.muted;
+      if (!state.muted) playSound("buy", 0.22);
+      render();
+      save();
+    });
+    $("resetSave").addEventListener("click", () => {
+      if (!confirm("确定清除全部本地进度，从第一层重新开始吗？")) return;
+      localStorage.removeItem(SAVE_KEY);
+      state = freshState();
+      addLog("你撕毁合同，又回到周一早上 8:59。");
+      $("intro").classList.remove("hidden");
+      render();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.code === "Space" && !event.repeat && $("intro").classList.contains("hidden") && !["BUTTON", "INPUT"].includes(document.activeElement.tagName)) {
+        event.preventDefault();
+        work();
+      }
+    });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+    window.addEventListener("beforeunload", save);
+    setInterval(save, 15000);
+
+    load();
+    render();
+    setInterval(() => {
+      const now = performance.now();
+      const delta = Math.min((now - lastTick) / 1000, 1);
+      lastTick = now;
+      if (incomePerSecond() > 0) earn(incomePerSecond() * delta);
+      render();
+    }, 200);
+  </script>
+</body>
+</html>
