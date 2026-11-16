@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#111311">
+  <link rel="icon" type="image/png" href="assets/images/cash.png">
   <title>无限工时 · 打工无限流 Demo</title>
   <style>
     :root {
@@ -27,7 +28,8 @@
       font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
       font-size: 14px;
     }
-    button { font: inherit; }
+    button { font: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .scene-content { display: contents; }
     button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
     .topbar {
       height: 72px;
@@ -352,6 +354,69 @@
       .build-option b { font-size: 12px; }
       .build-option small { font-size: 10px; }
     }
+    /* Mobile app frame: the work view fits one screen; only drawers scroll. */
+    @media (max-width: 900px) {
+      html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+      body { height: 100vh; height: 100dvh; padding-bottom: 0; }
+      .topbar { height: 56px; padding: 0 14px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .brand-mark img { width: 28px; height: 28px; }
+      .brand h1 { font-size: 17px; }
+      .brand small, .save-status { display: none; }
+      .top-actions { gap: 8px; }
+      .sound-btn { min-width: 44px; min-height: 44px; justify-content: center; }
+      .text-btn { min-height: 44px; white-space: nowrap; }
+      .layout {
+        display: block; min-height: 0;
+        height: calc(100vh - 114px - env(safe-area-inset-bottom, 0px));
+        height: calc(100dvh - 114px - env(safe-area-inset-bottom, 0px));
+      }
+      .main {
+        height: 100%; min-height: 0; padding: 10px 12px; overflow: hidden;
+        display: flex; flex-direction: column; gap: 7px;
+      }
+      .wallet-label, .wallet, .income, .stats, .skill-deck { flex: 0 0 auto; }
+      .wallet-label { font-size: 10px; line-height: 1.2; }
+      .wallet { margin: 0; font-size: 30px; line-height: 1.05; }
+      .income { font-size: 10px; line-height: 1.4; }
+      .stats { margin: 0; }
+      .stat { padding: 7px 9px; }
+      .stat small { margin-bottom: 3px; font-size: 9px; }
+      .stat b { font-size: 14px; }
+      .skill-deck { margin: 0; padding: 8px; }
+      .energy-line { margin-bottom: 5px; }
+      .energy-bar { margin-bottom: 7px; }
+      .skill-btn { min-height: 46px; padding: 6px; }
+      .skill-btn b { margin-bottom: 3px; font-size: 10px; }
+      .skill-btn small { display: none; }
+      .skill-btn em { margin-top: 2px; font-size: 8px; }
+      .work-zone { flex: 1 1 0; min-height: 0; height: auto; }
+      .scene-content {
+        position: absolute; left: 0; bottom: 0; display: block; width: 100%; height: 340px;
+        transform: scale(var(--scene-scale, 1)); transform-origin: 50% 100%;
+      }
+      .work-btn { touch-action: manipulation; -webkit-touch-callout: none; }
+      .work-caption { z-index: 10; bottom: 8px; font-size: 9px; line-height: 1.4; }
+      .sidebar, .shop { -webkit-overflow-scrolling: touch; }
+      .intro { overflow-y: auto; overscroll-behavior: contain; }
+      .intro-card { padding: 26px; }
+    }
+    @media (max-width: 900px) and (max-height: 700px) {
+      .main { padding-top: 8px; padding-bottom: 8px; gap: 6px; }
+      .wallet { font-size: 27px; }
+      .stat { padding-top: 5px; padding-bottom: 5px; }
+      .skill-deck { padding: 7px; }
+      .office-window, .wall-poster, .headphones-img { display: none; }
+    }
+    @media (max-width: 900px) and (max-height: 560px) {
+      .topbar { height: 48px; }
+      .layout {
+        height: calc(100vh - 106px - env(safe-area-inset-bottom, 0px));
+        height: calc(100dvh - 106px - env(safe-area-inset-bottom, 0px));
+      }
+      .income, .stats { display: none; }
+      .work-caption { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -429,20 +494,22 @@
         </div>
       </section>
       <section class="work-zone" id="workZone">
-        <div class="office-window"><div class="window-view"><div class="city"></div></div></div>
-        <div class="wall-poster"><b>自愿奋斗</b><span>公司就是你家<br>下班就是搬家</span></div>
-        <img class="tower-img" src="assets/images/tower.png" alt="">
-        <img class="headphones-img" src="assets/images/headphones.png" alt="">
-        <button class="work-btn" id="workBtn" aria-label="点击显示器搬砖赚钱">
-          <span class="monitor-shell">
-            <img class="monitor-img" src="assets/images/monitor.png" alt="">
-            <span class="monitor-screen"><small>TASKS REMAINING</small><strong>∞</strong><em id="combo">点击显示器搬砖</em></span>
-          </span>
-          <span class="work-label">点击 / SPACE 搬砖</span>
-        </button>
-        <div class="desk-edge"></div>
-        <img class="keyboard-img" src="assets/images/keyboard.png" alt="">
-        <img class="coffee-img" src="assets/images/coffee.png" alt="">
+        <div class="scene-content" id="sceneContent">
+          <div class="office-window"><div class="window-view"><div class="city"></div></div></div>
+          <div class="wall-poster"><b>自愿奋斗</b><span>公司就是你家<br>下班就是搬家</span></div>
+          <img class="tower-img" src="assets/images/tower.png" alt="">
+          <img class="headphones-img" src="assets/images/headphones.png" alt="">
+          <button class="work-btn" id="workBtn" aria-label="点击显示器搬砖赚钱">
+            <span class="monitor-shell">
+              <img class="monitor-img" src="assets/images/monitor.png" alt="">
+              <span class="monitor-screen"><small>TASKS REMAINING</small><strong>∞</strong><em id="combo">点击显示器搬砖</em></span>
+            </span>
+            <span class="work-label">点击 / SPACE 搬砖</span>
+          </button>
+          <div class="desk-edge"></div>
+          <img class="keyboard-img" src="assets/images/keyboard.png" alt="">
+          <img class="coffee-img" src="assets/images/coffee.png" alt="">
+        </div>
         <div class="work-caption">今日待办：∞　　距离下班：--:--　　工位状态：<span id="workStatus">勉强清醒</span></div>
       </section>
     </main>
@@ -896,10 +963,9 @@
     }
     function toggleMobilePanel(name) {
       if (!compactMedia.matches) return;
-      if (name === "skills") {
+      if (name === "work" || name === "skills") {
         closeMobilePanels();
-        document.querySelector('[data-mobile-panel="skills"]').classList.add("active");
-        $("skillDeck").scrollIntoView({ behavior: "smooth", block: "center" });
+        document.querySelector(`[data-mobile-panel="${name}"]`).classList.add("active");
         return;
       }
       const target = document.querySelector(name === "shop" ? ".shop" : ".sidebar");
@@ -911,11 +977,24 @@
         document.querySelector(`[data-mobile-panel="${name}"]`).classList.add("active");
       }
     }
+    function syncWorkScene() {
+      const zone = $("workZone");
+      if (!compactMedia.matches) {
+        zone.style.removeProperty("--scene-scale");
+        return;
+      }
+      const scale = Math.max(0.3, Math.min(1.15, zone.clientHeight / 340));
+      zone.style.setProperty("--scene-scale", scale.toFixed(3));
+    }
     function syncResponsivePanels() {
       document.querySelectorAll("details.responsive-collapse").forEach(panel => { panel.open = !compactMedia.matches; });
       closeMobilePanels();
+      requestAnimationFrame(syncWorkScene);
     }
-    compactMedia.addEventListener("change", syncResponsivePanels);
+    if (compactMedia.addEventListener) compactMedia.addEventListener("change", syncResponsivePanels);
+    else compactMedia.addListener(syncResponsivePanels);
+    if ("ResizeObserver" in window) new ResizeObserver(syncWorkScene).observe($("workZone"));
+    window.addEventListener("resize", syncWorkScene);
     document.querySelectorAll("[data-mobile-panel]").forEach(btn => btn.addEventListener("click", () => toggleMobilePanel(btn.dataset.mobilePanel)));
     document.querySelectorAll("[data-close-panel]").forEach(btn => btn.addEventListener("click", closeMobilePanels));
 
