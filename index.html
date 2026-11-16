@@ -286,6 +286,72 @@
       .skill-btn { padding: 7px; }
       .build-panel { margin-top: 20px; }
     }
+    .responsive-collapse { border: 1px solid var(--line); background: var(--panel); }
+    .build-collapse, .log-wrap { margin-top: 18px; }
+    .collapse-summary { min-height: 44px; padding: 11px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; list-style: none; cursor: pointer; color: var(--muted); font-size: 11px; letter-spacing: 1px; user-select: none; }
+    .collapse-summary::-webkit-details-marker { display: none; }
+    .collapse-summary::after { content: "+"; margin-left: auto; color: var(--green); font: 18px/1 Consolas, monospace; }
+    .responsive-collapse[open] > .collapse-summary::after { content: "−"; }
+    .collapse-summary small { color: var(--green); font-size: 9px; letter-spacing: 0; text-align: right; }
+    .collapse-body { padding: 0 10px 10px; }
+    .shop-collapse { margin-bottom: 10px; }
+    .shop-collapse .collapse-body { padding: 0 6px 6px; }
+    .mobile-nav, .mobile-panel-head, .mobile-panel-close { display: none; }
+    @media (max-width: 900px) {
+      body { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
+      .layout { display: block; min-height: auto; }
+      .main { padding: 22px; }
+      .sidebar, .shop {
+        position: fixed; z-index: 35; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom));
+        display: block; width: 100%; max-height: 72vh; max-height: 72dvh; margin: 0; padding: 14px;
+        overflow-y: auto; overscroll-behavior: contain; border: 1px solid #526048; border-bottom: 0;
+        background: #141714; box-shadow: 0 -15px 45px #000b; transform: translateY(110%);
+        visibility: hidden; transition: transform .2s ease, visibility 0s .2s;
+      }
+      .sidebar.mobile-open, .shop.mobile-open { transform: translateY(0); visibility: visible; transition: transform .2s ease, visibility 0s; }
+      .sidebar .log-wrap { display: block; }
+      .mobile-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+      .mobile-panel-head b { font-size: 15px; letter-spacing: 2px; }
+      .mobile-panel-close { display: block; width: 36px; height: 36px; color: var(--muted); background: #242924; border: 1px solid var(--line); cursor: pointer; font-size: 20px; }
+      .mobile-nav {
+        position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; height: calc(58px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(4, 1fr);
+        background: #111411; border-top: 1px solid #475240; box-shadow: 0 -5px 20px #0008;
+      }
+      .mobile-nav button { color: var(--muted); background: none; border: 0; border-right: 1px solid #292f28; cursor: pointer; font-size: 12px; letter-spacing: 2px; }
+      .mobile-nav button.active { color: var(--green); background: #20281c; }
+      .build-panel { margin-top: 0; }
+      .collapse-summary { min-height: 48px; font-size: 12px; }
+      .shop-head { position: sticky; top: -14px; z-index: 5; margin: -14px -14px 12px; padding: 14px; background: #141714; border-bottom: 1px solid var(--line); }
+      .shop-head h2 { font-size: 15px; }
+      .buy-controls button { min-width: 38px; min-height: 32px; }
+      .shop-item { grid-template-columns: 42px minmax(0, 1fr) auto; gap: 9px; padding: 12px 9px; }
+      .item-name { font-size: 12px; }
+      .item-desc { font-size: 11px; line-height: 1.55; }
+      .item-price { font-size: 11px; }
+      .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+    }
+    @media (max-width: 620px) {
+      .main { padding: 20px 14px; }
+      .wallet { font-size: 36px; }
+      .income { line-height: 1.8; }
+      .stats { margin: 16px 0; }
+      .skill-deck { margin-bottom: 14px; padding: 10px; }
+      .skill-btn { min-height: 58px; padding: 8px 6px; }
+      .skill-btn b { font-size: 10px; }
+      .skill-btn small { display: none; }
+      .skill-btn em { font-size: 8px; }
+      .work-zone { min-height: 340px; }
+      .work-caption { font-size: 9px; }
+      .chapter-title { font-size: 20px; }
+      .story { line-height: 1.8; }
+      .sidebar, .shop { padding: 12px; }
+      .shop-head { top: -12px; margin: -12px -12px 12px; padding: 12px; }
+      .build-current { font-size: 12px; }
+      .build-option { padding: 12px; }
+      .build-option b { font-size: 12px; }
+      .build-option small { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -318,6 +384,7 @@
 
   <div class="layout">
     <aside class="sidebar">
+      <div class="mobile-panel-head"><b>职场副本</b><button class="mobile-panel-close" data-close-panel aria-label="关闭面板">×</button></div>
       <section>
         <div class="eyebrow" id="chapterNo">FLOOR 01</div>
         <h2 class="chapter-title" id="chapterTitle"></h2>
@@ -330,15 +397,17 @@
         <button class="loop-btn" id="loopBtn" disabled>提交离职申请</button>
         <p class="loop-hint" id="loopHint">本轮总收入达到 2,500 后解锁</p>
       </section>
-      <section class="build-panel">
-        <div class="section-label">本轮构筑 / BUILD</div>
-        <p class="build-current" id="buildCurrent">尚未选择，可随时入职一个部门</p>
-        <div class="build-list" id="buildList"></div>
-      </section>
-      <section class="log-wrap">
-        <div class="section-label">公司内网 / 实时记录</div>
-        <ul class="log" id="log"></ul>
-      </section>
+      <details class="responsive-collapse build-collapse" open>
+        <summary class="collapse-summary"><span>本轮构筑 / BUILD</span><small id="buildSummary">未选择</small></summary>
+        <div class="collapse-body build-panel">
+          <p class="build-current" id="buildCurrent">尚未选择，可随时入职一个部门</p>
+          <div class="build-list" id="buildList"></div>
+        </div>
+      </details>
+      <details class="responsive-collapse log-wrap" open>
+        <summary class="collapse-summary"><span>公司内网 / 实时记录</span><small id="logSummary">0 条</small></summary>
+        <div class="collapse-body"><ul class="log" id="log"></ul></div>
+      </details>
     </aside>
 
     <main class="main">
@@ -350,7 +419,7 @@
         <div class="stat"><small>本轮总收入</small><b>¥ <span id="totalEarned">0</span></b></div>
         <div class="stat"><small>已轮回</small><b><span id="loops">0</span> 次</b></div>
       </div>
-      <section class="skill-deck">
+      <section class="skill-deck" id="skillDeck">
         <div class="energy-line"><span>精力 / 每秒自然恢复</span><strong><span id="energy">100</span> / 100</strong></div>
         <div class="energy-bar"><div id="energyProgress"></div></div>
         <div class="skill-row">
@@ -379,15 +448,27 @@
     </main>
 
     <aside class="shop">
-      <div class="shop-head"><h2>行政采购</h2><div class="buy-controls" id="buyControls"><button data-buy="1" class="active">1</button><button data-buy="10">10</button><button data-buy="max">MAX</button></div></div>
-      <div class="shop-group">自动化设施 / 每 10 个产量 ×2</div>
-      <div id="buildingList"></div>
-      <div class="shop-group">通用强化 / 本轮有效</div>
-      <div id="upgradeList"></div>
-      <div class="shop-group" id="buildUpgradeLabel">构筑专属强化 / 选择后解锁</div>
-      <div id="buildUpgradeList"></div>
+      <div class="shop-head"><h2>行政采购</h2><div class="buy-controls" id="buyControls"><button data-buy="1" class="active">1</button><button data-buy="10">10</button><button data-buy="max">MAX</button></div><button class="mobile-panel-close" data-close-panel aria-label="关闭采购">×</button></div>
+      <details class="responsive-collapse shop-collapse" open>
+        <summary class="collapse-summary"><span>自动化设施</span><small id="facilitySummary">每 10 个产量 ×2</small></summary>
+        <div class="collapse-body" id="buildingList"></div>
+      </details>
+      <details class="responsive-collapse shop-collapse" open>
+        <summary class="collapse-summary"><span>通用强化</span><small id="commonUpgradeSummary">本轮有效</small></summary>
+        <div class="collapse-body" id="upgradeList"></div>
+      </details>
+      <details class="responsive-collapse shop-collapse" open>
+        <summary class="collapse-summary"><span id="buildUpgradeLabel">构筑专属强化</span><small id="buildUpgradeSummary">选择后解锁</small></summary>
+        <div class="collapse-body" id="buildUpgradeList"></div>
+      </details>
     </aside>
   </div>
+  <nav class="mobile-nav" aria-label="游戏功能">
+    <button type="button" class="active" data-mobile-panel="work">工位</button>
+    <button type="button" data-mobile-panel="sidebar">构筑</button>
+    <button type="button" data-mobile-panel="skills">技能</button>
+    <button type="button" data-mobile-panel="shop">采购</button>
+  </nav>
   <div class="toast" id="toast" role="status"></div>
 
   <script>
@@ -718,6 +799,11 @@
       $("speakerIcon").setAttribute("d", state.muted ? "M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.2-2.2-1.4-1.4-2.2 2.2L13 8.4v2.8l.8.8-.8.8v2.8l2.2-2.2 2.2 2.2 1.4-1.4-2.2-2.2z" : "M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zm-2.5-8.77v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z");
 
       $("buildCurrent").textContent = activeBuild ? `${activeBuild.name} · ${activeBuild.detail}${state.build === "slack" ? ` · 当前停手 ×${idleMultiplier().toFixed(2)}` : ""}` : "尚未选择，可随时入职一个部门";
+      $("buildSummary").textContent = activeBuild ? activeBuild.name : "未选择";
+      $("facilitySummary").textContent = `${buildings.reduce((sum, b) => sum + state.buildings[b.id], 0)} 个 · 每 10 个 ×2`;
+      $("commonUpgradeSummary").textContent = `${upgrades.filter(u => state.upgrades.includes(u.id)).length} / ${upgrades.length} 已生效`;
+      $("buildUpgradeSummary").textContent = activeBuild ? (state.upgrades.includes(buildUpgrades[state.build][0].id) ? "已生效" : "可购买") : "选择后解锁";
+      $("logSummary").textContent = `${state.logs.length} 条`;
       if (render.buildKey !== state.build) {
         render.buildKey = state.build;
         $("buildList").innerHTML = builds.map(b => `<button class="build-option ${state.build === b.id ? "selected" : ""}" data-build="${b.id}" ${state.build ? "disabled" : ""}><b>${b.name}<span>${b.code}</span></b><small>${b.desc}</small></button>`).join("");
@@ -803,6 +889,36 @@
       if (!state.logs.length) addLog("打卡成功。系统提示：请勿寻找公司的出口。");
     }
 
+    const compactMedia = window.matchMedia("(max-width: 900px)");
+    function closeMobilePanels() {
+      document.querySelectorAll(".sidebar, .shop").forEach(panel => panel.classList.remove("mobile-open"));
+      document.querySelectorAll("[data-mobile-panel]").forEach(btn => btn.classList.toggle("active", btn.dataset.mobilePanel === "work"));
+    }
+    function toggleMobilePanel(name) {
+      if (!compactMedia.matches) return;
+      if (name === "skills") {
+        closeMobilePanels();
+        document.querySelector('[data-mobile-panel="skills"]').classList.add("active");
+        $("skillDeck").scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      const target = document.querySelector(name === "shop" ? ".shop" : ".sidebar");
+      const shouldOpen = !target.classList.contains("mobile-open");
+      closeMobilePanels();
+      if (shouldOpen) {
+        target.classList.add("mobile-open");
+        target.scrollTop = 0;
+        document.querySelector(`[data-mobile-panel="${name}"]`).classList.add("active");
+      }
+    }
+    function syncResponsivePanels() {
+      document.querySelectorAll("details.responsive-collapse").forEach(panel => { panel.open = !compactMedia.matches; });
+      closeMobilePanels();
+    }
+    compactMedia.addEventListener("change", syncResponsivePanels);
+    document.querySelectorAll("[data-mobile-panel]").forEach(btn => btn.addEventListener("click", () => toggleMobilePanel(btn.dataset.mobilePanel)));
+    document.querySelectorAll("[data-close-panel]").forEach(btn => btn.addEventListener("click", closeMobilePanels));
+
     $("workBtn").addEventListener("click", work);
     $("loopBtn").addEventListener("click", enterLoop);
     document.querySelectorAll("[data-skill]").forEach(btn => btn.addEventListener("click", () => castSkill(btn.dataset.skill)));
@@ -836,6 +952,7 @@
     window.addEventListener("beforeunload", save);
     setInterval(save, 15000);
 
+    syncResponsivePanels();
     load();
     render();
     setInterval(() => {
