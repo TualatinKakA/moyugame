@@ -417,6 +417,22 @@
       .income, .stats { display: none; }
       .work-caption { display: none; }
     }
+    @media (max-width: 900px) {
+      .skill-deck {
+        position: fixed; z-index: 35; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom));
+        display: block; width: 100%; max-height: 72vh; max-height: 72dvh; margin: 0; padding: 14px;
+        overflow-y: auto; overscroll-behavior: contain; border: 1px solid #526048; border-bottom: 0;
+        background: #141714; box-shadow: 0 -15px 45px #000b; transform: translateY(110%);
+        visibility: hidden; transition: transform .2s ease, visibility 0s .2s;
+      }
+      .skill-deck.mobile-open { transform: translateY(0); visibility: visible; transition: transform .2s ease, visibility 0s; }
+      .skill-deck .mobile-panel-head { display: flex; }
+      .skill-deck .skill-row { grid-template-columns: 1fr; gap: 8px; }
+      .skill-deck .skill-btn { min-height: 64px; padding: 10px 12px; }
+      .skill-deck .skill-btn b { font-size: 12px; }
+      .skill-deck .skill-btn small { display: block; font-size: 10px; }
+      .skill-deck .skill-btn em { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -485,11 +501,12 @@
         <div class="stat"><small>已轮回</small><b><span id="loops">0</span> 次</b></div>
       </div>
       <section class="skill-deck" id="skillDeck">
+        <div class="mobile-panel-head"><b>主动技能</b><button class="mobile-panel-close" data-close-panel aria-label="关闭技能">×</button></div>
         <div class="energy-line"><span>精力 / 每秒自然恢复</span><strong><span id="energy">100</span> / 100</strong></div>
         <div class="energy-bar"><div id="energyProgress"></div></div>
         <div class="skill-row">
           <button class="skill-btn" data-skill="deadline"><b>Deadline 降临</b><small>点击 ×4，设施 ×2</small><em id="deadlineStatus">30 精力 · 18 秒</em></button>
-          <button class="skill-btn" data-skill="copy"><b>复制粘贴</b><small>立即获得 60 秒产出</small><em>20 精力 · 瞬发</em></button>
+          <button class="skill-btn" data-skill="copy"><b>复制粘贴</b><small>60 秒产出／10 次点击，取较高者</small><em>20 精力 · 瞬发</em></button>
           <button class="skill-btn" data-skill="fishing"><b>带薪摸鱼</b><small>设施产出 ×4</small><em id="fishingStatus">40 精力 · 20 秒</em></button>
         </div>
       </section>
@@ -958,17 +975,16 @@
 
     const compactMedia = window.matchMedia("(max-width: 900px)");
     function closeMobilePanels() {
-      document.querySelectorAll(".sidebar, .shop").forEach(panel => panel.classList.remove("mobile-open"));
+      document.querySelectorAll(".sidebar, .shop, .skill-deck").forEach(panel => panel.classList.remove("mobile-open"));
       document.querySelectorAll("[data-mobile-panel]").forEach(btn => btn.classList.toggle("active", btn.dataset.mobilePanel === "work"));
     }
     function toggleMobilePanel(name) {
       if (!compactMedia.matches) return;
-      if (name === "work" || name === "skills") {
+      if (name === "work") {
         closeMobilePanels();
-        document.querySelector(`[data-mobile-panel="${name}"]`).classList.add("active");
         return;
       }
-      const target = document.querySelector(name === "shop" ? ".shop" : ".sidebar");
+      const target = document.querySelector(name === "shop" ? ".shop" : name === "skills" ? "#skillDeck" : ".sidebar");
       const shouldOpen = !target.classList.contains("mobile-open");
       closeMobilePanels();
       if (shouldOpen) {
