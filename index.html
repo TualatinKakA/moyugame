@@ -473,10 +473,10 @@
       </section>
       <section class="mission">
         <div class="section-label">当前主线</div>
-        <div class="mission-row"><span>攒够离职补偿</span><span id="goalText">0 / 2,500</span></div>
+        <div class="mission-row"><span>攒够离职补偿</span><span id="goalText">0 / 100M</span></div>
         <div class="progress"><div id="goalProgress"></div></div>
         <button class="loop-btn" id="loopBtn" disabled>提交离职申请</button>
-        <p class="loop-hint" id="loopHint">本轮总收入达到 2,500 后解锁</p>
+        <p class="loop-hint" id="loopHint">本轮总收入达到 100M 后解锁</p>
       </section>
       <details class="responsive-collapse build-collapse" open>
         <summary class="collapse-summary"><span>本轮构筑 / BUILD</span><small id="buildSummary">未选择</small></summary>
@@ -556,25 +556,26 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script>
-    const GOAL = 2500;
+    const GOAL = 100000000;
+    const GOAL_TEXT = "100M";
     const SAVE_KEY = "endless-shift-demo-v1";
     const chapters = [
-      { title: "试用期无休", story: "你的合同只有一行字：乙方自愿将明天也视为今天。人事说，攒够 2,500 元，就批准你的离职。" },
+      { title: "试用期无休", story: "你的合同只有一行字：乙方自愿将明天也视为今天。人事说，攒够 100M 元，就批准你的离职。" },
       { title: "需求坟场", story: "上一层的离职证明，是这一层的入职通知。产品经理微笑着走来：“只是个小需求，顺便改一下底层逻辑。”" },
       { title: "团建孤岛", story: "全公司被传送到无人岛，唯独钉钉仍有信号。老板宣布：本次团建采取自愿原则，缺席者自愿离职。" },
       { title: "绩效审判庭", story: "评委是你历代的周报。它们一致认为你缺乏主人翁精神，并判处你继续优化自己，直到产生剩余价值。" },
       { title: "老板之梦", story: "你终于坐上老板的位置，却发现窗外仍是那间办公室。工位上的你抬起头，说：“这个需求很简单。”" }
     ];
     const buildings = [
-      { id: "intern", icon: "id-card", name: "见习牛马", desc: "不会抱怨，偶尔跑错需求", baseCost: 15, rate: 0.5 },
-      { id: "coffee", icon: "coffee", name: "续命咖啡机", desc: "把睡眠时间折算成产能", baseCost: 100, rate: 3 },
-      { id: "script", icon: "keyboard", name: "自动化脚本", desc: "写代码让代码替你上班", baseCost: 1100, rate: 14 },
-      { id: "avatar", icon: "laptop", name: "数字替身", desc: "它在开会，你在假装开会", baseCost: 12000, rate: 90 }
+      { id: "intern", icon: "id-card", name: "见习牛马", desc: "不会抱怨，偶尔跑错需求", baseCost: 1.5, rate: 0.05 },
+      { id: "coffee", icon: "coffee", name: "续命咖啡机", desc: "把睡眠时间折算成产能", baseCost: 10, rate: 0.3 },
+      { id: "script", icon: "keyboard", name: "自动化脚本", desc: "写代码让代码替你上班", baseCost: 110, rate: 1.4 },
+      { id: "avatar", icon: "laptop", name: "数字替身", desc: "它在开会，你在假装开会", baseCost: 1200, rate: 9 }
     ];
     const upgrades = [
-      { id: "keyboard", icon: "keyboard", name: "人体工学键盘", desc: "每次搬砖收入 × 5", cost: 100 },
-      { id: "okR", icon: "cash", name: "反向画饼", desc: "所有设施产出 × 2", cost: 750 },
-      { id: "union", icon: "headphones", name: "摸鱼互助会", desc: "搬砖额外获得秒收入 × 10%", cost: 1800 }
+      { id: "keyboard", icon: "keyboard", name: "人体工学键盘", desc: "每次搬砖收入 × 5", cost: 10 },
+      { id: "okR", icon: "cash", name: "反向画饼", desc: "所有设施产出 × 2", cost: 75 },
+      { id: "union", icon: "headphones", name: "摸鱼互助会", desc: "搬砖额外获得秒收入 × 10%", cost: 180 }
     ];
     const builds = [
       { id: "click", code: "CLICK", name: "键盘修会", desc: "点击基础 ×2；连击继续增幅，最高 ×3", detail: "主动连点流 · Deadline 持续 +50%" },
@@ -582,9 +583,9 @@
       { id: "slack", code: "IDLE", name: "隐身摸鱼办", desc: "停手后产出逐渐 ×3；点击 ×0.75", detail: "放置流 · 离线 100%，精力恢复更快" }
     ];
     const buildUpgrades = {
-      click: [{ id: "wrist", icon: "keyboard", name: "腕豪附体", desc: "点击收入再 ×3，连击收益核心", cost: 2400 }],
-      automation: [{ id: "server", icon: "tower", name: "服务器集群", desc: "脚本 ×2，数字替身 ×3", cost: 2400 }],
-      slack: [{ id: "ghost", icon: "headphones", name: "精神离职", desc: "停手加成最高 ×5，离线收益 ×1.5", cost: 2400 }]
+      click: [{ id: "wrist", icon: "keyboard", name: "腕豪附体", desc: "点击收入再 ×3，连击收益核心", cost: 240 }],
+      automation: [{ id: "server", icon: "tower", name: "服务器集群", desc: "脚本 ×2，数字替身 ×3", cost: 240 }],
+      slack: [{ id: "ghost", icon: "headphones", name: "精神离职", desc: "停手加成最高 ×5，离线收益 ×1.5", cost: 240 }]
     };
     const freshState = () => ({
       cash: 0, totalEarned: 0, lifetime: 0, clicks: 0, loops: 0, muted: false,
@@ -642,7 +643,7 @@
       * (state.deadline > 0 ? 2 : 1)
       * (state.fishing > 0 ? 4 : 1);
     const clickPower = () => {
-      const base = 1 + (state.upgrades.includes("union") ? incomePerSecond() * 0.1 : 0);
+      const base = 0.1 + (state.upgrades.includes("union") ? incomePerSecond() * 0.1 : 0);
       const comboBoost = state.build === "click" ? 2 * (1 + Math.min(combo, 100) * 0.02) : 1;
       const buildPenalty = state.build === "automation" ? 0.5 : state.build === "slack" ? 0.75 : 1;
       return base * multiplier()
@@ -874,10 +875,10 @@
       $("clickPower").textContent = format(clickPower());
       $("totalEarned").textContent = format(state.totalEarned);
       $("loops").textContent = state.loops;
-      $("goalText").textContent = `${format(state.totalEarned)} / ${format(GOAL)}`;
+      $("goalText").textContent = `${format(state.totalEarned)} / ${GOAL_TEXT}`;
       $("goalProgress").style.width = Math.min(100, state.totalEarned / GOAL * 100) + "%";
       $("loopBtn").disabled = state.totalEarned < GOAL;
-      $("loopHint").textContent = state.totalEarned >= GOAL ? "可进入下一层 · 永久产能 +35% · 重选构筑" : `还差 ${format(GOAL - state.totalEarned)}，本轮总收入达到 ${format(GOAL)} 后解锁`;
+      $("loopHint").textContent = state.totalEarned >= GOAL ? "可进入下一层 · 永久产能 +35% · 重选构筑" : `还差 ${format(GOAL - state.totalEarned)}，本轮总收入达到 ${GOAL_TEXT} 后解锁`;
       $("soundLabel").textContent = state.muted ? "声音 关" : "声音 开";
       $("soundBtn").setAttribute("aria-label", state.muted ? "打开声音" : "关闭声音");
       $("speakerIcon").setAttribute("d", state.muted ? "M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.2-2.2-1.4-1.4-2.2 2.2L13 8.4v2.8l.8.8-.8.8v2.8l2.2-2.2 2.2 2.2 1.4-1.4-2.2-2.2z" : "M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zm-2.5-8.77v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z");
