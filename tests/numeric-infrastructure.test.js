@@ -110,6 +110,7 @@ test('duplicate EffectSpec ids are ignored and reported', () => {
 test('vertical slice exposes sources and abdication clears old buffs', () => {
   const state = createState();
   state.coins = 1e9;
+  state.stats.run.coins = 1e9;
   state.upgrades.push('fairy-1', 'fairy-2', 'farm-1');
   state.buildings.farm = 5;
   const snapshot = computeSnapshot(state);

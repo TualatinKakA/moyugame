@@ -38,7 +38,19 @@ export function resolveSnapshot(state, computeSnapshot) {
   if (computeSnapshot !== undefined && typeof computeSnapshot !== 'function') {
     throw new TypeError('computeSnapshot must be a function');
   }
-  return computeSnapshot ? computeSnapshot(state) : createCompatibilitySnapshot(state);
+  const compatibility = createCompatibilitySnapshot(state);
+  if (!computeSnapshot) return compatibility;
+  const numeric = computeSnapshot(state);
+  return {
+    ...compatibility,
+    ...numeric,
+    progression: numeric.progression || compatibility.progression,
+    stats: numeric.stats || compatibility.stats,
+    story: numeric.story || compatibility.story,
+    achievements: numeric.achievements || compatibility.achievements,
+    retirement: numeric.retirement || compatibility.retirement,
+    cycles: numeric.cycles || compatibility.cycles,
+  };
 }
 
 function totalClicks(context) {

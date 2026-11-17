@@ -1,15 +1,20 @@
 import { BUILDINGS } from '../content/r0r3/buildings.js';
 import FACTIONS from '../content/r0r3/factions.js';
+import {
+  createStoryState, createAchievementState, createSchema3Migration,
+  normalizeStoryState, normalizeAchievementState,
+} from './story-state.js';
 
 export const SAVE_KEY = 'endless-shift-r0r3-v1';
+export const SCHEMA2_BACKUP_KEY = 'endless-shift-r0r3-schema2-backup';
 export const CONTENT_VERSION = 'r0-r3-v1';
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 export const STAT_SCOPES = ['run', 'r', 'ascension', 'total'];
 
 export const emptyStats = () => ({
   time: 0, coins: 0, clickCoins: 0, clicks: 0, spellsCast: 0, manaProduced: 0,
   factionCoins: 0, excavations: 0, assistantsMax: 0, manaMax: 0, manaRegenMax: 0,
-  buildingsMax: 0, upgradesBought: 0, longestSession: 0, offlineTime: 0,
+  buildingsMax: 0, upgradesBought: 0, longestSession: 0, offlineTime: 0, abdications: 0,
   factionTime: {}, factionCoinsByFaction: {}, buildingMax: {}, upgradesByFaction: {},
 });
 
@@ -36,6 +41,8 @@ export function createState() {
     unlocked: { archaeology: false, survey: false, underworld: false, mercenary: false },
     mercenary: { upgrades: [], spells: [] },
     stats: { run: emptyStats(), r: emptyStats(), ascension: emptyStats(), total: emptyStats() },
+    story: createStoryState(),
+    achievements: createAchievementState(),
     settings: { buyAmount: 1, muted: true, offlineEfficiency: 0.5 },
     rngState: 0x6d2b79f5,
   };
@@ -44,7 +51,9 @@ export function createState() {
 export function normalizeState(saved) {
   const base = createState();
   if (!saved || typeof saved !== 'object') return base;
-  const { _derived, ...persistent } = saved;
+  const migrated = createSchema3Migration(saved).state;
+  if (!migrated) return base;
+  const { _derived, ...persistent } = migrated;
   const savedProgression = persistent.progression && typeof persistent.progression === 'object' ? persistent.progression : {};
   const state = {
     ...base, ...persistent,
@@ -62,6 +71,8 @@ export function normalizeState(saved) {
     mercenary: { ...base.mercenary, ...(saved.mercenary || {}) },
     settings: { ...base.settings, ...(saved.settings || {}) },
     stats: Object.fromEntries(STAT_SCOPES.map(scope => [scope, { ...base.stats[scope], ...(saved.stats?.[scope] || {}) }])),
+    story: normalizeStoryState(migrated.story),
+    achievements: normalizeAchievementState(migrated.achievements),
   };
   for (const scope of STAT_SCOPES) {
     for (const key of ['factionTime', 'factionCoinsByFaction', 'buildingMax', 'upgradesByFaction']) {
@@ -101,7 +112,10 @@ export function saveState(state, storage = globalThis.localStorage) {
 export function loadState(storage = globalThis.localStorage) {
   try {
     const raw = storage.getItem(SAVE_KEY);
-    return raw ? normalizeState(JSON.parse(raw)) : createState();
+    if (!raw) return createState();
+    const parsed = JSON.parse(raw);
+    if (parsed.schemaVersion === 2) storage.setItem(SCHEMA2_BACKUP_KEY, raw);
+    return normalizeState(parsed);
   } catch {
     return createState();
   }

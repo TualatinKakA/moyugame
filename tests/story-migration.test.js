@@ -69,8 +69,9 @@ test('soft reset preserves story and achievements while hard reset clears only t
   const { state, runtime } = testContext();
   runtime.handleEvent(state, domainEvent('game.started', { isNewSave: true }));
   state.stats.total.time = 100;
+  state.stats.run.coins = 1e8;
   const reset = abdicate(state);
-  assert.equal(reset.story, undefined);
+  assert.deepEqual(reset.story, state.story);
   preserveStoryAndAchievements(state, reset);
   assert.deepEqual(reset.story, state.story);
   assert.deepEqual(reset.achievements, state.achievements);

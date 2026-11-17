@@ -1,4 +1,7 @@
-import { loadState, saveState, normalizeState, SAVE_KEY } from '../core/state.js';
+import { loadState, saveState, normalizeState, SAVE_KEY, SCHEMA2_BACKUP_KEY, touchState } from '../core/state.js';
+import { emitGameEvent } from '../core/events.js';
+import { createGameStory } from './story/bootstrap.js';
+import { getHighestBusinessAchievement } from '../systems/achievements.js';
 import { formatNumber, formatTime } from '../core/number.js';
 import { BUILDINGS, BUILDING_BY_ID, availableBuildings } from '../content/r0r3/buildings.js';
 import BUILDING_UPGRADES from '../content/r0r3/building-upgrades.js';
@@ -6,7 +9,7 @@ import { MISC_UPGRADES } from '../content/r0r3/misc-upgrades.js';
 import { CHALLENGES } from '../content/r0r3/challenges.js';
 import { SPELLS, SPELL_BY_ID } from '../content/r0r3/spells.js';
 import {
-  FACTION_BY_ID, UPGRADE_BY_ID, computeState, buildingQuote, buyBuilding, buyBuildingUpgrade, buyMiscUpgrade, requirementMet,
+  FACTION_BY_ID, UPGRADE_BY_ID, computeState, computeSnapshot, buildingQuote, buyBuilding, buyBuildingUpgrade, buyMiscUpgrade, requirementMet,
   buyFactionUpgrade, buyProof, spellAvailable, workClick, castSpell, tick, pendingGems,
   abdicate, reincarnate, reincarnationRequirement, buyRoyalExchange, unlockArchaeology,
   excavate, unlockNeutralFaction, unlockUnderworld, completePrestigeQuest, mercenaryTributeCost,
@@ -18,6 +21,14 @@ const $ = id => document.getElementById(id);
 const money = n => `¥ ${formatNumber(n)}`;
 const factions = Object.values(FACTION_BY_ID);
 let state = loadState();
+const story = createGameStory({
+  document,
+  getState: () => state,
+  computeSnapshot,
+  save: persistStory,
+  onRetire: completeRetirement,
+});
+const BASIC_FACTIONS = new Set(['fairy', 'elf', 'angel', 'goblin', 'undead', 'demon']);
 let resetting = false;
 let activeTab = 'work';
 let panelDirty = true;
@@ -48,6 +59,7 @@ function playCoinSound() {
 function workFeedback(event) {
   const amount = computeState(state).clickReward;
   workClick(state);
+  emitGameEvent('work.clicked', { totalClicks: state.stats.total.clicks, success: true });
   playCoinSound();
   const zone = document.querySelector('#workArea .work-zone');
   if (!zone) return;
@@ -83,27 +95,11 @@ function workFeedback(event) {
   }
 }
 
-const chapters = [
-  ['地球 · 试用期', '完成账面产值，申请离职。'],
-  ['城市 · 项目制', '离职只是项目结束，并不代表离开公司。'],
-  ['全国 · 外包网络', '工作已经全国化，工位仍然只有 1.2 平方米。'],
-  ['全球 · 导师制度', '旧档案中的前任员工似乎与你有关。'],
-  ['地月 · 合规体系', '地球只是集团的一个基层办事处。'],
-  ['近地轨道 · 制度中心', '公司制度开始影响现实本身。'],
-  ['太阳系 · 工时网络', '各行星不得再以昼夜差异为由拒绝开会。'],
-  ['恒星群 · 多时间线', '每个时间线里的你都在处理同一份需求。'],
-];
-function chapter() {
-  const R = state.progression.reincarnations;
-  if (R >= 40) return ['跨星系 · 协议联合体', '组织架构图的上方，永远还有另一个上级。'];
-  if (R >= 28) return chapters[7];
-  if (R >= 20) return chapters[6];
-  if (R >= 16) return chapters[5];
-  if (R >= 10) return chapters[4];
-  if (R >= 7) return chapters[3];
-  if (R >= 3) return chapters[2];
-  if (R >= 1) return chapters[1];
-  return chapters[0];
+function currentBusiness() {
+  return getHighestBusinessAchievement(state, {
+    registry: story.achievementRegistry,
+    computeSnapshot,
+  });
 }
 function notify(text, error = false) {
   logs.unshift(text); logs = logs.slice(0, 8);
@@ -127,7 +123,7 @@ function refresh(panel = false) {
   $('manaProgress').setAttribute('aria-valuemax', String(manaMax));
   $('manaProgress').setAttribute('aria-valuenow', String(state.mana));
   $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
-  $('rankText').textContent = `R${state.progression.reincarnations} · ${chapter()[0]}`;
+  $('rankText').textContent = `R${state.progression.reincarnations} · ${currentBusiness().scope}`;
   renderSide();
   if (panelDirty) {
     renderWork();
@@ -136,8 +132,9 @@ function refresh(panel = false) {
   }
 }
 function renderSide() {
-  const c = chapter();
-  $('chapterName').textContent = c[0]; $('chapterStory').textContent = c[1];
+  const business = currentBusiness();
+  $('chapterName').textContent = business.scope;
+  $('chapterStory').textContent = `${business.rank} · 奖杯与档案持续记录。`;
   $('factionName').textContent = state.faction === 'mercenary' ? '外包联盟' : FACTION_BY_ID[state.faction]?.name || '尚未选择';
   $('factionDetail').textContent = state.prestige ? `叠加：${FACTION_BY_ID[state.prestige].name}` : state.alignment ? `立场：${{ good: '进取', evil: '强压', neutral: '均衡' }[state.alignment]}` : '先购买部门立场，再签署部门条约。';
   const stats = [
@@ -248,6 +245,8 @@ function moreView() {
       <article class="card"><h3>转行进入 R${state.progression.reincarnations + 1}</h3><p>需要持有 ${formatNumber(req)} 期权，当前 ${formatNumber(state.gems)}。重置深度高于离职。</p><button data-action="reincarnate" ${state.gems < req ? 'disabled' : ''}>转行</button></article>
     </div>
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
+    <section class="subsection" id="achievementMount"></section>
+    <section class="subsection" id="storyArchiveMount"></section>
     <section class="subsection">${statRows('run', '本轮统计')}${statRows('r', '本次职业统计')}${state.progression.ascension > 0 ? statRows('ascension', '本次升阶统计') : ''}${statRows('total', '全部历史统计')}</section>`;
 }
 function statsView() {
@@ -256,6 +255,7 @@ function statsView() {
 }
 function renderWork() {
   $('workArea').innerHTML = workView();
+  $('workArea').appendChild(story.ui.retirementElement);
   lastPanelRender = performance.now();
   if (activeTab === 'work') panelDirty = false;
 }
@@ -269,6 +269,10 @@ function renderPanel(force = false) {
   if (!force && !panelDirty && now - lastPanelRender < 500) return;
   const content = activeTab === 'buildings' ? buildingView() : activeTab === 'factions' ? factionView() : activeTab === 'audit' ? auditView() : activeTab === 'stats' ? statsView() : moreView();
   $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${content}`;
+  if (activeTab === 'more') {
+    $('achievementMount').appendChild(story.ui.achievementElement);
+    $('storyArchiveMount').appendChild(story.ui.archiveElement);
+  }
   $('mainPanel').hidden = false;
   panelDirty = false; lastPanelRender = now;
 }
@@ -284,6 +288,33 @@ function actionResult(result, success, failure = '当前条件或资源不足') 
   else notify(failure, true);
   return result;
 }
+function persistStory(current) {
+  touchState(current);
+  saveState(current);
+}
+function completeRetirement() {
+  const snapshot = computeSnapshot(state);
+  if (!snapshot.retirement.eligible) return { ok: false, reason: 'target-not-met' };
+  const earned = pendingGems(state);
+  if (!confirm(`本次退休将获得 ${formatNumber(earned)} 期权。\n本轮工资、设施与升级将清零，当前部门关系将结束。\n奖杯、永久解锁、初始剧情、业务域与职阶将保留。确定结算吗？`)) {
+    return { ok: false, reason: 'cancelled' };
+  }
+  const previousAbdications = state.stats.total.abdications || 0;
+  const runCoins = state.stats.run.coins;
+  const next = abdicate(state);
+  if (!next) return { ok: false, reason: 'target-not-met' };
+  state = next;
+  saveState(state);
+  notify('退休结算完成。新的职业周期已经开启');
+  emitGameEvent('abdication.completed', {
+    saved: true,
+    targetMet: true,
+    firstRetirement: previousAbdications === 0,
+    previousAbdications,
+    runCoins,
+  });
+  return { ok: true };
+}
 document.addEventListener('click', event => {
   const tab = event.target.closest('[data-tab]');
   if (tab) {
@@ -297,18 +328,49 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   const id = button.dataset.id;
   if (action === 'close-panel') { closeAuxPanel(); return; }
-  if (action === 'start') { $('intro').classList.add('hidden'); notify('已入职。先点击显示器，或积累 ¥25K 购买部门立场。'); }
+  if (action === 'start') {
+    const isNewSave = !state.story.triggered['intro.onboarding']
+      && state.stats.total.time === 0 && state.stats.total.clicks === 0;
+    $('intro').classList.add('hidden');
+    notify('已入职。先点击显示器，或积累 ¥25K 购买部门立场。');
+    emitGameEvent('game.started', { isNewSave });
+  }
   if (action === 'work') workFeedback(event);
   if (action === 'buy-amount') { state.settings.buyAmount = button.dataset.value === 'max' ? 'max' : Number(button.dataset.value); panelDirty = true; }
-  if (action === 'buy-building') actionResult(buyBuilding(state, id), '设施采购完成');
-  if (action === 'buy-building-upgrade') actionResult(buyBuildingUpgrade(state, id), '设施升级已生效');
+  if (action === 'buy-building') {
+    const before = state.buildings[id] || 0;
+    const purchased = actionResult(buyBuilding(state, id), '设施采购完成');
+    if (purchased) emitGameEvent('building.purchased', {
+      buildingId: id, quantity: state.buildings[id] - before, totalOwned: state.buildings[id],
+    });
+  }
+  if (action === 'buy-building-upgrade') {
+    if (actionResult(buyBuildingUpgrade(state, id), '设施升级已生效')) {
+      emitGameEvent('building.upgraded', { buildingId: UPGRADE_BY_ID[id]?.building, upgradeId: id });
+    }
+  }
   if (action === 'buy-misc-upgrade') actionResult(buyMiscUpgrade(state, id), '通用升级已生效');
-  if (action === 'buy-faction-upgrade') actionResult(buyFactionUpgrade(state, id), '部门升级已生效');
+  if (action === 'buy-faction-upgrade') {
+    const previousFaction = state.faction;
+    const purchased = actionResult(buyFactionUpgrade(state, id), '部门升级已生效');
+    if (purchased && state.faction !== previousFaction) {
+      emitGameEvent('faction.joined', { factionId: state.faction, basic: BASIC_FACTIONS.has(state.faction) });
+    }
+  }
   if (action === 'proof') actionResult(buyProof(state, id), '部门立场已确认');
-  if (action === 'cast') actionResult(castSpell(state, id), `已释放：${SPELL_BY_ID[id].name}`, '精力不足或技能尚未解锁');
+  if (action === 'cast') {
+    if (actionResult(castSpell(state, id), `已释放：${SPELL_BY_ID[id].name}`, '精力不足或技能尚未解锁')) {
+      emitGameEvent('spell.cast', { spellId: id });
+    }
+  }
   if (action === 'exchange') actionResult(buyRoyalExchange(state, id, 1) > 0, '资源置换完成');
   if (action === 'unlock-archaeology') actionResult(unlockArchaeology(state), '档案审计已永久解锁');
-  if (action === 'excavate') actionResult(excavate(state), '审计完成');
+  if (action === 'excavate') {
+    const before = state.artifacts.length;
+    if (actionResult(excavate(state), '审计完成') && state.artifacts.length > before) {
+      emitGameEvent('artifact.found', { artifactIds: state.artifacts.slice(before) });
+    }
+  }
   if (action === 'unlock-neutral') actionResult(unlockNeutralFaction(state, id), '中立部门已解锁');
   if (action === 'unlock-underworld') actionResult(unlockUnderworld(state), '高级部门任务已解锁');
   if (action === 'prestige-quest') actionResult(completePrestigeQuest(state, id), '高级部门任务已完成');
@@ -320,20 +382,28 @@ document.addEventListener('click', event => {
   if (action === 'save') { saveState(state); $('saveStatus').textContent = '已保存'; notify('存档已写入本地'); }
   if (action === 'export') { saveState(state); $('exportText').value = localStorage.getItem(SAVE_KEY); $('exportText').select(); notify('存档已导出，请复制保存'); }
   if (action === 'import') $('importFile').click();
-  if (action === 'abdicate') {
-    if (!confirm(`本次离职将获得 ${formatNumber(pendingGems(state))} 期权。确定结算本轮吗？`)) return;
-    state = abdicate(state); actionResult(true, '离职结算完成。新的项目已经开启'); saveState(state);
-  }
+  if (action === 'abdicate') story.ui.requestRetirement();
   if (action === 'reincarnate') {
     if (!confirm(`确定转行进入 R${state.progression.reincarnations + 1} 吗？当前期权将被清空。`)) return;
+    const previousReincarnations = state.progression.reincarnations;
     const next = reincarnate(state);
-    if (next) { state = next; notify(`已进入 R${state.progression.reincarnations}。新的组织规则已生效`); saveState(state); }
-    else notify('期权不足，无法转行', true);
+    if (next) {
+      state = next;
+      notify(`已进入 R${state.progression.reincarnations}。新的组织规则已生效`);
+      saveState(state);
+      emitGameEvent('reincarnation.completed', {
+        reincarnations: state.progression.reincarnations,
+        previousReincarnations,
+      });
+    } else notify('期权不足，无法转行', true);
   }
   if (action === 'hard-reset') {
     if (!confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
     resetting = true;
-    localStorage.removeItem(SAVE_KEY); location.reload(); return;
+    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(SCHEMA2_BACKUP_KEY);
+    location.reload();
+    return;
   }
   refresh(action === 'work' ? false : true);
 });
@@ -344,7 +414,7 @@ $('importFile').addEventListener('change', async event => {
     const parsed = JSON.parse(await file.text());
     if (!parsed.contentVersion || !parsed.stats) throw new Error('invalid');
     state = normalizeState(parsed);
-    saveState(state); panelDirty = true; notify('存档导入成功'); refresh(true);
+    saveState(state); story.ui.sync(); panelDirty = true; notify('存档导入成功'); refresh(true);
   } catch { notify('导入失败：文件不是有效的游戏存档', true); }
   event.target.value = '';
 });
@@ -360,14 +430,24 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && !re
 const away = Math.max(0, (Date.now() - state.lastSave) / 1000);
 if (away > 10 && computeState(state).production > 0) {
   const earned = applyOffline(state, away);
-  if (earned > 0) logs.unshift(`离线 ${formatTime(away)}，结算 ${money(earned)}。`);
+  if (earned > 0) {
+    logs.unshift(`离线 ${formatTime(away)}，结算 ${money(earned)}。`);
+    emitGameEvent('offline.settled', { seconds: away, coins: earned });
+  }
 }
-if (state.stats.total.time > 0 || state.stats.total.clicks > 0) $('intro').classList.add('hidden');
+if (state.stats.total.time > 0 || state.stats.total.clicks > 0 || state.story.triggered['intro.onboarding']) {
+  $('intro').classList.add('hidden');
+}
 refresh(true);
 let lastTick = performance.now();
 setInterval(() => {
   const now = performance.now();
+  const previousChallenges = new Set(state.challenges);
   tick(state, (now - lastTick) / 1000); lastTick = now;
+  for (const challengeId of state.challenges) {
+    if (!previousChallenges.has(challengeId)) emitGameEvent('challenge.completed', { challengeId });
+  }
+  story.ui.handleTick(now);
   if (activeTab === 'work' && now - lastPanelRender > 1000) panelDirty = true;
   refresh();
 }, 200);

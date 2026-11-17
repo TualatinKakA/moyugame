@@ -147,3 +147,16 @@ test('clicks and ticks update all statistical scopes', () => {
     assert.equal(s.stats[scope].time, 0.5);
   }
 });
+
+
+test('first abdication requires the configured production target', () => {
+  const s = createState();
+  assert.equal(abdicate(s), null);
+  s.stats.run.coins = 1e8 - 1;
+  assert.equal(abdicate(s), null);
+  s.stats.run.coins = 1e8;
+  const next = abdicate(s);
+  assert.ok(next);
+  assert.equal(next.stats.total.abdications, 1);
+  assert.equal(next.stats.run.coins, 0);
+});

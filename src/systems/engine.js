@@ -6,6 +6,8 @@ import { MISC_BY_ID } from '../content/r0r3/misc-upgrades.js';
 import { CHALLENGE_BY_ID } from '../content/r0r3/challenges.js';
 import { createModifiers, EffectAggregator, collectEffectSpecs } from './effects.js';
 import { createState, STAT_SCOPES, touchState } from '../core/state.js';
+import { preserveStoryAndAchievements } from '../core/story-state.js';
+import { hasTrophy, getTrophyCount } from './achievements.js';
 import { evaluateFormula } from './formula.js';
 
 export const FACTION_BY_ID = Object.fromEntries(FACTIONS.map(f => [f.id, f]));
@@ -24,6 +26,17 @@ export function gemsToCoins(gems) {
 }
 export function reincarnationRequirement(reincarnations) {
   return 1e27 * 1000 ** reincarnations;
+}
+export const FIRST_RETIREMENT_TARGET = 1e8;
+export function retirementStatus(state) {
+  const firstRetirement = (state.stats.total.abdications || 0) === 0;
+  const eligible = !firstRetirement || state.stats.run.coins >= FIRST_RETIREMENT_TARGET;
+  return {
+    firstRetirement,
+    target: firstRetirement ? FIRST_RETIREMENT_TARGET : 0,
+    eligible,
+    guidanceEligible: firstRetirement && eligible,
+  };
 }
 export function buildingCost(state, id, offset = state.buildings[id] || 0, mods = null) {
   const b = BUILDING_BY_ID[id];
@@ -86,7 +99,7 @@ function calculateProduction(state, mods) {
   for (const b of BUILDINGS) {
     const count = state.buildings[b.id] * mods.buildingCountMult * (mods.buildingCountMultById[b.id] || 1);
     const base = b.rate + (mods.buildingBaseAdd[b.id] || 0);
-    const trophyRate = b.perTrophy ? state.trophies.length : 1;
+    const trophyRate = b.perTrophy ? getTrophyCount(state) : 1;
     const local = 1 + (mods.buildingAdd[b.id] || 0) / 100 + (mods.alignmentAdd[b.alignment] || 0) / 100;
     const localMult = mods.buildingMult[b.id] || 1;
     outputs[b.id] = count * base * trophyRate * local * localMult * global;
@@ -142,6 +155,8 @@ export function computeSnapshot(state, context = {}) {
     warnings: aggregator.warnings,
     dependencies: [...aggregator.dependencies],
     revision: state.revision,
+    retirement: retirementStatus(state),
+    cycles: { run: state.stats.total.abdications || 0 },
     context: {
       R: state.progression.reincarnations,
       A: state.progression.ascension,
@@ -157,7 +172,7 @@ export function computeSnapshot(state, context = {}) {
 function rawDependency(state, path) {
   if (path === 'coins') return state.coins;
   if (path === 'gems') return state.gems;
-  if (path === 'trophies') return state.trophies.length;
+  if (path === 'trophies') return getTrophyCount(state);
   if (path === 'activeSpells') return Object.keys(state.activeSpells).filter(id => state.activeSpells[id] > 0).sort();
   if (path === 'buildings' || path === 'buildings.total') return state.buildings;
   if (path === 'buildings.low3') return LOW3.map(id => state.buildings[id]);
@@ -196,6 +211,7 @@ function snapshotFingerprint(state, snapshot) {
     upgrades: state.upgrades,
     mercenary: state.mercenary.upgrades,
     trophies: state.trophies,
+    achievements: state.achievements?.stateById || {},
     progression: state.progression,
     challenges: state.challenges,
     alignment: state.alignment,
@@ -367,7 +383,7 @@ export function buyFactionUpgrade(state, id) {
       state.faction = faction.id;
       state.alignment = faction.alignment;
       state.facelessStreak = faction.id === 'faceless' ? (state.facelessStreak || 0) + 1 : 0;
-      if (state.facelessStreak >= 5 && !state.trophies.includes('facelessOvermind')) state.trophies.push('facelessOvermind');
+      if (state.facelessStreak >= 5 && !hasTrophy(state, 'facelessOvermind')) state.trophies.push('facelessOvermind');
     }
   }
   if (faction.id === 'fairy' && challengeReady(state, 'fairy1') && state.stats.run.time <= 60 && (state.stats.run.upgradesByFaction.fairy || 0) >= 12) {
@@ -427,7 +443,7 @@ function findFactionCoins(state, amount, forced = null) {
   }
   if (state.activeSpells.diamondPickaxe > 0) {
     state.stats.run.diamondCoins = (state.stats.run.diamondCoins || 0) + reward;
-    if (state.stats.run.diamondCoins >= 30000 && !state.trophies.includes('minedwarf')) state.trophies.push('minedwarf');
+    if (state.stats.run.diamondCoins >= 30000 && !hasTrophy(state, 'minedwarf')) state.trophies.push('minedwarf');
   }
   checkChallenges(state);
   return { id, amount: reward };
@@ -454,8 +470,8 @@ export function castSpell(state, id, free = false) {
   const s = SPELL_BY_ID[id];
   if (!s || !spellAvailable(state, id)) return false;
   const mods = computeState(state).mods;
-  let cost = free ? 0 : Math.max(0, s.cost * mods.spellCostMult - (id === 'goblinsGreed' && state.trophies.includes('greedDrive') ? 150 : 0));
-  if (id === 'grandBalance' && state.trophies.includes('hallsBalance')) cost = Math.max(0, cost - 200);
+  let cost = free ? 0 : Math.max(0, s.cost * mods.spellCostMult - (id === 'goblinsGreed' && hasTrophy(state, 'greedDrive') ? 150 : 0));
+  if (id === 'grandBalance' && hasTrophy(state, 'hallsBalance')) cost = Math.max(0, cost - 200);
   if (state.mana < cost) return false;
   state.mana -= cost;
   const count = mods.spellCastCountMult;
@@ -467,7 +483,7 @@ export function castSpell(state, id, free = false) {
   if (id === 'taxCollection') {
     for (const scope of STAT_SCOPES) state.stats[scope].taxCasts = (state.stats[scope].taxCasts || 0) + count;
     earnCoins(state, computeState(state).production * (30 + mods.taxSecondsAdd));
-    if (state.trophies.includes('coinPillage')) findFactionCoins(state, 30);
+    if (hasTrophy(state, 'coinPillage')) findFactionCoins(state, 30);
   }
   if (id === 'goblinsGreed') findFactionCoins(state, evaluateFormula(s.instantFactionCoins, { x: state.gems }), 'goblin');
   if (id === 'comboStrike') {
@@ -483,7 +499,7 @@ export function castSpell(state, id, free = false) {
     state.balanceTarget = targets[0]?.[0] || null;
   }
   if (id === 'brainwave') state.spellBrainwaveStacks = 0;
-  if (s.duration > 0) state.activeSpells[id] = (id === 'grandBalance' && state.trophies.includes('hallsBalance') ? 24 : s.duration) * mods.spellDurationMult;
+  if (s.duration > 0) state.activeSpells[id] = (id === 'grandBalance' && hasTrophy(state, 'hallsBalance') ? 24 : s.duration) * mods.spellDurationMult;
   checkSpellTrophies(state, id);
   if (id === 'holyLight') {
     const hour = new Date().getHours();
@@ -492,7 +508,7 @@ export function castSpell(state, id, free = false) {
       if (state.stats.run.time <= 1200 && state.stats.run.daytimeHoly >= 50 && challengeReady(state, 'angel1')) completeChallenge(state, 'angel1');
     }
   }
-  if (id !== 'godsHand' && state.activeSpells.godsHand > 0 && state.trophies.includes('godsRest')) findFactionCoins(state, Math.floor(computeState(state).fcChance ** 1.1));
+  if (id !== 'godsHand' && state.activeSpells.godsHand > 0 && hasTrophy(state, 'godsRest')) findFactionCoins(state, Math.floor(computeState(state).fcChance ** 1.1));
   if (mods.special.has('goblinBank') && id !== 'taxCollection') castSpell(state, 'taxCollection', true);
   touchState(state);
   return true;
@@ -506,7 +522,7 @@ function completeChallenge(state, id) {
 }
 function challengeReady(state, id) {
   const c = CHALLENGE_BY_ID[id];
-  return state.progression.reincarnations >= 2 && state.faction === c.faction && state.trophies.includes(c.requiredTrophy);
+  return state.progression.reincarnations >= 2 && state.faction === c.faction && hasTrophy(state, c.requiredTrophy);
 }
 function checkChallenges(state) {
   if (challengeReady(state, 'elf1') && state.stats.run.time <= 3600 && (state.stats.run.factionCoinsByFaction.elf || 0) > 400000) completeChallenge(state, 'elf1');
@@ -517,7 +533,7 @@ function checkChallenges(state) {
 function checkSpellTrophies(state, id) {
   const d = computeState(state);
   const unlock = (trophy, condition = true) => {
-    if (condition && !state.trophies.includes(trophy)) {
+    if (condition && !hasTrophy(state, trophy)) {
       state.trophies.push(trophy);
       touchState(state);
     }
@@ -557,7 +573,7 @@ export function tick(state, delta) {
   for (let i = 0; i < guaranteed; i++) findFactionCoins(state, 1);
   if (nextRandom(state) < assistantFc - guaranteed) findFactionCoins(state, 1);
   if (d.mods.special.has('elvenLuck') && nextRandom(state) < 0.01 * d.assistants * dt) triggerElvenLuck(state, true);
-  if (state.activeSpells.moonBlessing > 0 && state.trophies.includes('sunBlessing')) {
+  if (state.activeSpells.moonBlessing > 0 && hasTrophy(state, 'sunBlessing')) {
     state.sunClickTimer = (state.sunClickTimer || 0) + dt;
     if (state.sunClickTimer >= 1) {
       state.sunClickTimer -= 1;
@@ -591,6 +607,7 @@ export function pendingGems(state) {
   return Math.max(0, coinsToGems(state.stats.run.coins) - (state.gemsClaimedRun || 0));
 }
 export function abdicate(state) {
+  if (!retirementStatus(state).eligible) return null;
   const next = createState();
   const earned = pendingGems(state);
   next.gems = state.gems + earned;
@@ -605,10 +622,11 @@ export function abdicate(state) {
   next.rngState = state.rngState;
   next.excavationCount = state.excavationCount;
   next.excavationResets = state.excavationResets;
+  state.stats.total.abdications = (state.stats.total.abdications || 0) + 1;
   next.stats.total = state.stats.total;
   next.stats.r = state.stats.r;
   next.stats.ascension = state.stats.ascension;
-  return next;
+  return preserveStoryAndAchievements(state, next);
 }
 export function reincarnate(state) {
   if (state.gems < reincarnationRequirement(state.progression.reincarnations)) return null;
@@ -627,7 +645,7 @@ export function reincarnate(state) {
   next.rngState = state.rngState;
   next.stats.total = state.stats.total;
   next.stats.ascension = state.stats.ascension;
-  return next;
+  return preserveStoryAndAchievements(state, next);
 }
 export function buyRoyalExchange(state, factionId, amount = 1) {
   const mods = computeState(state).mods;
@@ -707,7 +725,7 @@ export function completePrestigeQuest(state, id) {
     state.coins -= 1e46;
     for (const fid of ['fairy', 'elf', 'angel']) state.factionCoins[fid] -= 10000;
   } else if (id === 'drow') {
-    const valid = state.alignment === 'evil' && state.buildings.darkTemple >= 650 && state.trophies.length >= 325 && state.stats.total.spellsCast >= 10000;
+    const valid = state.alignment === 'evil' && state.buildings.darkTemple >= 650 && getTrophyCount(state) >= 325 && state.stats.total.spellsCast >= 10000;
     if (!valid || state.coins < 1e46 || ['goblin', 'undead', 'demon'].some(fid => state.factionCoins[fid] < 10000)) return false;
     state.coins -= 1e46;
     for (const fid of ['goblin', 'undead', 'demon']) state.factionCoins[fid] -= 10000;

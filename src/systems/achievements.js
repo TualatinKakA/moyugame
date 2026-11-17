@@ -351,3 +351,16 @@ export function markAchievementRead(state, id) {
   achievements.read.push(id);
   return true;
 }
+
+export function hasTrophy(state, id) {
+  return Boolean(state.trophies?.includes(id) || state.achievements?.stateById?.[id]?.status === 'active');
+}
+
+export function getTrophyCount(state) {
+  return new Set([
+    ...(state.trophies || []),
+    ...Object.entries(state.achievements?.stateById || {})
+      .filter(([, entry]) => entry.status === 'active')
+      .map(([id]) => id),
+  ]).size;
+}

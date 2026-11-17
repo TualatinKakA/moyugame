@@ -69,6 +69,7 @@ test('R/A metadata and A-scope stats survive abdication and reincarnation', () =
   s.progression.ascensionStartR = 40;
   s.progression.ascensionHistory = [{ from: 0, to: 1, atR: 39 }];
   s.stats.ascension.time = 1234;
+  s.stats.run.coins = 1e8;
   const history = s.progression.ascensionHistory;
   const aStats = s.stats.ascension;
   s = abdicate(s);

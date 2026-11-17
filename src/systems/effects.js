@@ -4,7 +4,9 @@ import BUILDING_UPGRADES from '../content/r0r3/building-upgrades.js';
 import { MISC_BY_ID } from '../content/r0r3/misc-upgrades.js';
 import { SPELL_BY_ID } from '../content/r0r3/spells.js';
 import { getFactionEffectSpecs } from '../content/r0r3/effect-specs.js';
+import { achievementEffectSpecs } from '../content/achievements/effect-specs.js';
 import { evaluateFormula } from './formula.js';
+import { hasTrophy, getTrophyCount } from './achievements.js';
 
 export const EFFECT_PHASES = Object.freeze(['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'global', 'factionCoin', 'click', 'utility']);
 const LOW3 = ['farm', 'inn', 'blacksmith'];
@@ -99,7 +101,7 @@ function resolvePath(path, state, mods, derived, target) {
   if (path === 'T') return target?.tier || 0;
   if (path === 'coins') return state.coins;
   if (path === 'gems') return state.gems;
-  if (path === 'trophies') return state.trophies.length;
+  if (path === 'trophies') return getTrophyCount(state);
   if (path === 'activeSpells') return Object.values(state.activeSpells).filter(v => v > 0).length;
   if (path === 'buildings.total') return totalBuildings(state);
   if (path === 'buildings.low3') return LOW3.reduce((sum, id) => sum + (state.buildings[id] || 0), 0);
@@ -325,7 +327,7 @@ function spellSpecs(state, id) {
   const add = (stat, operation, value, target = { type: 'global' }, phase = 'global') => specs.push(makeSpec(`spell:${id}`, specs.length, stat, operation, typeof value === 'object' ? value : constant(value), target, phase));
   if (s.formula && s.effect && ['globalAdd', 'buildingAdd'].includes(s.effect.stat)) {
     let expression = s.formula;
-    if (id === 'comboStrike' && state.trophies.includes('perfectCombo')) expression = '(40 * x ^ 0.9)%';
+    if (id === 'comboStrike' && hasTrophy(state, 'perfectCombo')) expression = '(40 * x ^ 0.9)%';
     const stat = s.effect.stat === 'globalAdd' ? 'global.production' : 'building.production';
     const target = s.effect.stat === 'globalAdd' ? { type: 'global' } : { type: 'buildings', ids: s.effect.targets };
     add(stat, 'addPercent', inline(expression, { x: SPELL_VARIABLES[s.x] }), target, s.effect.stat === 'globalAdd' ? 'global' : 'buildingLocal');
@@ -334,17 +336,17 @@ function spellSpecs(state, id) {
   if (id === 'bloodFrenzy') add('building.production', 'addPercent', 1250, { type: 'alignment', id: 'evil' }, 'buildingLocal');
   if (id === 'fairyChanting') {
     add('building.production', 'addPercent', 50000, { type: 'buildings', ids: LOW3 }, 'buildingLocal');
-    if (state.trophies.includes('fairyChoir')) add('assistants.count', 'multiplyPercent', 200, { type: 'global' }, 'assistants');
+    if (hasTrophy(state, 'fairyChoir')) add('assistants.count', 'multiplyPercent', 200, { type: 'global' }, 'assistants');
   }
-  if (id === 'nightTime') add('assistants.production', 'addPercent', inline(`${state.trophies.includes('trueNight') ? 40 : 30} * x`, { x: 'buildings.necropolis' }));
-  if (id === 'hellfireBlast' && state.trophies.includes('hellRush')) add('building.production', 'addPercent', inline(s.formula, { x: 'trophies' }), { type: 'building', id: 'hallOfLegends' }, 'buildingLocal');
+  if (id === 'nightTime') add('assistants.production', 'addPercent', inline(`${hasTrophy(state, 'trueNight') ? 40 : 30} * x`, { x: 'buildings.necropolis' }));
+  if (id === 'hellfireBlast' && hasTrophy(state, 'hellRush')) add('building.production', 'addPercent', inline(s.formula, { x: 'trophies' }), { type: 'building', id: 'hallOfLegends' }, 'buildingLocal');
   if (id === 'diamondPickaxe') {
     add('click.reward', 'multiplyPercent', inline('25 * x', { x: 'excavations.r' }), { type: 'global' }, 'click');
-    add('factionCoin.chance', 'addPercent', state.trophies.includes('minedwarf') ? 300 : 200, { type: 'global' }, 'factionCoin');
+    add('factionCoin.chance', 'addPercent', hasTrophy(state, 'minedwarf') ? 300 : 200, { type: 'global' }, 'factionCoin');
   }
-  if (id === 'brainwave') add('global.production', 'addPercent', inline(`${state.trophies.includes('facelessOvermind') ? 3 : 2} * x`, { x: 'brainwave.stacks' }));
+  if (id === 'brainwave') add('global.production', 'addPercent', inline(`${hasTrophy(state, 'facelessOvermind') ? 3 : 2} * x`, { x: 'brainwave.stacks' }));
   if (id === 'lightningStrike' && state.lightningTarget) {
-    add('building.production', 'multiplyPercent', inline(`${state.trophies.includes('lightningStorm') ? 750 : 500} * x`, { x: 'buildings.ironStronghold' }), { type: 'building', id: state.lightningTarget }, 'buildingLocal');
+    add('building.production', 'multiplyPercent', inline(`${hasTrophy(state, 'lightningStorm') ? 750 : 500} * x`, { x: 'buildings.ironStronghold' }), { type: 'building', id: state.lightningTarget }, 'buildingLocal');
     add('factionCoin.chance', 'multiplyPercent', inline(s.fcFormula, { x: 'gems' }), { type: 'global' }, 'factionCoin');
   }
   if (id === 'grandBalance' && state.balanceTarget) {
@@ -354,7 +356,7 @@ function spellSpecs(state, id) {
 }
 
 export function collectEffectSpecs(state) {
-  const specs = [...reincarnationSpecs(state)];
+  const specs = [...reincarnationSpecs(state), ...achievementEffectSpecs(state)];
   for (const id of state.upgrades) {
     if (BUILDING_UPGRADE_BY_ID[id]) specs.push(...buildingSpecs(BUILDING_UPGRADE_BY_ID[id]));
     else if (FACTION_UPGRADE_BY_ID[id]) specs.push(...getFactionEffectSpecs(FACTION_UPGRADE_BY_ID[id]));
