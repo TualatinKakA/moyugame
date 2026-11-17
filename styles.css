@@ -102,7 +102,11 @@ button.danger { color: var(--red); }
 .event-strip { position: relative; flex-shrink: 0; min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; }
 .event-strip > button { min-height: 34px; padding: 5px 10px; color: var(--green); font-size: 10px; }
 #latestLog { min-width: 0; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.event-log { position: absolute; z-index: 25; left: 0; right: 0; bottom: calc(100% + 5px); max-height: 190px; margin: 0; padding: 8px; overflow-y: auto; border: 1px solid #526048; background: #141714; box-shadow: 0 -12px 30px #0008; list-style: none; color: var(--muted); font-size: 11px; }
+.event-log { position: absolute; z-index: 25; left: 0; right: 0; bottom: calc(100% + 5px); max-height: 190px; margin: 0; padding: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #526048; background: #141714; box-shadow: 0 -12px 30px #0008; color: var(--muted); font-size: 11px; }
+.event-log-head { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 8px; border-bottom: 1px solid var(--line); background: var(--panel2); }
+.event-log-head strong { color: var(--text); font-size: 11px; }
+.event-log-head button { min-width: 64px; min-height: 32px; padding: 4px 8px; color: var(--green); font-size: 10px; }
+.event-log-list { min-height: 0; margin: 0; padding: 0 8px 8px; overflow-y: auto; overscroll-behavior: contain; list-style: none; }
 .event-log li { padding: 7px 8px; border-bottom: 1px solid #2a3028; }
 .event-log li:first-child { color: var(--text); }
 .facility-rail { min-width: 0; min-height: 0; display: flex; flex-direction: column; border-left: 1px solid var(--line); background: #141714; }
@@ -283,6 +287,9 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .event-strip > button { min-height: 32px; padding: 4px 8px; }
   #latestLog { font-size: 9px; }
   .event-log { position: fixed; left: 8px; right: 8px; bottom: calc(66px + env(safe-area-inset-bottom, 0px)); max-height: 35dvh; }
+  .event-log-head { padding: 4px 6px 4px 10px; }
+  .event-log-head strong { font-size: 12px; }
+  .event-log-head button { min-height: 44px; font-size: 12px; }
   .facility-rail { display: none; }
   .main-panel { left: 8px; right: 8px; top: auto; bottom: calc(66px + env(safe-area-inset-bottom, 0px)); width: auto; height: auto; max-height: 42dvh; padding: 12px; transform: none; -webkit-overflow-scrolling: touch; box-shadow: 0 -15px 45px #000b; }
   .panel-head { flex-direction: row; align-items: flex-start; justify-content: space-between; }

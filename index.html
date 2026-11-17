@@ -66,7 +66,13 @@
       <section class="event-strip" aria-label="实时记录">
         <button data-action="toggle-log" id="logToggle" aria-expanded="false" aria-controls="eventLog">实时记录</button>
         <span id="latestLog">打卡成功。系统提示：请勿寻找公司的出口。</span>
-        <ul class="event-log" id="eventLog" hidden></ul>
+        <section class="event-log" id="eventLog" aria-label="实时记录列表" hidden>
+          <div class="event-log-head">
+            <strong>实时记录</strong>
+            <button type="button" data-action="close-log" id="logClose" aria-label="关闭实时记录">× 关闭</button>
+          </div>
+          <ul class="event-log-list" id="eventLogItems"></ul>
+        </section>
       </section>
     </main>
 

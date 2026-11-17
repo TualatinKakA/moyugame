@@ -155,7 +155,7 @@ function renderSide() {
   const logSignature = logs.join('\n');
   if (logSignature !== lastLogSignature) {
     $('latestLog').textContent = logs[0] || '暂无记录';
-    $('eventLog').innerHTML = logs.map(x => `<li>${x}</li>`).join('');
+    $('eventLogItems').innerHTML = logs.map(x => `<li>${x}</li>`).join('');
     lastLogSignature = logSignature;
   }
 }
@@ -622,7 +622,15 @@ function completeRetirement() {
   });
   return { ok: true };
 }
+function setEventLogOpen(open, restoreFocus = false) {
+  $('eventLog').hidden = !open;
+  $('logToggle').setAttribute('aria-expanded', String(open));
+  if (open) $('logClose').focus({ preventScroll: true });
+  else if (restoreFocus) $('logToggle').focus({ preventScroll: true });
+}
+
 document.addEventListener('click', event => {
+  if (!event.target.closest('.event-strip') && !$('eventLog').hidden) setEventLogOpen(false);
   if (event.target.closest('#workArea') && activeTab !== 'work') closeAuxPanel();
   const tab = event.target.closest('[data-tab]');
   if (tab) {
@@ -643,9 +651,11 @@ document.addEventListener('click', event => {
   }
   if (action === 'close-upgrade-detail') { selectedUpgrade = null; panelDirty = true; renderPanel(true); return; }
   if (action === 'toggle-log') {
-    const expanded = $('eventLog').hidden;
-    $('eventLog').hidden = !expanded;
-    $('logToggle').setAttribute('aria-expanded', String(expanded));
+    setEventLogOpen($('eventLog').hidden);
+    return;
+  }
+  if (action === 'close-log') {
+    setEventLogOpen(false, true);
     return;
   }
   if (action === 'start') {
@@ -743,6 +753,7 @@ $('importFile').addEventListener('change', async event => {
   event.target.value = '';
 });
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !$('eventLog').hidden) { setEventLogOpen(false, true); return; }
   if (event.key === 'Escape' && activeTab !== 'work') closeAuxPanel();
   if (event.code === 'Space' && $('intro').classList.contains('hidden') && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
     event.preventDefault(); workFeedback(); refresh();

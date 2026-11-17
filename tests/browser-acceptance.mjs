@@ -124,6 +124,20 @@ try {
     assert.equal(await visible(page, '#workArea .work-zone'), true, `${width}px: workstation visible`);
     if (width <= 900) {
       assert.equal(await page.locator('#facilityRail').isHidden(), true, `${width}px: desktop rail hidden`);
+      await page.locator('#logToggle').click();
+      assert.equal(await visible(page, '#eventLog'), true, `${width}px: live log opens`);
+      assert.equal(await page.locator('#logToggle').getAttribute('aria-expanded'), 'true');
+      assert.ok(await page.locator('#logClose').evaluate(button => button.getBoundingClientRect().height >= 44), `${width}px: live log close button remains touchable`);
+      await noOverflow(page, `${width}px live log`);
+      await page.locator('#logClose').click();
+      assert.equal(await page.locator('#eventLog').isHidden(), true, `${width}px: explicit button closes live log`);
+      assert.equal(await page.locator('#logToggle').getAttribute('aria-expanded'), 'false');
+      await page.locator('#logToggle').click();
+      await page.keyboard.press('Escape');
+      assert.equal(await page.locator('#eventLog').isHidden(), true, `${width}px: Escape closes live log`);
+      await page.locator('#logToggle').click();
+      await page.locator('#workArea .work-context').click();
+      assert.equal(await page.locator('#eventLog').isHidden(), true, `${width}px: outside tap closes live log`);
       await page.locator('.app-nav [data-tab="buildings"]').click();
       assert.equal(await visible(page, '#mainPanel'), true, `${width}px: drawer opens`);
       assert.equal(await page.locator('#mainPanel .building-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 2, `${width}px: two facility columns`);
