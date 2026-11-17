@@ -273,3 +273,48 @@
     animation: none !important;
   }
 }
+
+.retirement-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #4c687b;
+  border-radius: 12px;
+  color: #e5edf0;
+  background: #182b3a;
+}
+
+.retirement-controls-text {
+  display: grid;
+  gap: 6px;
+}
+
+.retirement-controls-text span {
+  color: #b9c9d1;
+  line-height: 1.5;
+}
+
+.retirement-request-button {
+  flex: 0 0 auto;
+  min-width: 128px;
+}
+
+.retirement-controls[data-eligible="false"] .retirement-request-button {
+  border-color: #8b745a;
+  color: #f1e5d2;
+  background: #5a4935;
+}
+
+@media (max-width: 640px) {
+  .retirement-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .retirement-request-button {
+    width: 100%;
+    min-height: 48px;
+  }
+}

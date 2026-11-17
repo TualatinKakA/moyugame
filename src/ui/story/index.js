@@ -1,5 +1,7 @@
 import { createStoryModal, createStoryArchive, ensureStoryStyles } from './story-modal.js';
 import { createAchievementPanel } from './achievement-panel.js';
+import { createRetirementControls } from './retirement-controls.js';
+import { resolveSnapshot, retirementTargetMet } from '../../systems/conditions.js';
 
 export function createStoryUI({
   document,
@@ -8,6 +10,8 @@ export function createStoryUI({
   achievementRegistry,
   computeSnapshot,
   onRead = null,
+  onRetire = () => ({ ok: false, reason: 'retirement-adapter-required' }),
+  retirementRoot = null,
 }) {
   if (typeof getState !== 'function' || !runtime || !achievementRegistry) {
     throw new TypeError('getState, runtime and achievementRegistry are required');
@@ -55,6 +59,37 @@ export function createStoryUI({
     },
   });
 
+  function canRetire() {
+    const state = getState();
+    if (state.story?.triggered?.['intro.first_retirement']) return true;
+    return retirementTargetMet(resolveSnapshot(state, computeSnapshot));
+  }
+
+  function requestRetirement() {
+    const state = getState();
+    const snapshot = resolveSnapshot(state, computeSnapshot);
+    if (!retirementTargetMet(snapshot)) {
+      const result = handleEvent({
+        type: 'abdication.rejected',
+        at: Date.now(),
+        data: { reason: 'target-not-met' },
+      });
+      if (!result.changed) {
+        const replay = runtime.replayStory(state, 'intro.retirement_denied');
+        if (replay) modal.show({ ...replay, replay: true });
+      }
+      return { ok: false, reason: 'target-not-met' };
+    }
+    return onRetire({ state, snapshot, emit: handleEvent });
+  }
+
+  const retirementControls = createRetirementControls({
+    document,
+    onRequest: requestRetirement,
+    isEligible: canRetire,
+  });
+  if (retirementRoot) retirementRoot.appendChild(retirementControls.element);
+
   function sync() {
     const next = runtime.next(getState());
     const card = next ? null : runtime.nextCard(getState());
@@ -76,6 +111,7 @@ export function createStoryUI({
         },
       });
     }
+    retirementControls.render();
     archive.render(runtime.archive(getState()));
     achievements.render();
   }
@@ -97,7 +133,9 @@ export function createStoryUI({
     sync,
     handleEvent,
     handleTick,
+    requestRetirement,
     modal,
+    retirementElement: retirementControls.element,
     archiveElement: archive.element,
     achievementElement: achievements.element,
     destroy: () => modal.destroy(),
@@ -106,3 +144,4 @@ export function createStoryUI({
 
 export { createStoryModal, createStoryArchive, ensureStoryStyles } from './story-modal.js';
 export { createAchievementPanel } from './achievement-panel.js';
+export { createRetirementControls } from './retirement-controls.js';

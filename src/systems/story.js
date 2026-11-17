@@ -151,14 +151,6 @@ export function createStoryRuntime({
     return record && record.scope === story.once && record.cycleKey === cycleKey(story, snapshot);
   }
 
-  function skipRetirementGuidance(state, snapshot, at) {
-    const id = 'intro.retirement_eligible';
-    if (state.story.triggered[id]) return false;
-    state.story.triggered[id] = { scope: 'profile', cycleKey: 'profile', skipped: true };
-    state.story.triggeredAt[id] = at;
-    pushUnique(state.story.skipped, id);
-    return true;
-  }
 
   function triggerStory(state, story, snapshot, at) {
     if (hasTriggered(state, story, snapshot)) return null;
@@ -211,7 +203,13 @@ export function createStoryRuntime({
     if (event.type === 'abdication.completed'
       && storyRegistry.byEvent(event.type).some(story => story.id === 'intro.first_retirement')
       && conditionRegistry.evaluateCondition('firstRetirementCompleted', { state, snapshot, event })) {
-      result.changed = skipRetirementGuidance(state, snapshot, at) || result.changed;
+      const guidance = storyRegistry.get('intro.retirement_eligible');
+      if (guidance && !hasTriggered(state, guidance, snapshot)) {
+        const triggered = triggerStory(state, guidance, snapshot, at);
+        result.changed = true;
+        result.triggered.push(triggered);
+        if (triggered.activation) result.activations.push(triggered.activation);
+      }
     }
 
     const achievementResult = evaluateAchievements(state, event, {

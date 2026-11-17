@@ -288,3 +288,40 @@ test('UI closes one queued story at a time and replay does not modify the ledger
   assert.equal(context.saves.length, afterReplay);
   assert.equal(context.saves.length, saveCount + 2);
 });
+
+
+test('main retirement button rejects unqualified requests and only calls the adapter after the target', () => {
+  const document = new FakeDocument();
+  const context = testContext();
+  const retirementRoot = document.createElement('main');
+  const calls = [];
+  const ui = createStoryUI({
+    document,
+    getState: () => context.state,
+    runtime: context.runtime,
+    achievementRegistry: context.achievementRegistry,
+    retirementRoot,
+    onRetire: ({ snapshot }) => {
+      calls.push(snapshot);
+      return { ok: true };
+    },
+  });
+  assert.equal(retirementRoot.children[0], ui.retirementElement);
+  ui.retirementElement.querySelector('button').click();
+  assert.equal(calls.length, 0);
+  assert.equal(ui.modal.current.story.id, 'intro.retirement_denied');
+  assert.ok(document.body.textContent.includes('考核未完成'));
+  ui.modal.close();
+  ui.retirementElement.querySelector('button').click();
+  assert.equal(calls.length, 0);
+  assert.equal(ui.modal.current.story.id, 'intro.retirement_denied');
+  assert.equal(ui.modal.current.replay, true);
+  ui.modal.close();
+
+  context.state.retirement = { eligible: true };
+  ui.sync();
+  assert.equal(ui.retirementElement.dataset.eligible, 'true');
+  ui.retirementElement.querySelector('button').click();
+  assert.equal(calls.length, 1);
+  assert.equal(ui.modal.current, null);
+});

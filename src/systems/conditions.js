@@ -45,6 +45,13 @@ function totalClicks(context) {
   return context.event?.data?.totalClicks ?? context.snapshot?.stats?.total?.clicks;
 }
 
+export function retirementTargetMet(snapshot) {
+  return snapshot?.retirement?.eligible === true
+    || snapshot?.retirement?.guidanceEligible === true
+    || snapshot?.firstRetirementEligible === true
+    || snapshot?.derived?.firstRetirementEligible === true;
+}
+
 function firstRetirement(context) {
   const data = context.event?.data || {};
   return data.firstRetirement === true || data.previousAbdications === 0 || context.snapshot?.stats?.total?.abdications === 1;
@@ -66,13 +73,15 @@ const defaultConditions = {
   firstBasicDepartment: ({ event }) => event?.type === 'faction.joined'
     && DEFAULT_BASIC_FACTIONS.has(event.data?.factionId)
     && event.data?.basic !== false,
-  firstRetirementGuidance: ({ snapshot }) => snapshot?.story?.intro?.completed !== true && (
-    snapshot?.retirement?.guidanceEligible === true
-    || snapshot?.firstRetirementEligible === true
-    || snapshot?.derived?.firstRetirementEligible === true
-  ),
+  firstRetirementGuidance: ({ snapshot }) => snapshot?.story?.intro?.completed !== true
+    && retirementTargetMet(snapshot),
   firstRetirementCompleted: context => context.event?.type === 'abdication.completed'
-    && context.event.data?.saved === true && firstRetirement(context),
+    && context.event.data?.saved === true && firstRetirement(context)
+    && (context.event.data?.targetMet === true || retirementTargetMet(context.snapshot)),
+  retirementTargetNotMet: ({ event, snapshot }) => event?.type === 'abdication.rejected'
+    && event.data?.reason === 'target-not-met'
+    && !snapshot?.story?.triggered?.['intro.first_retirement']
+    && !retirementTargetMet(snapshot),
   runCoinsAtLeast1Oc: ({ event, snapshot }) => Number(
     event?.data?.runCoins ?? snapshot?.stats?.run?.coins,
   ) >= 1e27,

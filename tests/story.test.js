@@ -42,8 +42,8 @@ test('condition registry supports all, any and not and rejects unknown IDs', () 
   }], { achievementRegistry: createAchievementRegistry(ACHIEVEMENTS), conditionRegistry: registry }), /Unknown condition/);
 });
 
-test('all five intro images exist locally', async () => {
-  assert.equal(STORIES.length, 5);
+test('all five main intro scenes and the retirement rejection scene have local images', async () => {
+  assert.equal(STORIES.length, 6);
   for (const story of STORIES) {
     assert.equal(story.image, STORY_IMAGES[story.imageKey].src);
     assert.ok(story.imageAlt.length > 0);
@@ -125,25 +125,43 @@ test('skip keeps the trophy and supports side-effect-free replay', () => {
   assert.equal(saves.length, 2);
 });
 
-test('early retirement skips eligibility, completes intro on close and suppresses later department modal', () => {
+test('retirement below target is rejected and a qualified first retirement keeps both main stories', () => {
   const { state, runtime } = testContext();
-  const retired = runtime.handleEvent(state, domainEvent('abdication.completed', {
+  const rejected = runtime.handleEvent(state, domainEvent('abdication.rejected', {
+    reason: 'target-not-met',
+  }));
+  assert.deepEqual(rejected.triggered.map(item => item.id), ['intro.retirement_denied']);
+  assert.equal(state.achievements.stateById['trophy.retirement.first'], undefined);
+  assert.equal(state.story.intro.completed, false);
+  runtime.closeStory(state, 'intro.retirement_denied');
+
+  const repeated = runtime.handleEvent(state, domainEvent('abdication.rejected', {
+    reason: 'target-not-met',
+  }, 2000));
+  assert.equal(repeated.changed, false);
+  assert.equal(runtime.replayStory(state, 'intro.retirement_denied').story.id, 'intro.retirement_denied');
+  const invalidSuccess = runtime.handleEvent(state, domainEvent('abdication.completed', {
     saved: true, firstRetirement: true, previousAbdications: 0,
   }));
-  assert.deepEqual(retired.triggered.map(item => item.id), ['intro.first_retirement']);
-  assert.equal(state.story.triggered['intro.retirement_eligible'].skipped, true);
-  assert.equal(state.achievements.stateById['trophy.retirement.eligible'], undefined);
-  assert.equal(state.story.intro.completed, false);
+  assert.equal(invalidSuccess.changed, false);
+  assert.equal(state.achievements.stateById['trophy.retirement.first'], undefined);
+
+  const retired = runtime.handleEvent(state, domainEvent('abdication.completed', {
+    saved: true, targetMet: true, firstRetirement: true, previousAbdications: 0,
+  }));
+  assert.deepEqual(retired.triggered.map(item => item.id), [
+    'intro.retirement_eligible', 'intro.first_retirement',
+  ]);
+  assert.deepEqual(state.story.pending.map(item => item.id), [
+    'intro.retirement_eligible', 'intro.first_retirement',
+  ]);
+  runtime.closeStory(state, 'intro.retirement_eligible');
   runtime.closeStory(state, 'intro.first_retirement');
   assert.equal(state.story.intro.completed, true);
   const department = runtime.handleEvent(state, domainEvent('faction.joined', { factionId: 'fairy', basic: true }));
   assert.equal(department.triggered[0].skipped, true);
   assert.equal(state.achievements.stateById['trophy.intro.first_department'].status, 'active');
   assert.equal(state.story.pending.length, 0);
-  const again = runtime.handleEvent(state, domainEvent('abdication.completed', {
-    saved: true, firstRetirement: false, previousAbdications: 1,
-  }));
-  assert.equal(again.changed, false);
 });
 
 test('full five-node intro reaches first retirement and completed state', () => {
@@ -160,7 +178,7 @@ test('full five-node intro reaches first retirement and completed state', () => 
   ]);
   for (const id of [...state.story.pending.map(item => item.id)]) runtime.closeStory(state, id);
   runtime.handleEvent(state, domainEvent('abdication.completed', {
-    saved: true, previousAbdications: 0,
+    saved: true, targetMet: true, previousAbdications: 0,
   }));
   assert.equal(runtime.next(state).id, 'intro.first_retirement');
   runtime.closeStory(state, 'intro.first_retirement');
