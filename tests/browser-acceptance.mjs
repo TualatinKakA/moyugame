@@ -109,7 +109,7 @@ try {
     await page.locator('[data-action="close-panel"]').click();
   }
 
-  for (const [width, height] of [[320, 568], [390, 844], [520, 740], [768, 1024], [900, 700], [1024, 768], [1440, 900]]) {
+  for (const [width, height] of [[320, 568], [390, 844], [520, 740], [768, 1024], [900, 700], [1024, 768], [1440, 730], [1440, 900]]) {
     await page.setViewportSize({ width, height });
     await noOverflow(page, `${width}px`);
     assert.equal(await visible(page, '#workArea #retirementPanel'), true, `${width}px: retirement visible`);
@@ -137,8 +137,13 @@ try {
       assert.equal(await page.locator('#mainPanel').isHidden(), true, `${width}px: Android/browser back closes drawer`);
     } else {
       assert.equal(await visible(page, '#facilityRail'), true, `${width}px: facility rail visible`);
-      const bounds = await page.evaluate(() => ({ zoneBottom: document.querySelector('.work-zone').getBoundingClientRect().bottom, logTop: document.querySelector('.event-strip').getBoundingClientRect().top }));
+      const bounds = await page.evaluate(() => ({
+        zoneBottom: document.querySelector('.work-zone').getBoundingClientRect().bottom,
+        buttonBottom: document.querySelector('.work-btn').getBoundingClientRect().bottom,
+        logTop: document.querySelector('.event-strip').getBoundingClientRect().top,
+      }));
       assert.ok(bounds.zoneBottom <= bounds.logTop + 1, `${width}px: workstation does not overlap the log`);
+      assert.ok(bounds.buttonBottom <= bounds.zoneBottom + 1, `${width}px: workstation button stays inside its zone`);
     }
   }
 
