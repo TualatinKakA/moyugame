@@ -59,5 +59,8 @@ export function buildingIdFromSource(name) {
 }
 
 export function availableBuildings(state) {
-  return BUILDINGS.filter(b => b.alignment === 'any' || b.alignment === state.alignment);
+  return BUILDINGS.filter(b => {
+    if (b.id === 'hallOfLegends') return Boolean(state.alignment);
+    return b.alignment === 'any' || b.alignment === state.alignment;
+  });
 }

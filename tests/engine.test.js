@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createState, saveState, normalizeState } from '../src/core/state.js';
 import { applyFactionUpgrade, createModifiers } from '../src/systems/effects.js';
+import { availableBuildings } from '../src/content/r0r3/buildings.js';
 import { UPGRADE_BY_ID, FACTION_BY_ID } from '../src/systems/engine.js';
 import {
   computeState, coinsToGems, gemsToCoins, reincarnationRequirement, buildingCost,
@@ -159,4 +160,18 @@ test('first abdication requires the configured production target', () => {
   assert.ok(next);
   assert.equal(next.stats.total.abdications, 1);
   assert.equal(next.stats.run.coins, 0);
+});
+
+
+test('Hall of Legends appears and can be purchased only after any alignment proof', () => {
+  const s = createState();
+  s.coins = 1e12;
+  assert.equal(availableBuildings(s).some(building => building.id === 'hallOfLegends'), false);
+  assert.equal(buyBuilding(s, 'hallOfLegends', 1), false);
+  for (const alignment of ['good', 'evil', 'neutral']) {
+    s.alignment = alignment;
+    assert.equal(availableBuildings(s).some(building => building.id === 'hallOfLegends'), true);
+  }
+  assert.equal(buyBuilding(s, 'hallOfLegends', 1), true);
+  assert.equal(s.buildings.hallOfLegends, 1);
 });
