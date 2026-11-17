@@ -33,13 +33,13 @@ test('reset chain can reach R3 without changing permanent statistics object', ()
     s.stats.run.coins = 5e15;
     s = abdicate(s);
     assert.ok(s.gems > 0);
-    s.gems = reincarnationRequirement(s.reincarnations);
+    s.gems = reincarnationRequirement(s.progression.reincarnations);
     const next = reincarnate(s);
     assert.ok(next);
-    assert.equal(next.reincarnations, target);
+    assert.equal(next.progression.reincarnations, target);
     assert.equal(next.stats.total, total);
     s = next;
   }
-  assert.equal(s.reincarnations, 3);
+  assert.equal(s.progression.reincarnations, 3);
   assert.equal(computeState(s).mods.globalAdd, 150);
 });

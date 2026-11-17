@@ -16,7 +16,7 @@ import {
 
 function rich() {
   const s = createState();
-  s.coins = 1e200; s.gems = 1e20; s.reincarnations = 3; s.mana = 1e20;
+  s.coins = 1e200; s.gems = 1e20; s.progression.reincarnations = 3; s.mana = 1e20;
   for (const id of Object.keys(s.buildings)) s.buildings[id] = 100;
   for (const id of Object.keys(s.factionCoins)) s.factionCoins[id] = 1e30;
   for (const scope of ['run', 'r', 'total']) Object.assign(s.stats[scope], {
@@ -121,7 +121,7 @@ test('prestige quest and treaty stack with the base faction', () => {
 });
 
 test('R3 mercenary tribute, oath and mixed upgrades work as persistent unlocks', () => {
-  const s = rich(); s.reincarnations = 3;
+  const s = rich(); s.progression.reincarnations = 3;
   assert.equal(payMercenaryTribute(s), true);
   assert.equal(mercenaryOath(s), true);
   assert.equal(joinMercenary(s, 'good'), true);

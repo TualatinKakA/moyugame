@@ -35,7 +35,7 @@ const chapters = [
   ['恒星群 · 多时间线', '每个时间线里的你都在处理同一份需求。'],
 ];
 function chapter() {
-  const R = state.reincarnations;
+  const R = state.progression.reincarnations;
   if (R >= 40) return ['跨星系 · 协议联合体', '组织架构图的上方，永远还有另一个上级。'];
   if (R >= 28) return chapters[7];
   if (R >= 20) return chapters[6];
@@ -62,7 +62,7 @@ function refresh(panel = false) {
   $('gems').textContent = formatNumber(state.gems);
   $('mana').textContent = `${formatNumber(state.mana)} / ${formatNumber(state._derived.manaMax)}`;
   $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
-  $('rankText').textContent = `R${state.reincarnations} · ${chapter()[0]}`;
+  $('rankText').textContent = `R${state.progression.reincarnations} · ${chapter()[0]}`;
   renderSide();
   if (panelDirty || activeTab !== 'work') renderPanel();
 }
@@ -95,7 +95,7 @@ function workView() {
       <div class="office-window"><div class="window-view"></div></div>
       <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="monitor-img" src="assets/images/monitor.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span><span class="work-label">点击 / SPACE 搬砖</span></button>
       <div class="desk-edge"></div><img class="keyboard-img" src="assets/images/keyboard.png" alt=""><img class="coffee-img" src="assets/images/coffee.png" alt="">
-      <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state.reincarnations}</div>
+      <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state.progression.reincarnations}</div>
     </section>`;
 }
 function buildingView() {
@@ -167,14 +167,14 @@ function statRows(scope, title) {
   return `<h3>${title}</h3><table class="stat-table">${[['时间', formatTime(s.time)], ['账面产值', money(s.coins)], ['点击次数', formatNumber(s.clicks)], ['点击收入', money(s.clickCoins)], ['施法次数', formatNumber(s.spellsCast)], ['发现影响力', formatNumber(s.factionCoins)], ['审计次数', formatNumber(s.excavations)], ['资源置换', formatNumber(s.exchanges || 0)]].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
 }
 function moreView() {
-  const req = reincarnationRequirement(state.reincarnations);
+  const req = reincarnationRequirement(state.progression.reincarnations);
   return `<div class="panel-head"><div><h2>职业与存档</h2><p>重置、统计和数据管理。</p></div></div>
     <div class="card-grid">
       <article class="card"><h3>申请离职</h3><p>本轮产值 ${money(state.stats.run.coins)} · 本次新增期权 ${formatNumber(pendingGems(state))}。清空本轮工资、设施、升级和部门，保留永久内容。</p><button data-action="abdicate">离职并结算期权</button></article>
-      <article class="card"><h3>转行进入 R${state.reincarnations + 1}</h3><p>需要持有 ${formatNumber(req)} 期权，当前 ${formatNumber(state.gems)}。重置深度高于离职。</p><button data-action="reincarnate" ${state.gems < req ? 'disabled' : ''}>转行</button></article>
+      <article class="card"><h3>转行进入 R${state.progression.reincarnations + 1}</h3><p>需要持有 ${formatNumber(req)} 期权，当前 ${formatNumber(state.gems)}。重置深度高于离职。</p><button data-action="reincarnate" ${state.gems < req ? 'disabled' : ''}>转行</button></article>
     </div>
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
-    <section class="subsection">${statRows('run', '本轮统计')}${statRows('r', '本次职业统计')}${statRows('total', '全部历史统计')}</section>`;
+    <section class="subsection">${statRows('run', '本轮统计')}${statRows('r', '本次职业统计')}${state.progression.ascension > 0 ? statRows('ascension', '本次升阶统计') : ''}${statRows('total', '全部历史统计')}</section>`;
 }
 function renderPanel(force = false) {
   const now = performance.now();
@@ -228,9 +228,9 @@ document.addEventListener('click', event => {
     state = abdicate(state); actionResult(true, '离职结算完成。新的项目已经开启'); saveState(state);
   }
   if (action === 'reincarnate') {
-    if (!confirm(`确定转行进入 R${state.reincarnations + 1} 吗？当前期权将被清空。`)) return;
+    if (!confirm(`确定转行进入 R${state.progression.reincarnations + 1} 吗？当前期权将被清空。`)) return;
     const next = reincarnate(state);
-    if (next) { state = next; notify(`已进入 R${state.reincarnations}。新的组织规则已生效`); saveState(state); }
+    if (next) { state = next; notify(`已进入 R${state.progression.reincarnations}。新的组织规则已生效`); saveState(state); }
     else notify('期权不足，无法转行', true);
   }
   if (action === 'hard-reset') {

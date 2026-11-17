@@ -44,7 +44,7 @@ function production(mods, target, value, mode = 'add') {
 function formulaValue(upgrade, state, mods, formula, effectText, tier = 0) {
   const x = inferX(`${effectText} ${formula}`, state, mods, tier);
   const y = /excavation resets/i.test(formula) ? 0 : 0;
-  return evaluateFormula(formula, { x, y, R: state.reincarnations, T: tier, A: 0 });
+  return evaluateFormula(formula, { x, y, R: state.progression.reincarnations, T: tier, A: 0 });
 }
 
 function inferX(text, state, mods, tier) {

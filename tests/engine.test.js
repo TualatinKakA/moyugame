@@ -11,7 +11,7 @@ import {
 
 const richState = () => {
   const s = createState();
-  s.coins = 1e100; s.gems = 1e40; s.reincarnations = 3;
+  s.coins = 1e100; s.gems = 1e40; s.progression.reincarnations = 3;
   for (const key of Object.keys(s.buildings)) s.buildings[key] = 100;
   for (const key of Object.keys(s.factionCoins)) s.factionCoins[key] = 1e30;
   for (const scope of ['run', 'r', 'total']) {
@@ -51,7 +51,7 @@ test('coin and gem conversion round trips', () => {
 });
 
 test('faction requires alignment proof and treaty', () => {
-  const s = richState(); s.gems = 0; s.reincarnations = 0;
+  const s = richState(); s.gems = 0; s.progression.reincarnations = 0;
   assert.equal(buyFactionUpgrade(s, 'fairy-0'), false);
   assert.equal(buyProof(s, 'good'), true);
   assert.equal(buyFactionUpgrade(s, 'fairy-0'), true);
@@ -81,7 +81,7 @@ test('spell casting consumes mana and applies active effect', () => {
 });
 
 test('R1-R3 progression modifiers are scoped correctly', () => {
-  const s = createState(); s.reincarnations = 3;
+  const s = createState(); s.progression.reincarnations = 3;
   const d = computeState(s);
   assert.equal(d.mods.globalAdd, 150);
   assert.equal(d.mods.offlineAdd, 1500);
@@ -104,11 +104,11 @@ test('abdication preserves permanent content and clears the run', () => {
 });
 
 test('reincarnation resets gems and increments R only at the requirement', () => {
-  const s = richState(); s.gems = 1e26; s.reincarnations = 0;
+  const s = richState(); s.gems = 1e26; s.progression.reincarnations = 0;
   assert.equal(reincarnate(s), null);
   s.gems = 1e27;
   const next = reincarnate(s);
-  assert.equal(next.reincarnations, 1);
+  assert.equal(next.progression.reincarnations, 1);
   assert.equal(next.gems, 0);
   assert.equal(next.stats.total, s.stats.total);
 });
@@ -121,7 +121,7 @@ test('save excludes derived cache and normalizes persistent state', () => {
   const raw = memory.get('endless-shift-r0r3-v1');
   assert.equal(JSON.parse(raw)._derived, undefined);
   const restored = normalizeState(JSON.parse(raw));
-  assert.equal(restored.reincarnations, 3);
+  assert.equal(restored.progression.reincarnations, 3);
   assert.equal(restored.contentVersion, 'r0-r3-v1');
 });
 

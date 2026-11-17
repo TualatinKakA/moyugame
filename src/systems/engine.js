@@ -5,7 +5,7 @@ import { SPELLS, SPELL_BY_ID } from '../content/r0r3/spells.js';
 import { MISC_BY_ID } from '../content/r0r3/misc-upgrades.js';
 import { CHALLENGE_BY_ID } from '../content/r0r3/challenges.js';
 import { createModifiers, applyFactionUpgrade } from './effects.js';
-import { emptyStats, createState } from '../core/state.js';
+import { emptyStats, createState, STAT_SCOPES } from '../core/state.js';
 import { evaluateFormula } from './formula.js';
 
 export const FACTION_BY_ID = Object.fromEntries(FACTIONS.map(f => [f.id, f]));
@@ -57,7 +57,7 @@ function derivedContext(state, mods) {
   return {
     assistants: Math.max(0, Math.floor(mods.assistantsAdd * mods.assistantsMult)),
     manaMax: Math.max(1, (1000 + mods.manaMaxAdd) * mods.manaMaxMult),
-    manaRegen: Math.max(0, (1 + mods.manaRegenAdd + 2 * state.reincarnations) * mods.manaRegenMult),
+    manaRegen: Math.max(0, (1 + mods.manaRegenAdd + 2 * state.progression.reincarnations) * mods.manaRegenMult),
     exchangeBonus: Math.max(0, mods.exchangeAdd * mods.exchangeMult),
     longestSpellDuration: Math.max(0, ...SPELLS.filter(s => spellAvailable(state, s.id)).map(s => s.duration)),
   };
@@ -72,7 +72,7 @@ function applyBuildingUpgrades(mods, state) {
   }
 }
 function applyReincarnation(mods, state) {
-  const R = state.reincarnations;
+  const R = state.progression.reincarnations;
   if (R >= 1) {
     mods.globalAdd += 50 * R;
     mods.offlineAdd += 500 * R;
@@ -94,7 +94,7 @@ function applyActiveSpells(mods, state) {
     if (s.formula && s.effect) {
       const x = s.x === 'manaRegen' ? state._derived.manaRegen : context[s.x] || 0;
       const formula = id === 'comboStrike' && state.trophies.includes('perfectCombo') ? '(40 * x ^ 0.9)%' : s.formula;
-      const value = evaluateFormula(formula, { x, R: state.reincarnations, A: 0 });
+      const value = evaluateFormula(formula, { x, R: state.progression.reincarnations, A: 0 });
       if (s.effect.stat === 'globalAdd') mods.globalAdd += value;
       if (s.effect.stat === 'buildingAdd') for (const target of s.effect.targets) mods.buildingAdd[target] = (mods.buildingAdd[target] || 0) + value;
     }
@@ -222,7 +222,7 @@ function calculateProduction(state, mods) {
 function earnCoins(state, amount, click = false) {
   if (!Number.isFinite(amount) || amount <= 0) return;
   state.coins += amount;
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].coins += amount;
     if (click) state.stats[scope].clickCoins += amount;
   }
@@ -237,7 +237,7 @@ export function buyBuilding(state, id, amount = state.settings.buyAmount) {
   state.coins -= quote.cost;
   state.buildings[id] += quote.qty;
   const total = totalBuildings(state);
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].buildingMax[id] = Math.max(state.stats[scope].buildingMax[id] || 0, state.buildings[id]);
     state.stats[scope].buildingsMax = Math.max(state.stats[scope].buildingsMax || 0, total);
   }
@@ -249,7 +249,7 @@ export function buyBuildingUpgrade(state, id) {
   if (!u || state.upgrades.includes(id) || state.buildings[u.building] < u.requirement || state.coins < u.cost) return false;
   state.coins -= u.cost;
   state.upgrades.push(id);
-  for (const scope of ['run', 'r', 'total']) state.stats[scope].upgradesBought++;
+  for (const scope of STAT_SCOPES) state.stats[scope].upgradesBought++;
   return true;
 }
 
@@ -276,7 +276,7 @@ export function buyMiscUpgrade(state, id) {
   if (!u || state.upgrades.includes(id) || state.coins < u.cost || !requirementMet(state, u.req)) return false;
   state.coins -= u.cost;
   state.upgrades.push(id);
-  for (const scope of ['run', 'r', 'total']) state.stats[scope].upgradesBought++;
+  for (const scope of STAT_SCOPES) state.stats[scope].upgradesBought++;
   return true;
 }
 
@@ -338,10 +338,10 @@ export function buyFactionUpgrade(state, id) {
   if (u.tier >= 3 && !state.upgrades.includes(`${faction.id}-8`)) return false;
   if (u.kind === 'heritage' && (state.stats.total.upgradesByFaction[faction.id] || 0) < 12) return false;
   const effective = { ...u };
-  if (u.kind === 'treaty' && ['fairy', 'goblin'].includes(faction.id) && !(state.reincarnations === 0 && state.gems === 0)) effective.cost = 20;
+  if (u.kind === 'treaty' && ['fairy', 'goblin'].includes(faction.id) && !(state.progression.reincarnations === 0 && state.gems === 0)) effective.cost = 20;
   if (!payFactionCost(state, effective)) return false;
   state.upgrades.push(id);
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].upgradesBought++;
     state.stats[scope].upgradesByFaction[faction.id] = (state.stats[scope].upgradesByFaction[faction.id] || 0) + 1;
   }
@@ -403,7 +403,7 @@ function findFactionCoins(state, amount, forced = null) {
   const mods = computeState(state).mods;
   const reward = amount * mods.fcRewardMult * (mods.factionRewardMult[id] || 1);
   state.factionCoins[id] = (state.factionCoins[id] || 0) + reward;
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].factionCoins += reward;
     state.stats[scope].factionCoinsByFaction[id] = (state.stats[scope].factionCoinsByFaction[id] || 0) + reward;
   }
@@ -419,13 +419,13 @@ function triggerElvenLuck(state, assistantTriggered = false) {
   const perAssistant = d.assistants ? d.assistantOutput / d.assistants : 0;
   const amount = 2500 * (d.buildingProduction + perAssistant) * (assistantTriggered ? Math.max(1, d.assistants) : 1);
   earnCoins(state, amount, true);
-  findFactionCoins(state, d.fcChance * (state.reincarnations + 1));
+  findFactionCoins(state, d.fcChance * (state.progression.reincarnations + 1));
 }
 
 export function workClick(state) {
   const d = computeState(state);
   earnCoins(state, d.clickReward, true);
-  for (const scope of ['run', 'r', 'total']) state.stats[scope].clicks++;
+  for (const scope of STAT_SCOPES) state.stats[scope].clicks++;
   if (nextRandom(state) < d.fcChance / 100) findFactionCoins(state, 1);
   if (d.mods.special.has('elvenLuck') && nextRandom(state) < 0.01) triggerElvenLuck(state);
   return d.clickReward;
@@ -440,19 +440,19 @@ export function castSpell(state, id, free = false) {
   if (state.mana < cost) return false;
   state.mana -= cost;
   const count = mods.spellCastCountMult;
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].spellsCast += count;
     state.stats[scope].spellsById = state.stats[scope].spellsById || {};
     state.stats[scope].spellsById[id] = (state.stats[scope].spellsById[id] || 0) + count;
   }
   if (id === 'taxCollection') {
-    for (const scope of ['run', 'r', 'total']) state.stats[scope].taxCasts = (state.stats[scope].taxCasts || 0) + count;
+    for (const scope of STAT_SCOPES) state.stats[scope].taxCasts = (state.stats[scope].taxCasts || 0) + count;
     earnCoins(state, computeState(state).production * (30 + mods.taxSecondsAdd));
     if (state.trophies.includes('coinPillage')) findFactionCoins(state, 30);
   }
   if (id === 'goblinsGreed') findFactionCoins(state, evaluateFormula(s.instantFactionCoins, { x: state.gems }), 'goblin');
   if (id === 'comboStrike') {
-    for (const scope of ['run', 'r', 'total']) state.stats[scope].comboCasts = (state.stats[scope].comboCasts || 0) + count;
+    for (const scope of STAT_SCOPES) state.stats[scope].comboCasts = (state.stats[scope].comboCasts || 0) + count;
   }
   if (id === 'lightningStrike') {
     const targets = availableBuildings(state).filter(b => state.buildings[b.id] > 0);
@@ -483,7 +483,7 @@ function completeChallenge(state, id) {
 }
 function challengeReady(state, id) {
   const c = CHALLENGE_BY_ID[id];
-  return state.reincarnations >= 2 && state.faction === c.faction && state.trophies.includes(c.requiredTrophy);
+  return state.progression.reincarnations >= 2 && state.faction === c.faction && state.trophies.includes(c.requiredTrophy);
 }
 function checkChallenges(state) {
   if (challengeReady(state, 'elf1') && state.stats.run.time <= 3600 && (state.stats.run.factionCoinsByFaction.elf || 0) > 400000) completeChallenge(state, 'elf1');
@@ -508,7 +508,7 @@ function checkSpellTrophies(state, id) {
 export function tick(state, delta) {
   const dt = Math.max(0, Math.min(1, Number(delta) || 0));
   if (!dt) return;
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].time += dt;
     state.stats[scope].longestSession = Math.max(state.stats[scope].longestSession, state.stats.run.time);
     if (state.alignment) state.stats[scope].factionTime[state.alignment] = (state.stats[scope].factionTime[state.alignment] || 0) + dt;
@@ -517,7 +517,7 @@ export function tick(state, delta) {
   const d = computeState(state);
   const manaGain = state._derived.manaRegen * dt;
   state.mana = Math.min(state._derived.manaMax, state.mana + manaGain);
-  for (const scope of ['run', 'r', 'total']) {
+  for (const scope of STAT_SCOPES) {
     state.stats[scope].manaProduced += manaGain;
     state.stats[scope].assistantsMax = Math.max(state.stats[scope].assistantsMax, d.assistants);
     state.stats[scope].manaMax = Math.max(state.stats[scope].manaMax, state._derived.manaMax);
@@ -566,7 +566,7 @@ export function abdicate(state) {
   const earned = pendingGems(state);
   next.gems = state.gems + earned;
   next.rubies = state.rubies;
-  next.reincarnations = state.reincarnations;
+  next.progression = { ...state.progression, ascensionHistory: [...state.progression.ascensionHistory] };
   next.trophies = [...state.trophies];
   next.artifacts = [...state.artifacts];
   next.challenges = [...state.challenges];
@@ -578,12 +578,17 @@ export function abdicate(state) {
   next.excavationResets = state.excavationResets;
   next.stats.total = state.stats.total;
   next.stats.r = state.stats.r;
+  next.stats.ascension = state.stats.ascension;
   return next;
 }
 export function reincarnate(state) {
-  if (state.gems < reincarnationRequirement(state.reincarnations)) return null;
+  if (state.gems < reincarnationRequirement(state.progression.reincarnations)) return null;
   const next = createState();
-  next.reincarnations = state.reincarnations + 1;
+  next.progression = {
+    ...state.progression,
+    reincarnations: state.progression.reincarnations + 1,
+    ascensionHistory: [...state.progression.ascensionHistory],
+  };
   next.rubies = state.rubies;
   next.trophies = [...state.trophies];
   next.artifacts = [...state.artifacts];
@@ -592,6 +597,7 @@ export function reincarnate(state) {
   next.settings = { ...state.settings };
   next.rngState = state.rngState;
   next.stats.total = state.stats.total;
+  next.stats.ascension = state.stats.ascension;
   return next;
 }
 export function buyRoyalExchange(state, factionId, amount = 1) {
@@ -602,7 +608,7 @@ export function buyRoyalExchange(state, factionId, amount = 1) {
     if (state.coins < cost) break;
     state.coins -= cost;
     bought++;
-    for (const scope of ['run', 'r', 'total']) {
+    for (const scope of STAT_SCOPES) {
       state.stats[scope].exchanges = (state.stats[scope].exchanges || 0) + 1;
       state.stats[scope].exchangesByFaction = state.stats[scope].exchangesByFaction || {};
       state.stats[scope].exchangesByFaction[factionId] = (state.stats[scope].exchangesByFaction[factionId] || 0) + 1;
@@ -626,7 +632,7 @@ export function excavate(state) {
   if (state.coins < cost) return false;
   state.coins -= cost;
   state.excavationCount++;
-  for (const scope of ['run', 'r', 'total']) state.stats[scope].excavations++;
+  for (const scope of STAT_SCOPES) state.stats[scope].excavations++;
   if (nextRandom(state) < 0.35) findFactionCoins(state, 1500 + 0.05 * (state.excavationCount - 1) ** 2.75);
   const n = state.excavationCount;
   if (n >= 5) addArtifact(state, 'titanClue1');
@@ -677,7 +683,7 @@ export function mercenaryTributeCost(state) {
   return { coins: 1e60 * periods ** 3.5, factionCoins: 100000 * periods ** 0.5 };
 }
 export function payMercenaryTribute(state) {
-  if (state.reincarnations < 3 || state.unlocked.mercenaryTribute) return false;
+  if (state.progression.reincarnations < 3 || state.unlocked.mercenaryTribute) return false;
   const cost = mercenaryTributeCost(state);
   const factions = Object.keys(state.factionCoins);
   if (state.coins < cost.coins || factions.some(id => state.factionCoins[id] < cost.factionCoins)) return false;
@@ -728,6 +734,6 @@ export function applyOffline(state, seconds) {
   const efficiency = Math.max(0, state.settings.offlineEfficiency + mods.offlineAdd / 100) * mods.offlineMult;
   const amount = computeState(state).production * time * efficiency;
   earnCoins(state, amount);
-  for (const scope of ['run', 'r', 'total']) state.stats[scope].offlineTime += time;
+  for (const scope of STAT_SCOPES) state.stats[scope].offlineTime += time;
   return amount;
 }
