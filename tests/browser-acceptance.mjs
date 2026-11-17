@@ -53,6 +53,7 @@ try {
   assert.equal(await visible(page, '#facilityRail'), true, 'desktop facility rail is persistent');
   assert.equal(await page.locator('#facilityRail .building-card').count(), 3, 'Hall of Legends stays hidden before any alignment proof');
   assert.equal(await page.locator('#facilityRail .building-card button').count(), 0, 'facility card has no separate purchase button');
+  assert.equal(await page.locator('#upgradeRail .upgrade-icon.insufficient').count(), 0, 'quick upgrades only show currently purchasable items');
   assert.equal(await page.locator('#facilityRail .building-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 2);
   const skillDescriptions = await page.locator('.skill-btn small').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent.trim(), display: getComputedStyle(node).display })));
   assert.ok(skillDescriptions.length > 0 && skillDescriptions.every(item => item.text && item.display !== 'none'), 'skill descriptions are visible');
@@ -167,6 +168,8 @@ try {
   await livePage.goto(origin, { waitUntil: 'domcontentloaded' });
   const liveSkill = livePage.locator('[data-action="cast"][data-id="taxCollection"]');
   assert.equal(await liveSkill.isDisabled(), true, 'skill starts disabled when mana is insufficient');
+  assert.equal(await livePage.locator('#upgradeRail .upgrade-icon.insufficient').count(), 0, 'quick upgrades hide unaffordable items at low resources');
+  assert.match(await livePage.locator('#upgradeRail').textContent(), /暂无可购买升级/, 'quick upgrades show an empty state when nothing is affordable');
   await livePage.locator('.app-nav [data-tab="building-upgrades"]').click();
   await livePage.locator('#mainPanel .upgrade-icon[data-kind="building"]').first().click();
   const liveBuy = livePage.locator('#upgradeDetail .primary');
@@ -177,6 +180,7 @@ try {
   });
   await livePage.waitForFunction(() => !document.querySelector('#upgradeDetail .primary').disabled, undefined, { timeout: 6000 });
   assert.equal(await livePage.evaluate(() => window.__liveDetail === document.querySelector('#upgradeDetail') && window.__liveUpgradeIcon === document.querySelector('#mainPanel .upgrade-icon')), true, 'live affordability updates reuse the same panel DOM');
+  await livePage.waitForFunction(() => document.querySelector('#upgradeRail .upgrade-icon.affordable'), undefined, { timeout: 6000 });
   await livePage.waitForFunction(() => !document.querySelector('[data-action="cast"][data-id="taxCollection"]').disabled, undefined, { timeout: 6000 });
   assert.equal(await liveSkill.isEnabled(), true, 'skill enables automatically when mana reaches its cost');
   await liveContext.close();

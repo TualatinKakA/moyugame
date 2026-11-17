@@ -377,10 +377,12 @@ function renderUpgradeRail(force = false) {
   const candidates = [
     ...visibleBuildingUpgrades().filter(u => !state.upgrades.includes(u.id)).map(u => ({ u, kind: 'building' })),
     ...visibleMiscUpgrades().filter(u => !state.upgrades.includes(u.id)).map(u => ({ u, kind: 'misc' })),
-  ].sort((a, b) => Number(!upgradeAffordable(a.u, a.kind)) - Number(!upgradeAffordable(b.u, b.kind)) || a.u.cost - b.u.cost).slice(0, 6);
+  ].filter(({ u, kind }) => upgradeAffordable(u, kind))
+    .sort((a, b) => a.u.cost - b.u.cost)
+    .slice(0, 6);
   const signature = candidates.map(({ u, kind }) => `${kind}:${u.id}`).join('|');
   if (force || signature !== upgradeRailStructure) {
-    $('upgradeRail').innerHTML = candidates.map(({ u, kind }) => upgradeIconView(u, kind)).join('') || '<small class="rail-empty">暂无已解锁升级</small>';
+    $('upgradeRail').innerHTML = candidates.map(({ u, kind }) => upgradeIconView(u, kind)).join('') || '<small class="rail-empty">暂无可购买升级</small>';
     upgradeRailStructure = signature;
   }
   lastUpgradeRailRender = performance.now();
