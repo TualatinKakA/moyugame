@@ -27,12 +27,12 @@ function rich() {
 
 test('content pack has complete current building, faction and spell inventories', () => {
   assert.equal(BUILDINGS.length, 25);
-  assert.equal(BUILDING_UPGRADES.length, 456);
+  assert.equal(BUILDING_UPGRADES.length, 475);
   assert.equal(FACTIONS.length, 11);
   assert.equal(FACTIONS.reduce((n, f) => n + f.upgrades.length, 0), 143);
   assert.equal(SPELLS.length, 15);
   assert.equal(CHALLENGES.length, 6);
-  assert.equal(new Set(BUILDING_UPGRADES.map(u => u.id)).size, 456);
+  assert.equal(new Set(BUILDING_UPGRADES.map(u => u.id)).size, 475);
 });
 
 test('formula evaluator supports logarithms, powers, rounding and stats', () => {
