@@ -18,6 +18,7 @@ const $ = id => document.getElementById(id);
 const money = n => `¥ ${formatNumber(n)}`;
 const factions = Object.values(FACTION_BY_ID);
 let state = loadState();
+let resetting = false;
 let activeTab = 'work';
 let panelDirty = true;
 let lastPanelRender = 0;
@@ -174,7 +175,7 @@ function buildingView() {
     const q = windowQuote(b.id);
     const count = state.buildings[b.id];
     const output = d.outputs[b.id] || 0;
-    return `<article class="card"><span class="badge">T${b.tier}</span><h3>${b.name} × ${formatNumber(count)}</h3><p>单类当前产出 ${money(output)} / 秒</p><div class="meta">${money(q.cost)} · 购买 ${q.qty} 个</div><button data-action="buy-building" data-id="${b.id}" ${!q.qty || state.coins < q.cost ? 'disabled' : ''}>采购设施</button></article>`;
+    return `<article class="card building-card"><span class="badge">T${b.tier}</span><h3>${b.name} × ${formatNumber(count)}</h3><span class="building-output">产出 ${money(output)} / 秒</span><span class="meta">${money(q.cost)} · ${q.qty} 个</span><button data-action="buy-building" data-id="${b.id}" ${!q.qty || state.coins < q.cost ? 'disabled' : ''}>采购</button></article>`;
   }).join('');
   const availableUpgrades = BUILDING_UPGRADES.filter(u => state.buildings[u.building] >= u.requirement || state.upgrades.includes(u.id));
   const upgrades = availableUpgrades.map(u => {
@@ -183,7 +184,7 @@ function buildingView() {
   }).join('');
   const misc = MISC_UPGRADES.filter(u => state.upgrades.includes(u.id) || requirementMet(state, u.req));
   const miscCards = misc.map(u => `<article class="card ${state.upgrades.includes(u.id) ? 'owned' : ''}"><h3>${u.name}</h3><div class="source-name">${u.id}</div><p>${u.effect}</p><div class="meta">${money(u.cost)}</div><button data-action="buy-misc-upgrade" data-id="${u.id}" ${state.upgrades.includes(u.id) || state.coins < u.cost ? 'disabled' : ''}>${state.upgrades.includes(u.id) ? '已生效' : '购买通用升级'}</button></article>`).join('');
-  return `<div class="panel-head"><div><h2>设施采购</h2><p>价格按几何级数增长，升级不改变核心公式。</p></div>${buyControls()}</div><div class="card-grid">${cards}</div><section class="subsection"><h3>设施升级 · 已满足条件或已购买</h3><div class="card-grid">${upgrades || '<p class="notice">增加设施数量后显示对应升级。</p>'}</div></section><section class="subsection"><h3>通用升级 · 已满足条件或已购买</h3><div class="card-grid">${miscCards || '<p class="notice">继续点击和积累产值以解锁通用升级。</p>'}</div></section>`;
+  return `<div class="panel-head"><div><h2>设施采购</h2><p>价格按几何级数增长，升级不改变核心公式。</p></div>${buyControls()}</div><div class="card-grid building-grid">${cards}</div><section class="subsection"><h3>设施升级 · 已满足条件或已购买</h3><div class="card-grid">${upgrades || '<p class="notice">增加设施数量后显示对应升级。</p>'}</div></section><section class="subsection"><h3>通用升级 · 已满足条件或已购买</h3><div class="card-grid">${miscCards || '<p class="notice">继续点击和积累产值以解锁通用升级。</p>'}</div></section>`;
 }
 function windowQuote(id) {
   return buildingQuote(state, id, state.settings.buyAmount, computeState(state).mods);
@@ -197,6 +198,11 @@ function upgradeCard(u) {
   const formula = u.formulas?.join('<br>') || '';
   return `<article class="card ${owned ? 'owned' : ''}"><span class="badge">${u.code} · T${u.tier}</span><h3>${FACTION_BY_ID[u.faction].name} · ${u.code}</h3><div class="source-name">${u.sourceName}</div><p>${u.effects.join('；')}</p>${formula ? `<div class="meta">${formula}</div>` : ''}<div class="meta">${u.costText}</div>${state.faction === 'mercenary' ? `<button data-action="merc-upgrade" data-id="${u.id}" ${owned ? 'disabled' : ''}>${owned ? '已选入' : '选入混编构筑'}</button>` : `<button data-action="buy-faction-upgrade" data-id="${u.id}" ${owned ? 'disabled' : ''}>${owned ? '已生效' : '购买升级'}</button>`}</article>`;
 }
+function proofUnavailable(alignment) {
+  const neutralLocked = alignment === 'neutral' && !state.artifacts.some(a => ['titanUnlock', 'druidUnlock', 'facelessUnlock'].includes(a));
+  const cost = alignment === 'neutral' ? 1e16 : 25000;
+  return Boolean(state.faction || state.prestige) || neutralLocked || state.coins < cost;
+}
 function factionView() {
   const current = FACTION_BY_ID[state.faction];
   const prestige = FACTION_BY_ID[state.prestige];
@@ -204,7 +210,7 @@ function factionView() {
   if (state.faction === 'mercenary') upgrades = factions.flatMap(f => f.upgrades.filter(u => u.kind !== 'heritage'));
   else upgrades = [...(current?.upgrades || []), ...(prestige?.upgrades || [])];
   return `<div class="panel-head"><div><h2>部门与立场</h2><p>部门硬币、专属技能和分层升级均使用独立配置。</p></div></div>
-    <div class="action-row">${['good', 'evil', 'neutral'].map(a => `<button data-action="proof" data-id="${a}" class="${state.alignment === a ? 'active' : ''}">${{ good: '进取证明 ¥25K', evil: '强压证明 ¥25K', neutral: '均衡证明 ¥10Qa' }[a]}</button>`).join('')}</div>
+    <div class="action-row">${['good', 'evil', 'neutral'].map(a => `<button data-action="proof" data-id="${a}" class="${state.alignment === a ? 'active' : ''}" ${proofUnavailable(a) ? 'disabled' : ''}>${{ good: '进取证明 ¥25K', evil: '强压证明 ¥25K', neutral: '均衡证明 ¥10Qa' }[a]}</button>`).join('')}</div>
     ${currencyList()}
     <div class="card-grid">${factions.map(f => {
       const treaty = f.upgrades[0];
@@ -327,6 +333,7 @@ document.addEventListener('click', event => {
   }
   if (action === 'hard-reset') {
     if (!confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
+    resetting = true;
     localStorage.removeItem(SAVE_KEY); location.reload(); return;
   }
   refresh(action === 'work' ? false : true);
@@ -348,8 +355,8 @@ document.addEventListener('keydown', event => {
     event.preventDefault(); workFeedback(); refresh();
   }
 });
-window.addEventListener('beforeunload', () => saveState(state));
-document.addEventListener('visibilitychange', () => { if (document.hidden) saveState(state); });
+window.addEventListener('beforeunload', () => { if (!resetting) saveState(state); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && !resetting) saveState(state); });
 
 const away = Math.max(0, (Date.now() - state.lastSave) / 1000);
 if (away > 10 && computeState(state).production > 0) {
@@ -365,4 +372,4 @@ setInterval(() => {
   if (activeTab === 'work' && now - lastPanelRender > 1000) panelDirty = true;
   refresh();
 }, 200);
-setInterval(() => { saveState(state); $('saveStatus').textContent = '已自动保存'; }, 15000);
+setInterval(() => { if (!resetting) { saveState(state); $('saveStatus').textContent = '已自动保存'; } }, 15000);
