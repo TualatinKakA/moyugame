@@ -23,6 +23,64 @@ let panelDirty = true;
 let lastPanelRender = 0;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
+const coinSoundPools = Array.from({ length: 8 }, (_, index) => {
+  const pool = Array.from({ length: 3 }, () => {
+    const audio = new Audio(`assets/audio/coin-${String(index + 1).padStart(2, '0')}.ogg`);
+    audio.preload = 'auto';
+    return audio;
+  });
+  pool.index = 0;
+  return pool;
+});
+let lastCoinSound = 0;
+function playCoinSound() {
+  const now = performance.now();
+  if (now - lastCoinSound < 65) return;
+  lastCoinSound = now;
+  const pool = coinSoundPools[Math.floor(Math.random() * coinSoundPools.length)];
+  const audio = pool[pool.index++ % pool.length];
+  audio.currentTime = 0;
+  audio.volume = 0.13;
+  audio.playbackRate = 0.94 + Math.random() * 0.24;
+  audio.play().catch(() => {});
+}
+function workFeedback(event) {
+  const amount = computeState(state).clickReward;
+  workClick(state);
+  playCoinSound();
+  const zone = document.querySelector('#workArea .work-zone');
+  if (!zone) return;
+  const button = zone.querySelector('.work-btn');
+  const rect = zone.getBoundingClientRect();
+  const x = event?.clientX ? event.clientX - rect.left : rect.width / 2;
+  const y = event?.clientY ? event.clientY - rect.top : Math.min(150, rect.height * 0.4);
+  button.classList.remove('coin-hit');
+  void button.offsetWidth;
+  button.classList.add('coin-hit');
+  setTimeout(() => button.classList.remove('coin-hit'), 180);
+  const floater = document.createElement('span');
+  floater.className = 'coin-float';
+  floater.textContent = `+¥ ${formatNumber(amount)}`;
+  floater.style.left = `${x}px`;
+  floater.style.top = `${y}px`;
+  zone.appendChild(floater);
+  setTimeout(() => floater.remove(), 800);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const count = Math.min(10, 4 + Math.floor(Math.log10(amount + 1)));
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement('img');
+    particle.className = 'coin-particle';
+    particle.src = `assets/images/${Math.random() > 0.25 ? 'coin' : 'cash'}.png`;
+    particle.alt = '';
+    particle.style.left = `${x + (Math.random() - 0.5) * 35}px`;
+    particle.style.top = `${y + (Math.random() - 0.5) * 20}px`;
+    particle.style.setProperty('--dx', `${(Math.random() - 0.5) * 150}px`);
+    particle.style.setProperty('--dy', `${-60 - Math.random() * 90}px`);
+    particle.style.setProperty('--spin', `${(Math.random() - 0.5) * 480}deg`);
+    zone.appendChild(particle);
+    setTimeout(() => particle.remove(), 750);
+  }
+}
 
 const chapters = [
   ['地球 · 试用期', '完成账面产值，申请离职。'],
@@ -57,14 +115,25 @@ function notify(text, error = false) {
 function refresh(panel = false) {
   if (panel) panelDirty = true;
   const d = computeState(state);
+  const manaMax = state._derived.manaMax;
+  const manaPercent = Math.max(0, Math.min(100, state.mana / manaMax * 100));
   $('coins').textContent = money(state.coins);
   $('production').textContent = money(d.production);
   $('gems').textContent = formatNumber(state.gems);
-  $('mana').textContent = `${formatNumber(state.mana)} / ${formatNumber(state._derived.manaMax)}`;
+  $('mana').textContent = `${formatNumber(state.mana)} / ${formatNumber(manaMax)}`;
+  $('manaRate').textContent = `+${formatNumber(state._derived.manaRegen)} / 秒`;
+  $('manaFill').style.width = `${manaPercent}%`;
+  $('manaProgress').setAttribute('aria-valuemax', String(manaMax));
+  $('manaProgress').setAttribute('aria-valuenow', String(state.mana));
   $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
   $('rankText').textContent = `R${state.progression.reincarnations} · ${chapter()[0]}`;
   renderSide();
-  if (panelDirty || activeTab !== 'work') renderPanel();
+  if (panelDirty) {
+    renderWork();
+    if (activeTab !== 'work') renderPanel();
+  } else if (activeTab !== 'work') {
+    renderPanel();
+  }
 }
 function renderSide() {
   const c = chapter();
@@ -176,12 +245,33 @@ function moreView() {
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
     <section class="subsection">${statRows('run', '本轮统计')}${statRows('r', '本次职业统计')}${state.progression.ascension > 0 ? statRows('ascension', '本次升阶统计') : ''}${statRows('total', '全部历史统计')}</section>`;
 }
+function statsView() {
+  return `<div class="panel-head"><div><h2>职业统计</h2><p>分别查看本轮、本次职业与全部历史数据。</p></div></div>
+    <section class="subsection">${statRows('run', '本轮统计')}${statRows('r', '本次职业统计')}${state.progression.ascension > 0 ? statRows('ascension', '本次升阶统计') : ''}${statRows('total', '全部历史统计')}</section>`;
+}
+function renderWork() {
+  $('workArea').innerHTML = workView();
+  lastPanelRender = performance.now();
+  if (activeTab === 'work') panelDirty = false;
+}
 function renderPanel(force = false) {
   const now = performance.now();
+  if (activeTab === 'work') {
+    $('mainPanel').hidden = true;
+    panelDirty = false;
+    return;
+  }
   if (!force && !panelDirty && now - lastPanelRender < 500) return;
-  $('mainPanel').classList.toggle('panel-scroll', activeTab !== 'work');
-  $('mainPanel').innerHTML = activeTab === 'work' ? workView() : activeTab === 'buildings' ? buildingView() : activeTab === 'factions' ? factionView() : activeTab === 'audit' ? auditView() : moreView();
+  const content = activeTab === 'buildings' ? buildingView() : activeTab === 'factions' ? factionView() : activeTab === 'audit' ? auditView() : activeTab === 'stats' ? statsView() : moreView();
+  $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${content}`;
+  $('mainPanel').hidden = false;
   panelDirty = false; lastPanelRender = now;
+}
+function closeAuxPanel() {
+  activeTab = 'work';
+  document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+  $('mainPanel').hidden = true;
+  panelDirty = false;
 }
 
 function actionResult(result, success, failure = '当前条件或资源不足') {
@@ -192,6 +282,7 @@ function actionResult(result, success, failure = '当前条件或资源不足') 
 document.addEventListener('click', event => {
   const tab = event.target.closest('[data-tab]');
   if (tab) {
+    if (activeTab === tab.dataset.tab) { closeAuxPanel(); return; }
     activeTab = tab.dataset.tab;
     document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active', b === tab));
     panelDirty = true; renderPanel(true); return;
@@ -200,8 +291,9 @@ document.addEventListener('click', event => {
   if (!button || button.disabled) return;
   const action = button.dataset.action;
   const id = button.dataset.id;
+  if (action === 'close-panel') { closeAuxPanel(); return; }
   if (action === 'start') { $('intro').classList.add('hidden'); notify('已入职。先点击显示器，或积累 ¥25K 购买部门立场。'); }
-  if (action === 'work') workClick(state);
+  if (action === 'work') workFeedback(event);
   if (action === 'buy-amount') { state.settings.buyAmount = button.dataset.value === 'max' ? 'max' : Number(button.dataset.value); panelDirty = true; }
   if (action === 'buy-building') actionResult(buyBuilding(state, id), '设施采购完成');
   if (action === 'buy-building-upgrade') actionResult(buyBuildingUpgrade(state, id), '设施升级已生效');
@@ -237,7 +329,7 @@ document.addEventListener('click', event => {
     if (!confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
     localStorage.removeItem(SAVE_KEY); location.reload(); return;
   }
-  refresh(true);
+  refresh(action === 'work' ? false : true);
 });
 $('importFile').addEventListener('change', async event => {
   const file = event.target.files?.[0];
@@ -251,8 +343,9 @@ $('importFile').addEventListener('change', async event => {
   event.target.value = '';
 });
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && activeTab !== 'work') closeAuxPanel();
   if (event.code === 'Space' && activeTab === 'work' && $('intro').classList.contains('hidden') && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
-    event.preventDefault(); workClick(state); refresh();
+    event.preventDefault(); workFeedback(); refresh();
   }
 });
 window.addEventListener('beforeunload', () => saveState(state));
