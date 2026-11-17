@@ -72,6 +72,9 @@ try {
   assert.equal(await visible(page, '#upgradeDetail'), true, 'upgrade icon opens its detail');
   await page.locator('#upgradeDetail [data-action="buy-building-upgrade"]').click();
   assert.equal(await page.locator('#upgradeDetail .primary').textContent(), '已生效');
+  await page.evaluate(() => { window.__stableUpgradeIcon = document.querySelector('#mainPanel .upgrade-icon'); });
+  await page.waitForTimeout(1300);
+  assert.equal(await page.evaluate(() => window.__stableUpgradeIcon === document.querySelector('#mainPanel .upgrade-icon')), true, 'upgrade panel does not rebuild every second');
   await closePanelWithWorkArea(page);
 
   await page.evaluate(() => {
@@ -93,6 +96,13 @@ try {
   assert.equal(await page.locator('#mainPanel [data-action="abdicate"]').count(), 0, 'retirement is removed from More');
   assert.equal(await visible(page, '#mainPanel [data-action="reincarnate"]'), true, 'reincarnation remains in More');
   await page.locator('[data-action="close-panel"]').click();
+
+  for (const tab of ['factions', 'audit', 'stats']) {
+    await page.locator(`.app-nav [data-tab="${tab}"]`).click();
+    assert.equal(await visible(page, '#mainPanel'), true, `${tab} panel opens`);
+    await page.waitForTimeout(250);
+    await page.locator('[data-action="close-panel"]').click();
+  }
 
   for (const [width, height] of [[320, 568], [390, 844], [520, 740], [768, 1024], [900, 700], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
@@ -127,6 +137,34 @@ try {
     }
   }
 
+  const liveContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const liveState = createState();
+  liveState.coins = 180;
+  liveState.mana = 197;
+  liveState.buildings.farm = 5;
+  liveState.stats.total.clicks = 1;
+  await liveContext.addInitScript(({ key, json }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, json);
+  }, { key: SAVE_KEY, json: JSON.stringify(liveState) });
+  const livePage = await liveContext.newPage();
+  livePage.on('pageerror', error => errors.push(error.message));
+  await livePage.goto(origin, { waitUntil: 'domcontentloaded' });
+  const liveSkill = livePage.locator('[data-action="cast"][data-id="taxCollection"]');
+  assert.equal(await liveSkill.isDisabled(), true, 'skill starts disabled when mana is insufficient');
+  await livePage.locator('.app-nav [data-tab="building-upgrades"]').click();
+  await livePage.locator('#mainPanel .upgrade-icon[data-kind="building"]').first().click();
+  const liveBuy = livePage.locator('#upgradeDetail .primary');
+  assert.equal(await liveBuy.isDisabled(), true, 'upgrade starts disabled when coins are insufficient');
+  await livePage.evaluate(() => {
+    window.__liveDetail = document.querySelector('#upgradeDetail');
+    window.__liveUpgradeIcon = document.querySelector('#mainPanel .upgrade-icon');
+  });
+  await livePage.waitForFunction(() => !document.querySelector('#upgradeDetail .primary').disabled, undefined, { timeout: 6000 });
+  assert.equal(await livePage.evaluate(() => window.__liveDetail === document.querySelector('#upgradeDetail') && window.__liveUpgradeIcon === document.querySelector('#mainPanel .upgrade-icon')), true, 'live affordability updates reuse the same panel DOM');
+  await livePage.waitForFunction(() => !document.querySelector('[data-action="cast"][data-id="taxCollection"]').disabled, undefined, { timeout: 6000 });
+  assert.equal(await liveSkill.isEnabled(), true, 'skill enables automatically when mana reaches its cost');
+  await liveContext.close();
+
   const cleanContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const cleanPage = await cleanContext.newPage();
   cleanPage.on('pageerror', error => errors.push(error.message));
@@ -145,7 +183,7 @@ try {
 
   assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);
-  console.log('Browser acceptance passed: retirement, facilities, upgrades, stable DOM, hard reset, and 320/390/520/768/900/1024/1440px layouts.');
+  console.log('Browser acceptance passed: retirement, facilities, live upgrade/skill states, stable panel and workstation DOM, hard reset, and 320/390/520/768/900/1024/1440px layouts.');
   await context.close();
 } finally {
   if (browser) await browser.close();
