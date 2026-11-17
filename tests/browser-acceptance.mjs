@@ -59,6 +59,8 @@ try {
   assert.ok(skillDescriptions.length > 0 && skillDescriptions.every(item => item.text && item.display !== 'none'), 'skill descriptions are visible');
   assert.equal(await page.locator('#workContent .skill-bar').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 2, 'two unlocked skills use two equal columns without an empty slot');
   assert.equal(await page.locator('.work-label').count(), 0, 'workstation click and Space hint stays removed');
+  assert.equal(await page.locator('#workContent .workstation-img').count(), 1, 'monitor and keyboard use one combined image');
+  assert.equal(await page.locator('#workContent .keyboard-img').count(), 0, 'keyboard no longer has an independent positioned element');
 
   await page.locator('#facilityRail [data-id="farm"]').click();
   assert.equal(await page.locator('#facilityRail [data-id="farm"] [data-field="count"]').textContent(), '× 6', 'whole card purchases a facility');
@@ -127,10 +129,14 @@ try {
     assert.equal(await visible(page, '#workArea .work-zone'), true, `${width}px: workstation visible`);
     const deskLayout = await page.evaluate(() => {
       const zone = document.querySelector('.work-zone').getBoundingClientRect();
-      const monitor = document.querySelector('.monitor-img').getBoundingClientRect();
+      const workstation = document.querySelector('.workstation-img').getBoundingClientRect();
       const screen = document.querySelector('.monitor-screen').getBoundingClientRect();
-      const keyboard = document.querySelector('.keyboard-img').getBoundingClientRect();
-      return { monitorTop: monitor.top, zoneTop: zone.top, screenBottom: screen.bottom, keyboardTop: keyboard.top };
+      return {
+        monitorTop: workstation.top,
+        zoneTop: zone.top,
+        screenBottom: screen.bottom,
+        keyboardTop: workstation.top + workstation.height * (158 / 208),
+      };
     });
     assert.ok(deskLayout.monitorTop >= deskLayout.zoneTop - 1, `${width}px: monitor is not clipped at the top: ${JSON.stringify(deskLayout)}`);
     assert.ok(deskLayout.screenBottom <= deskLayout.keyboardTop + 1, `${width}px: keyboard does not cover the monitor screen`);

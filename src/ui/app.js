@@ -272,8 +272,8 @@ function workView() {
   return `${skillButtons()}
     <section class="work-zone">
       <div class="office-window"><div class="window-view"></div></div>
-      <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="monitor-img" src="assets/images/monitor.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span></button>
-      <div class="desk-edge"></div><img class="keyboard-img" src="assets/images/keyboard.png" alt=""><img class="coffee-img" src="assets/images/coffee.png" alt="">
+      <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="workstation-img" src="assets/images/workstation.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span></button>
+      <div class="desk-edge"></div><img class="coffee-img" src="assets/images/coffee.png" alt="">
       <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state.progression.reincarnations}</div>
     </section>`;
 }
