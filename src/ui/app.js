@@ -233,8 +233,8 @@ function skillButtons() {
   if (!available.length) return '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
   const quick = quickSkillIds().map(id => SPELL_BY_ID[id]);
   return `<section class="skill-shortcuts" aria-label="快捷技能">
-    <div class="skill-bar-head"><small>快捷技能 · 按固定顺序显示</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>
-    ${quick.length ? `<div class="skill-bar">${quick.map(skillButtonView).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}
+    <div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel" aria-label="查看全部 ${available.length} 个技能">全部技能（${available.length}）</button></div>
+    ${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButtonView).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}
   </section>`;
 }
 function skillsView() {
@@ -272,7 +272,7 @@ function workView() {
   return `${skillButtons()}
     <section class="work-zone">
       <div class="office-window"><div class="window-view"></div></div>
-      <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="monitor-img" src="assets/images/monitor.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span><span class="work-label">点击 / SPACE 搬砖</span></button>
+      <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="monitor-img" src="assets/images/monitor.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span></button>
       <div class="desk-edge"></div><img class="keyboard-img" src="assets/images/keyboard.png" alt=""><img class="coffee-img" src="assets/images/coffee.png" alt="">
       <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state.progression.reincarnations}</div>
     </section>`;

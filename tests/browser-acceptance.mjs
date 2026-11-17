@@ -57,6 +57,8 @@ try {
   assert.equal(await page.locator('#facilityRail .building-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 2);
   const skillDescriptions = await page.locator('.skill-btn small').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent.trim(), display: getComputedStyle(node).display })));
   assert.ok(skillDescriptions.length > 0 && skillDescriptions.every(item => item.text && item.display !== 'none'), 'skill descriptions are visible');
+  assert.equal(await page.locator('#workContent .skill-bar').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 2, 'two unlocked skills use two equal columns without an empty slot');
+  assert.equal(await page.locator('.work-label').count(), 0, 'workstation click and Space hint stays removed');
 
   await page.locator('#facilityRail [data-id="farm"]').click();
   assert.equal(await page.locator('#facilityRail [data-id="farm"] [data-field="count"]').textContent(), '× 6', 'whole card purchases a facility');
