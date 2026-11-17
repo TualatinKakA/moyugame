@@ -85,7 +85,7 @@ function buyControls() {
 function buildingCard(item) {
   return `<button type="button" class="card building-card" data-action="purchase" data-building-card data-id="${item.id}">
     <span class="building-icon" aria-hidden="true">${item.tier}</span><span class="building-name"><b>${item.name}</b><small data-field="count">× 0</small></span>
-    <span class="building-output" data-field="output">¥ 0 / 秒</span><span class="building-price" data-field="cost"></span>
+    <span class="building-output" data-field="output">本次 +¥ 0 / 秒</span><span class="building-price" data-field="cost"></span>
     <span class="building-buy"><b data-field="quantity"></b><small>点击采购</small></span></button>`;
 }
 function updateBuildingCards() {
@@ -93,7 +93,7 @@ function updateBuildingCards() {
     const model = view(card.dataset.id);
     if (!model.viewModel) return;
     card.querySelector('[data-field="count"]').textContent = `× ${formatNumber(model.viewModel.count)}`;
-    card.querySelector('[data-field="output"]').textContent = `${money(model.viewModel.output)} / 秒`;
+    card.querySelector('[data-field="output"]').textContent = `本次 +${money(model.viewModel.purchaseProduction)} / 秒`;
     card.querySelector('[data-field="cost"]').textContent = money(model.costs[0]?.value || 0);
     card.querySelector('[data-field="quantity"]').textContent = `+${model.quantity || 0}`;
     card.disabled = model.status === 'NEED_RESOURCE';

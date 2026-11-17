@@ -1,5 +1,6 @@
 import { evaluateCondition, pathValue } from './content-registry.js';
 import { evaluateFormula } from './formula.js';
+import { computeDerived } from './derived.js';
 
 function amountValue(state, derived, amount) {
   if (amount.constant !== undefined) return Number(amount.constant);
@@ -53,10 +54,15 @@ export function selectContent(state, graph, derived, id, args = {}) {
   const unlocked = requirements.every(condition => evaluateCondition(graph, condition, context));
   let costs = (definition.purchase?.costs || definition.cast?.costs || []).map(cost => ({ ...cost, value: amountValue(state, derived, cost.amount) }));
   let quantity = null;
+  let purchaseProduction = 0;
   if (definition.kind === 'building') {
     const quote = buildingQuote(state, graph, derived, id, args.amount ?? state.settings.buyAmount);
     quantity = quote.quantity;
     costs = [{ resource: 'coins', value: quote.cost }];
+    if (quantity > 0) {
+      const preview = computeDerived(state, graph, new Map(), { [id]: (state.buildings[id] || 0) + quantity });
+      purchaseProduction = Math.max(0, preview.production - derived.production);
+    }
   }
   const affordable = costs.every(cost => {
     const available = cost.resource.startsWith('factionCoin.') ? state.resources.factionCoins[cost.resource.slice(12)] : state.resources[cost.resource];
@@ -77,6 +83,7 @@ export function selectContent(state, graph, derived, id, args = {}) {
       remaining: state.timers.spells[id] ? Math.max(0, (state.timers.spells[id].dueAt ?? state.stats.run.time + state.timers.spells[id].remaining) - state.stats.run.time) : 0,
       count: state.buildings[id] || 0,
       output: derived.outputs[id] || 0,
+      purchaseProduction,
       status,
     },
   };

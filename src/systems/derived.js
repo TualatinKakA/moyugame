@@ -11,16 +11,17 @@ const owned = (state, definition) => definition.kind === 'trophy' ? state.perman
   })()
     : state.owned[definition.scope]?.[definition.id] || (definition.scope === 'total' && state.permanentUnlocks[definition.id]);
 
-function resolvePath(path, state, graph, target, derived) {
+function resolvePath(path, state, graph, target, derived, buildingOverrides = {}) {
+  const count = id => buildingOverrides[id] ?? state.buildings[id] ?? 0;
   if (path.startsWith('derived.')) return derived?.[path.slice(8)] || 0;
-  if (path === 'target.count') return state.buildings[target?.id] || 0;
-  if (path === 'buildings.total') return Object.values(state.buildings).reduce((sum, count) => sum + count, 0);
-  if (path === 'buildings.low3') return ['farm', 'inn', 'blacksmith'].reduce((sum, id) => sum + (state.buildings[id] || 0), 0);
+  if (path === 'target.count') return count(target?.id);
+  if (path === 'buildings.total') return buildings(graph).reduce((sum, item) => sum + count(item.id), 0);
+  if (path === 'buildings.low3') return ['farm', 'inn', 'blacksmith'].reduce((sum, id) => sum + count(id), 0);
   if (path.startsWith('buildings.alignment.')) {
     const alignment = path.slice(20);
-    return buildings(graph).filter(item => item.alignment === alignment).reduce((sum, item) => sum + (state.buildings[item.id] || 0), 0);
+    return buildings(graph).filter(item => item.alignment === alignment).reduce((sum, item) => sum + count(item.id), 0);
   }
-  if (path.startsWith('buildings.')) return state.buildings[path.slice(10)] || 0;
+  if (path.startsWith('buildings.')) return count(path.slice(10));
   if (path === 'factionCoins.total') return Object.values(state.resources.factionCoins).reduce((sum, value) => sum + value, 0);
   if (path.startsWith('resources.')) return pathValue(state, path) || 0;
   return pathValue(state, path) || 0;
@@ -59,7 +60,7 @@ function applyEffect(mods, effect, amount, targetId) {
   else throw new Error(`Unknown derived effect stat ${effect.stat}`);
 }
 
-export function computeDerived(state, graph, groupCache = new Map()) {
+export function computeDerived(state, graph, groupCache = new Map(), buildingOverrides = {}) {
   const mods = createModifiers();
   const entries = [];
   for (const definition of graph.definitions) {
@@ -74,7 +75,7 @@ export function computeDerived(state, graph, groupCache = new Map()) {
       const cacheKey = `${effect.group}|${targetId || 'global'}`;
       let amount = groupCache.get(cacheKey);
       if (amount === undefined) {
-        const variables = Object.fromEntries(Object.entries(effect.value.variables || {}).map(([name, path]) => [name, resolvePath(path, state, graph, target)]));
+        const variables = Object.fromEntries(Object.entries(effect.value.variables || {}).map(([name, path]) => [name, resolvePath(path, state, graph, target, null, buildingOverrides)]));
         amount = effect.value.constant !== undefined ? Number(effect.value.constant)
           : evaluateFormula(effect.value.formula, variables, { contentId: definition.id, phase: effect.phase });
         if (!Number.isFinite(amount)) throw new Error(`Non-finite effect ${definition.id}/${effect.group}`);
@@ -87,7 +88,7 @@ export function computeDerived(state, graph, groupCache = new Map()) {
   const globalMult = (1 + mods.globalAdd / 100) * mods.globalMult;
   let buildingProduction = 0;
   for (const definition of buildings(graph)) {
-    const count = state.buildings[definition.id] || 0;
+    const count = buildingOverrides[definition.id] ?? state.buildings[definition.id] ?? 0;
     const base = definition.production + (mods.buildingBaseAdd[definition.id] || 0);
     const output = count * base * (1 + (mods.buildingAdd[definition.id] || 0) / 100) * (mods.buildingMult[definition.id] || 1) * globalMult;
     outputs[definition.id] = output;

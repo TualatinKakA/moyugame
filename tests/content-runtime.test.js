@@ -242,3 +242,15 @@ test('aggregate building dependencies invalidate the affected formula group afte
   const after = game.select('derived').outputs.slavePen;
   assert.ok(after > before * 2, `expected aggregate bonus to increase: ${before} -> ${after}`);
 });
+
+test('building selector returns accurate per-second gain for the current bulk purchase', async () => {
+  const { game } = fixture(initial());
+  await game.start();
+  const ten = game.select('content', { id: 'farm', amount: 10 });
+  assert.equal(ten.quantity, 10);
+  assert.equal(ten.viewModel.purchaseProduction, 20);
+  game.dispatch({ type: 'purchase', id: 'farm', amount: 10 });
+  const one = game.select('content', { id: 'farm', amount: 1 });
+  assert.equal(one.viewModel.purchaseProduction, 2);
+  assert.equal(game.select('state').resources.coins, 1e12 - ten.costs[0].value, 'preview itself does not spend resources');
+});

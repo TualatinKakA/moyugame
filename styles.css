@@ -327,10 +327,10 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .resource-bar strong { font-size: 12px; }
   .mana-copy small { display: none; }
   .retirement-values span:last-child { display: none; }
-  .building-output { display: none; }
-  button.card.building-card { min-height: 78px; grid-template-rows: auto auto; }
-  .building-price { grid-row: 2; }
-  .building-buy { grid-row: 1 / 3; }
+  .building-output { display: block; grid-column: 1 / 3; grid-row: 2; }
+  button.card.building-card { min-height: 94px; grid-template-rows: auto auto auto; }
+  .building-price { grid-row: 3; }
+  .building-buy { grid-row: 1 / 4; }
   .building-buy small { display: none; }
   .building-name b { font-size: 10px; }
   .building-price { font-size: 9px; }

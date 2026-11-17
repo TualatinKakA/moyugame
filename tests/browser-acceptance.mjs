@@ -80,6 +80,8 @@ try {
   await gamePage.locator('#mainPanel [data-id="farm"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="count"]').textContent(), '× 1');
   await gamePage.locator('#mainPanel [data-action="buy-amount"][data-value="10"]').click();
+  assert.equal(await visible(gamePage, '#mainPanel [data-id="farm"] [data-field="output"]'), true, 'mobile building card shows purchase production');
+  assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="output"]').textContent(), '本次 +¥ 20 / 秒');
   await gamePage.locator('#mainPanel [data-id="farm"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="count"]').textContent(), '× 11');
   await gamePage.locator('[data-action="close-panel"]').click();
