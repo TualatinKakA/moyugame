@@ -554,6 +554,7 @@ function renderPanel(force = false) {
     return;
   }
   if (!force && !panelDirty) return;
+  $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
   const content = activeTab === 'buildings' ? buildingView()
     : activeTab === 'building-upgrades' ? facilityUpgradesView()
       : activeTab === 'misc-upgrades' ? miscUpgradesView()

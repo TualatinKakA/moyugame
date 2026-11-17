@@ -98,6 +98,12 @@ try {
   assert.equal(await visible(page, '#workArea .work-btn'), true, 'new run workstation is immediately usable');
 
   await page.locator('#moreTabButton').click();
+  const moreBounds = await page.locator('#mainPanel').evaluate(panel => {
+    const rect = panel.getBoundingClientRect();
+    return { centerX: rect.left + rect.width / 2, centerY: rect.top + rect.height / 2, viewportX: innerWidth / 2, viewportY: innerHeight / 2, isMoreDialog: panel.classList.contains('more-dialog') };
+  });
+  assert.equal(moreBounds.isMoreDialog, true, 'More uses its centered dialog variant');
+  assert.ok(Math.abs(moreBounds.centerX - moreBounds.viewportX) < 2 && Math.abs(moreBounds.centerY - moreBounds.viewportY) < 2, 'More is centered on desktop');
   assert.equal(await page.locator('#mainPanel [data-action="abdicate"]').count(), 0, 'retirement is removed from More');
   assert.equal(await visible(page, '#mainPanel [data-action="reincarnate"]'), true, 'reincarnation remains in More');
   await page.locator('[data-action="close-panel"]').click();
