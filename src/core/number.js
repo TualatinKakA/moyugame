@@ -18,7 +18,7 @@ export function formatNumber(value, digits = 2) {
   if (!Number.isFinite(value)) return value > 0 ? '∞' : '0';
   const sign = value < 0 ? '-' : '';
   const n = Math.abs(value);
-  if (n < 1000) {
+  if (n < 10000) {
     const text = n < 10 && n % 1 !== 0 ? n.toFixed(1) : n < 100 && n % 1 !== 0 ? n.toFixed(2) : Math.floor(n).toLocaleString('zh-CN');
     return sign + text;
   }
