@@ -103,7 +103,7 @@ button.danger { color: var(--red); }
 .office-window { position: absolute; left: 22px; top: 25px; width: 130px; height: 115px; padding: 6px; border: 2px solid #596555; background: #1c231d; }
 .window-view { width: 100%; height: 100%; background: linear-gradient(#91a99b, #cfce9e); position: relative; overflow: hidden; }
 .window-view::after { content: ""; position: absolute; inset: 35% 0 0; background: repeating-linear-gradient(90deg, #52635b 0 12%, #738074 12% 24%); }
-.work-btn { position: absolute; z-index: 3; left: 50%; top: 65px; width: 220px; height: 205px; margin-left: -110px; border: 0; background: transparent; }
+.work-btn { position: absolute; z-index: 3; left: 50%; bottom: 38px; width: 220px; height: 205px; margin-left: -110px; border: 0; background: transparent; transform-origin: center bottom; }
 .work-btn:hover:not(:disabled) { border: 0; background: transparent; }
 .monitor-img { width: 220px; height: 177px; display: block; }
 .monitor-screen { position: absolute; left: 30px; top: 19px; width: 160px; height: 104px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #162014; color: var(--green); }
@@ -234,7 +234,7 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .retirement-btn { font-size: 11px; }
   .work-content { min-height: 0; }
   .work-zone { min-height: 0; }
-  .work-btn { top: 35px; transform: scale(.8); transform-origin: center top; }
+  .work-btn { top: auto; bottom: 54px; transform: scale(.8); transform-origin: center bottom; }
   .work-btn:active:not(:disabled) { transform: scale(.8); }
   .skill-bar { grid-template-columns: repeat(var(--quick-count, 4), minmax(0, 1fr)); }
   .facility-head { padding: 9px; }
@@ -297,7 +297,7 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .skill-btn em { margin-top: 2px; font-size: 8px; }
   .skill-notice { margin-bottom: 7px; padding: 6px 8px; }
   .work-zone { min-height: 0; height: auto; }
-  .work-btn { top: 35px; transform: scale(.75); transform-origin: center top; }
+  .work-btn { top: auto; bottom: 32px; transform: scale(.75); transform-origin: center bottom; }
   .work-btn:active:not(:disabled) { transform: scale(.75); }
   .office-window { width: 95px; height: 90px; left: 12px; top: 18px; }
   .desk-edge { bottom: 27px; height: 62px; border-top-width: 9px; }
@@ -366,8 +366,9 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .skill-btn { min-height: 58px; }
   .skill-btn small { -webkit-line-clamp: 1; }
   .skill-notice { padding-block: 4px; }
-  .work-btn { transform: scale(.6); top: 20px; }
-  .work-btn:active:not(:disabled) { transform: scale(.6); }
+  .work-btn { top: auto; bottom: 55px; transform: scale(.42); transform-origin: center bottom; }
+  .work-btn:active:not(:disabled) { transform: scale(.42); }
+  .keyboard-img { bottom: 48px; }
   .office-window { transform: scale(.8); transform-origin: left top; }
   .event-strip > button { min-height: 30px; }
 }
@@ -378,7 +379,7 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
 @media (min-width: 901px) and (max-height: 800px) {
   .work-area { gap: 8px; }
   .skill-btn { min-height: 72px; }
-  .work-btn { top: 35px; transform: scale(.75); transform-origin: center top; }
+  .work-btn { top: auto; bottom: 58px; transform: scale(.75); transform-origin: center bottom; }
   .work-btn:active:not(:disabled) { transform: scale(.75); }
 }
 @media (prefers-reduced-motion: reduce) {

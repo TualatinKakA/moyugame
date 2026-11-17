@@ -121,9 +121,19 @@ try {
 
   for (const [width, height] of [[320, 568], [390, 844], [520, 740], [768, 1024], [900, 700], [1024, 768], [1440, 730], [1440, 900]]) {
     await page.setViewportSize({ width, height });
+    await page.waitForTimeout(200);
     await noOverflow(page, `${width}px`);
     assert.equal(await visible(page, '#workArea #retirementPanel'), true, `${width}px: retirement visible`);
     assert.equal(await visible(page, '#workArea .work-zone'), true, `${width}px: workstation visible`);
+    const deskLayout = await page.evaluate(() => {
+      const zone = document.querySelector('.work-zone').getBoundingClientRect();
+      const monitor = document.querySelector('.monitor-img').getBoundingClientRect();
+      const screen = document.querySelector('.monitor-screen').getBoundingClientRect();
+      const keyboard = document.querySelector('.keyboard-img').getBoundingClientRect();
+      return { monitorTop: monitor.top, zoneTop: zone.top, screenBottom: screen.bottom, keyboardTop: keyboard.top };
+    });
+    assert.ok(deskLayout.monitorTop >= deskLayout.zoneTop - 1, `${width}px: monitor is not clipped at the top: ${JSON.stringify(deskLayout)}`);
+    assert.ok(deskLayout.screenBottom <= deskLayout.keyboardTop + 1, `${width}px: keyboard does not cover the monitor screen`);
     if (width <= 900) {
       assert.equal(await page.locator('#facilityRail').isHidden(), true, `${width}px: desktop rail hidden`);
       await page.locator('#logToggle').click();
