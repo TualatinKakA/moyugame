@@ -19,7 +19,7 @@ function focusable(panel) {
     .filter(node => !node.disabled && !node.hidden);
 }
 
-export function createStoryModal({ document, onClose = () => {} }) {
+export function createStoryModal({ document, onClose = () => {}, onChoice = () => {} }) {
   ensureStoryStyles(document);
   let overlay = null;
   let current = null;
@@ -110,6 +110,19 @@ export function createStoryModal({ document, onClose = () => {} }) {
     const body = element(document, 'div', 'story-body');
     for (const text of story.paragraphs) body.appendChild(element(document, 'p', 'story-paragraph', text));
     panel.appendChild(body);
+
+    if (story.choices?.length && !replay) {
+      const choices = element(document, 'div', 'story-choices');
+      for (const choice of story.choices) {
+        const button = element(document, 'button', 'story-button story-button-choice', choice.label);
+        button.type = 'button';
+        button.dataset.action = 'story-choice';
+        button.dataset.choiceId = choice.id;
+        button.addEventListener('click', () => onChoice({ id: story.id, choiceId: choice.id, story }));
+        choices.appendChild(button);
+      }
+      panel.appendChild(choices);
+    }
 
     if (achievement) {
       const card = element(document, 'aside', 'story-achievement');

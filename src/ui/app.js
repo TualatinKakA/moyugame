@@ -1,865 +1,394 @@
-import { loadState, saveState, normalizeState, SAVE_KEY, SCHEMA2_BACKUP_KEY, touchState } from '../core/state.js';
-import { emitGameEvent } from '../core/events.js';
-import { createGameStory } from './story/bootstrap.js';
-import { getHighestBusinessAchievement } from '../systems/achievements.js';
+import { CONTENT } from '../content/index.js';
+import { createGameRuntime } from '../systems/runtime.js';
+import { createSaveAdapter } from '../systems/persistence.js';
 import { formatNumber, formatTime } from '../core/number.js';
-import { BUILDING_BY_ID, availableBuildings } from '../content/r0r3/buildings.js';
-import BUILDING_UPGRADES from '../content/r0r3/building-upgrades.js';
-import { MISC_UPGRADES } from '../content/r0r3/misc-upgrades.js';
-import { CHALLENGES } from '../content/r0r3/challenges.js';
-import { SPELLS, SPELL_BY_ID } from '../content/r0r3/spells.js';
-import {
-  FACTION_BY_ID, UPGRADE_BY_ID, computeState, computeSnapshot, buildingQuote, buyBuilding, buyBuildingUpgrade, buyMiscUpgrade, requirementMet,
-  buyFactionUpgrade, buyProof, spellAvailable, workClick, castSpell, tick, pendingGems,
-  abdicate, reincarnate, reincarnationRequirement, buyRoyalExchange, unlockArchaeology,
-  excavate, unlockNeutralFaction, unlockUnderworld, completePrestigeQuest, mercenaryTributeCost,
-  payMercenaryTribute, mercenaryOath, joinMercenary, selectMercenarySpell, buyMercenaryUpgrade,
-  applyOffline, excavationCost, royalExchangeCost,
-} from '../systems/engine.js';
+import { createStoryModal } from './story/story-modal.js';
 
 const $ = id => document.getElementById(id);
-const money = n => `¥ ${formatNumber(n)}`;
-const factions = Object.values(FACTION_BY_ID);
-let state = loadState();
-const story = createGameStory({
-  document,
-  getState: () => state,
-  computeSnapshot,
-  save: persistStory,
-  onRetire: completeRetirement,
-});
-const BASIC_FACTIONS = new Set(['fairy', 'elf', 'angel', 'goblin', 'undead', 'demon']);
-let resetting = false;
+const money = value => `¥ ${formatNumber(value)}`;
+const saveAdapter = createSaveAdapter();
+let game;
+let graph;
 let activeTab = 'work';
-let panelDirty = true;
-let lastUpgradeRailRender = 0;
-let upgradeRailStructure = '';
-let workStructure = '';
-let facilityStructure = '';
-let selectedUpgrade = null;
 let panelReturnFocus = null;
 let panelHistory = false;
-let retirementMessage = '';
-let lastLogSignature = '';
+let quickStructure = '';
+let facilityStructure = '';
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
+let lastCoinSound = 0;
 const coinSoundPools = Array.from({ length: 8 }, (_, index) => {
   const pool = Array.from({ length: 3 }, () => {
     const audio = new Audio(`assets/audio/coin-${String(index + 1).padStart(2, '0')}.ogg`);
-    audio.preload = 'auto';
-    return audio;
+    audio.preload = 'auto'; return audio;
   });
-  pool.index = 0;
-  return pool;
+  pool.index = 0; return pool;
 });
-let lastCoinSound = 0;
+const state = () => game.select('state');
+const derived = () => game.select('derived');
+const definition = id => graph.definitionsById.get(id);
+const content = kind => graph.arraysByKind.get(kind) || [];
+const view = id => game.select('content', { id });
+const visible = kind => content(kind).filter(item => view(item.id).status !== 'HIDDEN_SYSTEM');
+
+function notify(text, error = false) {
+  logs.unshift(text); logs = logs.slice(0, 8);
+  $('toast').textContent = text; $('toast').classList.toggle('error', error); $('toast').classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2600);
+  renderLogs();
+}
 function playCoinSound() {
-  const now = performance.now();
-  if (now - lastCoinSound < 65) return;
+  const now = performance.now(); if (now - lastCoinSound < 65) return;
   lastCoinSound = now;
   const pool = coinSoundPools[Math.floor(Math.random() * coinSoundPools.length)];
   const audio = pool[pool.index++ % pool.length];
-  audio.currentTime = 0;
-  audio.volume = 0.13;
-  audio.playbackRate = 0.94 + Math.random() * 0.24;
+  audio.currentTime = 0; audio.volume = 0.13; audio.playbackRate = 0.94 + Math.random() * 0.24;
   audio.play().catch(() => {});
 }
 function workFeedback(event) {
-  const amount = computeState(state).clickReward;
-  workClick(state);
-  emitGameEvent('work.clicked', { totalClicks: state.stats.total.clicks, success: true });
   playCoinSound();
   const zone = document.querySelector('#workArea .work-zone');
-  if (!zone) return;
   const button = zone.querySelector('.work-btn');
   const rect = zone.getBoundingClientRect();
   const x = event?.clientX ? event.clientX - rect.left : rect.width / 2;
   const y = event?.clientY ? event.clientY - rect.top : Math.min(150, rect.height * 0.4);
-  button.classList.remove('coin-hit');
-  void button.offsetWidth;
-  button.classList.add('coin-hit');
+  button.classList.remove('coin-hit'); void button.offsetWidth; button.classList.add('coin-hit');
   setTimeout(() => button.classList.remove('coin-hit'), 180);
-  const floater = document.createElement('span');
-  floater.className = 'coin-float';
-  floater.textContent = `+¥ ${formatNumber(amount)}`;
-  floater.style.left = `${x}px`;
-  floater.style.top = `${y}px`;
-  zone.appendChild(floater);
-  setTimeout(() => floater.remove(), 800);
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const count = Math.min(10, 4 + Math.floor(Math.log10(amount + 1)));
-  for (let i = 0; i < count; i++) {
-    const particle = document.createElement('img');
-    particle.className = 'coin-particle';
-    particle.src = `assets/images/${Math.random() > 0.25 ? 'coin' : 'cash'}.png`;
-    particle.alt = '';
-    particle.style.left = `${x + (Math.random() - 0.5) * 35}px`;
-    particle.style.top = `${y + (Math.random() - 0.5) * 20}px`;
-    particle.style.setProperty('--dx', `${(Math.random() - 0.5) * 150}px`);
-    particle.style.setProperty('--dy', `${-60 - Math.random() * 90}px`);
+  const floater = document.createElement('span'); floater.className = 'coin-float';
+  floater.textContent = `+${money(viewModelReward())}`; floater.style.left = `${x}px`; floater.style.top = `${y}px`;
+  zone.appendChild(floater); setTimeout(() => floater.remove(), 800);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (let index = 0; index < 5; index++) {
+    const particle = document.createElement('img'); particle.className = 'coin-particle';
+    particle.src = `assets/images/${Math.random() > 0.25 ? 'coin' : 'cash'}.png`; particle.alt = '';
+    particle.style.left = `${x + (Math.random() - 0.5) * 35}px`; particle.style.top = `${y}px`;
+    particle.style.setProperty('--dx', `${(Math.random() - 0.5) * 150}px`); particle.style.setProperty('--dy', `${-60 - Math.random() * 90}px`);
     particle.style.setProperty('--spin', `${(Math.random() - 0.5) * 480}deg`);
-    zone.appendChild(particle);
-    setTimeout(() => particle.remove(), 750);
+    zone.appendChild(particle); setTimeout(() => particle.remove(), 750);
   }
 }
+function viewModelReward() { return derived().clickReward; }
 
-function currentBusiness() {
-  return getHighestBusinessAchievement(state, {
-    registry: story.achievementRegistry,
-    computeSnapshot,
-  });
+function renderLogs() {
+  $('latestLog').textContent = logs[0] || '暂无记录';
+  $('eventLogItems').innerHTML = logs.map(item => `<li>${item}</li>`).join('');
 }
-function notify(text, error = false) {
-  logs.unshift(text); logs = logs.slice(0, 8);
-  $('toast').textContent = text;
-  $('toast').classList.toggle('error', error);
-  $('toast').classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2600);
-  renderSide();
-}
-function refresh(panel = false) {
-  if (panel) panelDirty = true;
-  const d = computeState(state);
-  const manaMax = d.manaMax;
-  const manaPercent = Math.max(0, Math.min(100, state.mana / manaMax * 100));
-  $('coins').textContent = money(state.coins);
-  $('production').textContent = money(d.production);
-  $('gems').textContent = formatNumber(state.gems);
-  $('mana').textContent = `${formatNumber(state.mana)} / ${formatNumber(manaMax)}`;
-  $('manaRate').textContent = `+${formatNumber(d.manaRegen)} / 秒`;
-  $('manaFill').style.width = `${manaPercent}%`;
-  $('manaProgress').setAttribute('aria-valuemax', String(manaMax));
-  $('manaProgress').setAttribute('aria-valuenow', String(state.mana));
-  $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
-  $('rankText').textContent = `R${state.progression.reincarnations} · ${currentBusiness().scope}`;
-  renderSide();
-  if (workStructureSignature() !== workStructure) renderWork();
-  updateWork(d);
-  updateRetirement();
-  renderFacilityRail();
-  updateBuildingCards(d);
-  if (performance.now() - lastUpgradeRailRender > 500) renderUpgradeRail();
-  if (panelDirty) {
-    if (activeTab !== 'work') renderPanel();
-    panelDirty = false;
-  }
-  updateUpgradeStates();
-  updatePanelActions(d);
-}
-function renderSide() {
-  const business = currentBusiness();
-  const factionName = state.faction === 'mercenary' ? '外包联盟' : FACTION_BY_ID[state.faction]?.name || '尚未选择部门';
-  $('chapterName').textContent = business.scope;
-  $('factionName').textContent = factionName;
-  $('factionName').title = `${business.rank} · ${state.prestige ? `叠加：${FACTION_BY_ID[state.prestige].name}` : state.alignment ? `立场：${{ good: '进取', evil: '强压', neutral: '均衡' }[state.alignment]}` : '先购买部门立场，再签署部门条约。'}`;
-  const logSignature = logs.join('\n');
-  if (logSignature !== lastLogSignature) {
-    $('latestLog').textContent = logs[0] || '暂无记录';
-    $('eventLogItems').innerHTML = logs.map(x => `<li>${x}</li>`).join('');
-    lastLogSignature = logSignature;
-  }
-}
-function availableSkills() {
-  return SPELLS.filter(s => spellAvailable(state, s.id));
-}
-function quickSkillLimit() {
-  if (window.innerWidth >= 1200) return 6;
-  if (window.innerWidth >= 901) return 4;
-  return 3;
-}
-function quickSkillIds(limit = quickSkillLimit()) {
-  const available = availableSkills();
-  const availableIds = new Set(available.map(s => s.id));
-  const configured = Array.isArray(state.settings.quickSkills)
-    ? state.settings.quickSkills
-    : available.map(s => s.id);
-  return configured.filter(id => availableIds.has(id)).slice(0, limit);
-}
-function workStructureSignature() {
-  return `R${state.progression.reincarnations}|${quickSkillLimit()}|${availableSkills().map(s => s.id).join(',')}|${quickSkillIds(6).join(',')}`;
-}
-function updateWork(d) {
-  $('clickReward').textContent = money(d.clickReward);
-  $('assistants').textContent = formatNumber(d.assistants);
-  $('runTime').textContent = formatTime(state.stats.run.time);
-  document.querySelectorAll('[data-action="cast"]').forEach(button => {
-    const spell = SPELL_BY_ID[button.dataset.id];
-    const remaining = state.activeSpells[spell.id] || 0;
-    button.classList.toggle('active', remaining > 0);
-    button.disabled = state.mana < spell.cost;
-    button.classList.toggle('insufficient', button.disabled);
-    button.setAttribute('aria-label', `${spell.name}。${spell.description}${remaining > 0 ? `，剩余 ${formatNumber(remaining)} 秒` : `，消耗 ${formatNumber(spell.cost)} 精力`}`);
-    const statusText = remaining > 0 ? `生效中 ${formatNumber(remaining)} 秒` : `${formatNumber(spell.cost)} 精力`;
-    const status = button.querySelector('em');
-    if (status) status.textContent = statusText;
-    const row = button.closest('[data-skill-row]');
-    row?.classList.toggle('active', remaining > 0);
-    const rowStatus = row?.querySelector('[data-skill-status]');
-    if (rowStatus) rowStatus.textContent = statusText;
-  });
-}
-function retirementView() {
-  return `<section class="retirement-card" aria-label="退休结算">
-    <div class="retirement-copy">
-      <div class="retirement-title"><strong>退休</strong><small id="retirementRunCoins">本轮产值 ¥ 0</small></div>
-      <div class="retirement-values"><span>本次可结算期权 <b id="pendingGemsValue">0</b></span><span>当前累计期权 <b id="totalGemsValue">0</b></span></div>
-      <p class="retirement-feedback" id="retirementFeedback" role="status" hidden></p>
-    </div>
-    <button class="retirement-btn" id="retirementButton" data-action="abdicate">申请退休（需100M）</button>
-  </section>`;
-}
-function updateRetirement() {
-  if (!$('retirementPanel').firstElementChild) $('retirementPanel').innerHTML = retirementView();
-  const pending = pendingGems(state);
-  const eligible = computeSnapshot(state).retirement.eligible;
-  $('pendingGemsValue').textContent = formatNumber(pending);
-  $('totalGemsValue').textContent = formatNumber(state.gems);
-  $('retirementRunCoins').textContent = `本轮产值 ${money(state.stats.run.coins)} · 首次退休目标 ¥100M`;
-  $('retirementButton').disabled = false;
-  $('retirementButton').textContent = eligible ? '退休并进入新工位' : '申请退休（需100M）';
-  $('retirementPanel').firstElementChild.classList.toggle('ready', eligible);
-  const feedback = $('retirementFeedback');
-  feedback.hidden = !retirementMessage;
-  feedback.textContent = retirementMessage;
+function setEventLogOpen(open, restoreFocus = false) {
+  $('eventLog').hidden = !open; $('logToggle').setAttribute('aria-expanded', String(open));
+  if (open) $('logClose').focus({ preventScroll: true });
+  else if (restoreFocus) $('logToggle').focus({ preventScroll: true });
 }
 function buyControls() {
-  return `<div class="buy-controls" aria-label="采购数量">${[1, 10, 'max'].map(x => `<button data-action="buy-amount" data-value="${x}" aria-pressed="${state.settings.buyAmount === x}" class="${state.settings.buyAmount === x ? 'active' : ''}">${String(x).toUpperCase()}</button>`).join('')}</div>`;
+  const current = state().settings.buyAmount;
+  return `<div class="buy-controls" aria-label="采购数量">${[1, 10, 'max'].map(value => `<button data-action="buy-amount" data-value="${value}" aria-pressed="${current === value}" class="${current === value ? 'active' : ''}">${String(value).toUpperCase()}</button>`).join('')}</div>`;
 }
-function skillButtonView(s) {
-  return `<button class="skill-btn ${state.activeSpells[s.id] > 0 ? 'active' : ''}" data-action="cast" data-id="${s.id}" title="${s.name}：${s.description}"><b>${s.name}</b><small>${s.description}</small><em>${state.activeSpells[s.id] > 0 ? `生效中 ${formatNumber(state.activeSpells[s.id])} 秒` : `${formatNumber(s.cost)} 精力`}</em></button>`;
+function buildingCard(item) {
+  return `<button type="button" class="card building-card" data-action="purchase" data-building-card data-id="${item.id}">
+    <span class="building-icon" aria-hidden="true">${item.tier}</span><span class="building-name"><b>${item.name}</b><small data-field="count">× 0</small></span>
+    <span class="building-output" data-field="output">¥ 0 / 秒</span><span class="building-price" data-field="cost"></span>
+    <span class="building-buy"><b data-field="quantity"></b><small>点击采购</small></span></button>`;
 }
-function skillButtons() {
-  const available = availableSkills();
-  if (!available.length) return '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
-  const quick = quickSkillIds().map(id => SPELL_BY_ID[id]);
-  return `<section class="skill-shortcuts" aria-label="快捷技能">
-    <div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel" aria-label="查看全部 ${available.length} 个技能">全部技能（${available.length}）</button></div>
-    ${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButtonView).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}
-  </section>`;
-}
-function skillsView() {
-  const available = availableSkills();
-  const quick = quickSkillIds(6);
-  return `<div class="panel-head"><div><h2>全部技能</h2><p>所有技能都可直接释放；常用技能按顺序进入主界面，手机显示前 3 个，桌面最多 6 个。</p></div></div>
-    <div class="skill-library">${available.map(s => {
-      const quickIndex = quick.indexOf(s.id);
-      const isQuick = quickIndex >= 0;
-      const remaining = state.activeSpells[s.id] || 0;
-      return `<article class="skill-row ${remaining > 0 ? 'active' : ''}" data-skill-row="${s.id}">
-        <div class="skill-copy"><h3>${s.name}</h3><p>${s.description}</p><small class="meta" data-skill-status>${remaining > 0 ? `生效中 ${formatNumber(remaining)} 秒` : `${formatNumber(s.cost)} 精力`}</small></div>
-        <div class="skill-actions">
-          <button class="primary" data-action="cast" data-id="${s.id}" ${state.mana < s.cost ? 'disabled' : ''}>释放</button>
-          ${isQuick && quickIndex > 0 ? `<button data-action="prioritize-skill" data-id="${s.id}">置顶</button>` : ''}
-          <button data-action="toggle-quick-skill" data-id="${s.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button>
-        </div>
-      </article>`;
-    }).join('')}</div>`;
-}
-function updateQuickSkill(id, mode) {
-  const available = availableSkills();
-  if (!available.some(s => s.id === id)) return;
-  const configured = Array.isArray(state.settings.quickSkills)
-    ? state.settings.quickSkills.filter(skillId => available.some(s => s.id === skillId))
-    : available.map(s => s.id);
-  let next = configured.filter(skillId => skillId !== id);
-  if (mode !== 'remove') next.unshift(id);
-  state.settings.quickSkills = [...new Set(next)].slice(0, 6);
-  saveState(state);
-  workStructure = '';
-  panelDirty = true;
-}
-function workView() {
-  return `${skillButtons()}
-    <section class="work-zone">
-      <div class="office-window"><div class="window-view"></div></div>
-      <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="workstation-img" src="assets/images/workstation.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span></button>
-      <div class="desk-edge"></div><img class="coffee-img" src="assets/images/coffee.png" alt="">
-      <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state.progression.reincarnations}</div>
-    </section>`;
-}
-const BUILDING_ICONS = {
-  farm: 'briefcase', inn: 'coffee', blacksmith: 'keyboard', warriorBarracks: 'laptop',
-  slavePen: 'headphones', deepMine: 'monitor', knightsJoust: 'id-card', orcishArena: 'cash',
-  stonePillars: 'tower', wizardTower: 'monitor', witchConclave: 'headphones', alchemistLab: 'laptop',
-  cathedral: 'tower', darkTemple: 'tower', monastery: 'id-card', citadel: 'briefcase',
-  necropolis: 'tower', labyrinth: 'monitor', royalCastle: 'cash', evilFortress: 'briefcase',
-  ironStronghold: 'tower', heavensGate: 'monitor', hellPortal: 'tower', ancientPyramid: 'cash',
-  hallOfLegends: 'coin',
-};
-function buildingIcon(id) {
-  return `assets/images/${BUILDING_ICONS[id] || 'briefcase'}.png`;
-}
-function buildingCardsView() {
-  const d = computeState(state);
-  return availableBuildings(state).map(b => {
-    const q = buildingQuote(state, b.id, state.settings.buyAmount, d.mods);
-    const count = state.buildings[b.id];
-    const output = d.outputs[b.id] || 0;
-    const disabled = !q.qty || state.coins < q.cost;
-    return `<button type="button" class="card building-card" data-action="buy-building" data-building-card data-id="${b.id}" ${disabled ? 'disabled' : ''} title="${b.name}：${money(q.cost)}，购买 ${q.qty} 个" aria-label="${b.name}，当前 ${formatNumber(count)} 个，单类产出 ${money(output)} 每秒，整批价格 ${money(q.cost)}，购买 ${q.qty} 个">
-      <img class="building-icon" src="${buildingIcon(b.id)}" alt="">
-      <span class="building-name"><b>${b.name}</b><small data-field="count">× ${formatNumber(count)}</small></span>
-      <span class="building-output" data-field="output">${money(output)} / 秒</span>
-      <span class="building-price" data-field="cost">${money(q.cost)}</span>
-      <span class="building-buy"><b data-field="qty">+${q.qty}</b><small>点击采购</small></span>
-    </button>`;
-  }).join('');
-}
-function updateBuildingCards(d = computeState(state)) {
+function updateBuildingCards() {
   document.querySelectorAll('[data-building-card]').forEach(card => {
-    const b = BUILDING_BY_ID[card.dataset.id];
-    const q = buildingQuote(state, b.id, state.settings.buyAmount, d.mods);
-    const count = state.buildings[b.id];
-    const output = d.outputs[b.id] || 0;
-    card.querySelector('[data-field="count"]').textContent = `× ${formatNumber(count)}`;
-    card.querySelector('[data-field="output"]').textContent = `${money(output)} / 秒`;
-    card.querySelector('[data-field="cost"]').textContent = money(q.cost);
-    card.querySelector('[data-field="qty"]').textContent = `+${q.qty}`;
-    card.disabled = !q.qty || state.coins < q.cost;
-    card.title = `${b.name}：${money(q.cost)}，购买 ${q.qty} 个`;
-    card.setAttribute('aria-label', `${b.name}，当前 ${formatNumber(count)} 个，单类产出 ${money(output)} 每秒，整批价格 ${money(q.cost)}，购买 ${q.qty} 个`);
+    const model = view(card.dataset.id);
+    if (!model.viewModel) return;
+    card.querySelector('[data-field="count"]').textContent = `× ${formatNumber(model.viewModel.count)}`;
+    card.querySelector('[data-field="output"]').textContent = `${money(model.viewModel.output)} / 秒`;
+    card.querySelector('[data-field="cost"]').textContent = money(model.costs[0]?.value || 0);
+    card.querySelector('[data-field="quantity"]').textContent = `+${model.quantity || 0}`;
+    card.disabled = model.status === 'NEED_RESOURCE';
+    card.setAttribute('aria-label', `${model.viewModel.name}，当前 ${model.viewModel.count} 个，价格 ${money(model.costs[0]?.value || 0)}`);
   });
   document.querySelectorAll('[data-action="buy-amount"]').forEach(button => {
     const value = button.dataset.value === 'max' ? 'max' : Number(button.dataset.value);
-    const active = state.settings.buyAmount === value;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-pressed', String(active));
+    button.classList.toggle('active', state().settings.buyAmount === value);
+    button.setAttribute('aria-pressed', String(state().settings.buyAmount === value));
   });
-}
-function buildingView() {
-  return `<div class="panel-head"><div><h2>设施采购</h2><p>点击设施卡，按当前数量直接采购。</p></div>${buyControls()}</div><div class="card-grid building-grid">${buildingCardsView()}</div>`;
-}
-function facilityRailView() {
-  return `<div class="facility-head"><div><small>常驻设施</small><h2>设施采购</h2></div>${buyControls()}</div><div class="facility-scroll panel-scroll"><div class="card-grid building-grid">${buildingCardsView()}</div></div>`;
 }
 function renderFacilityRail() {
-  const signature = availableBuildings(state).map(b => b.id).join(',');
-  if (signature !== facilityStructure || !$('facilityRail').firstElementChild) {
-    $('facilityRail').innerHTML = facilityRailView();
+  const items = visible('building');
+  const signature = items.map(item => item.id).join(',');
+  if (signature !== facilityStructure) {
+    $('facilityRail').innerHTML = `<div class="facility-head"><div><small>常驻设施</small><h2>设施采购</h2></div>${buyControls()}</div><div class="facility-scroll panel-scroll"><div class="card-grid building-grid">${items.map(buildingCard).join('')}</div></div>`;
     facilityStructure = signature;
   }
+  updateBuildingCards();
+}
+function workView() {
+  return `<div id="skillMount"></div><section class="work-zone">
+    <div class="office-window"><div class="window-view"></div></div>
+    <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="workstation-img" src="assets/images/workstation.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span></button>
+    <div class="desk-edge"></div><img class="coffee-img" src="assets/images/coffee.png" alt="">
+    <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state().progression.reincarnations}</div></section>`;
+}
+function quickLimit() { return innerWidth >= 1200 ? 6 : innerWidth >= 901 ? 4 : 3; }
+function quickSkillIds(limit = quickLimit()) {
+  const available = visible('spell');
+  const ids = new Set(available.map(item => item.id));
+  const configured = Array.isArray(state().settings.quickSkills) ? state().settings.quickSkills : available.map(item => item.id);
+  return configured.filter(id => ids.has(id)).slice(0, limit);
+}
+function skillButton(item) {
+  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b>${item.name}</b><small>${item.description}</small><em></em></button>`;
+}
+function renderQuickSkills() {
+  const available = visible('spell');
+  const quick = quickSkillIds().map(definition);
+  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}`;
+  if (signature === quickStructure) return;
+  quickStructure = signature;
+  $('skillMount').innerHTML = available.length ? `<section class="skill-shortcuts" aria-label="快捷技能"><div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButton).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}</section>` : '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
+}
+function updateCastButtons() {
+  document.querySelectorAll('[data-action="cast"]').forEach(button => {
+    const model = view(button.dataset.id);
+    if (!model.viewModel) return;
+    button.disabled = model.status === 'NEED_RESOURCE';
+    button.classList.toggle('active', model.viewModel.active);
+    button.classList.toggle('insufficient', button.disabled);
+    const status = model.viewModel.active ? `生效中 ${formatNumber(model.viewModel.remaining)} 秒` : `${formatNumber(model.costs[0]?.value || 0)} 精力`;
+    const em = button.querySelector('em'); if (em) em.textContent = status;
+    const rowStatus = button.closest('[data-skill-row]')?.querySelector('[data-skill-status]'); if (rowStatus) rowStatus.textContent = status;
+    button.setAttribute('aria-label', `${model.viewModel.name}。${model.viewModel.description}，${status}`);
+  });
+}
+function updateQuickSkill(id, mode) {
+  const available = visible('spell');
+  if (!available.some(item => item.id === id)) return;
+  const configured = Array.isArray(state().settings.quickSkills) ? state().settings.quickSkills.filter(item => available.some(spell => spell.id === item)) : available.map(item => item.id);
+  const next = configured.filter(item => item !== id);
+  if (mode !== 'remove') next.unshift(id);
+  game.dispatch({ type: 'setting', key: 'quickSkills', value: [...new Set(next)].slice(0, 6) });
 }
 
-function currencyList() {
-  return `<div class="currency-list">${Object.entries(state.factionCoins).filter(([, v]) => v > 0).map(([id, v]) => `<span>${FACTION_BY_ID[id]?.name || id} ${formatNumber(v)}</span>`).join('') || '<span>尚未发现部门影响力</span>'}</div>`;
+function buildingPanel() {
+  return `<div class="panel-head"><div><h2>设施采购</h2><p>点击设施卡，按当前数量直接采购。</p></div>${buyControls()}</div><div class="card-grid building-grid">${visible('building').map(buildingCard).join('')}</div>`;
 }
-function visibleBuildingUpgrades() {
-  const available = new Set(availableBuildings(state).map(b => b.id));
-  return BUILDING_UPGRADES.filter(u => available.has(u.building) && (state.buildings[u.building] >= u.requirement || state.upgrades.includes(u.id)));
+function upgradeCard(item) {
+  return `<article class="card" data-upgrade-card="${item.id}"><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
 }
-function visibleMiscUpgrades() {
-  return MISC_UPGRADES.filter(u => state.upgrades.includes(u.id) || requirementMet(state, u.req));
+function upgradesPanel() {
+  const items = visible('upgrade');
+  return `<div class="panel-head"><div><h2>升级</h2><p>可见性、前置、价格与效果均由当前内容包定义。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
-function upgradeOwned(u, kind) {
-  return kind === 'faction' ? state.upgrades.includes(u.id) || state.mercenary.upgrades.includes(u.id) : state.upgrades.includes(u.id);
+function choiceCard(item) {
+  return `<article class="card" data-choice-card="${item.id}"><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
 }
-function upgradeAffordable(u, kind) {
-  if (kind !== 'faction') return state.coins >= u.cost;
-  if (state.faction === 'mercenary') {
-    const count = state.mercenary.upgrades.length;
-    const cost = { 1: 1500, 2: 3000, 3: 4500 }[u.tier] * (1 + count % 4);
-    return (state.factionCoins[u.faction] || 0) >= cost;
-  }
-  if (!u.cost) return true;
-  if (u.currency === 'coins') return state.coins >= u.cost;
-  const matches = [...(u.costText || '').matchAll(/([A-Za-z]+) Coins/gi)];
-  if (matches.length) return matches.every(match => {
-    const name = match[1].toLowerCase();
-    const id = { elven: 'elf', dwarven: 'dwarf', demons: 'demon' }[name] || name;
-    return (state.factionCoins[id] || 0) >= u.cost;
-  });
-  return (state.factionCoins[u.currency] || 0) >= u.cost;
+function factionsPanel() {
+  return `<div class="panel-head"><div><h2>部门与立场</h2><p>当前序章只开放进取／强压立场及产品部／财务部。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
 }
-function factionUpgradeVisible(u) {
-  if (upgradeOwned(u, 'faction')) return true;
-  if (u.kind === 'treaty') return false;
-  if (state.faction === 'mercenary') {
-    const count = state.mercenary.upgrades.length;
-    if (u.kind === 'heritage' || count >= 12) return false;
-    if (u.tier === 2 && count < 4) return false;
-    if (u.tier === 3 && count < 8) return false;
-    return true;
-  }
-  const faction = FACTION_BY_ID[u.faction];
-  if (!state.upgrades.includes(`${faction.id}-0`)) return false;
-  if (u.tier >= 2 && ![1, 2, 3].every(n => state.upgrades.includes(`${faction.id}-${n}`))) return false;
-  if (u.tier >= 3 && ![5, 6, 7].every(n => state.upgrades.includes(`${faction.id}-${n}`))) return false;
-  if (u.kind === 'heritage' && (state.stats.total.upgradesByFaction[faction.id] || 0) < 12) return false;
-  return true;
+function skillsPanel() {
+  const available = visible('spell');
+  const quick = quickSkillIds(6);
+  return `<div class="panel-head"><div><h2>全部技能</h2><p>所有技能都可直接释放；常用技能按顺序进入主界面，手机显示前 3 个，桌面最多 6 个。</p></div></div><div class="skill-library">${available.map(item => {
+    const index = quick.indexOf(item.id); const isQuick = index >= 0;
+    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3>${item.name}</h3><p>${item.description}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
+  }).join('')}</div>`;
 }
-function upgradeIconView(u, kind) {
-  const owned = upgradeOwned(u, kind);
-  const affordable = upgradeAffordable(u, kind);
-  const status = owned ? 'owned' : affordable ? 'affordable' : 'insufficient';
-  const name = kind === 'building' ? `${BUILDING_BY_ID[u.building].name} · ${u.upgradeLevel}` : kind === 'faction' ? `${FACTION_BY_ID[u.faction].name} · ${u.code}` : u.name;
-  const icon = kind === 'building' ? `<img src="${buildingIcon(u.building)}" alt="">` : `<span class="upgrade-glyph">${kind === 'faction' ? u.code : '通用'}</span>`;
-  return `<button class="upgrade-icon ${status}" data-action="upgrade-detail" data-kind="${kind}" data-id="${u.id}" title="${name}" aria-label="查看${name}详情">${owned ? '<span class="upgrade-corner" aria-label="已购买">✓</span>' : ''}${icon}<span>${name}</span><small>${owned ? '已生效' : kind === 'faction' ? u.costText : money(u.cost)}</small></button>`;
+const statRow = (label, path, format = 'number') => `<tr><td>${label}</td><td data-stat="${path}" data-format="${format}">0</td></tr>`;
+function statsPanel() {
+  const rows = scope => `${statRow('时间', `stats.${scope}.time`, 'time')}${statRow('账面产值', `stats.${scope}.coins`, 'money')}${statRow('点击次数', `stats.${scope}.clicks`)}${statRow('施法次数', `stats.${scope}.spellsCast`)}${statRow('部门影响力', `stats.${scope}.factionCoins`)}`;
+  return `<div class="panel-head"><div><h2>职业统计</h2><p>分别查看本轮、本次职业与全部历史数据。</p></div></div><section class="subsection"><h3>本轮</h3><table class="stat-table">${rows('run')}</table><h3>本次职业</h3><table class="stat-table">${rows('r')}</table><h3>全部历史</h3><table class="stat-table">${rows('total')}</table></section>`;
 }
-function upgradeIconGrid(items, kind, emptyText) {
-  return items.length ? `<div class="upgrade-icon-grid">${items.map(u => upgradeIconView(u, kind)).join('')}</div>` : `<p class="notice">${emptyText}</p>`;
+function storyForTrophy(trophyId) {
+  return content('story').find(story => story.grants.some(action => action.type === 'awardTrophy' && action.id === trophyId));
 }
-function findUpgrade(kind, id) {
-  return kind === 'building' ? BUILDING_UPGRADES.find(u => u.id === id) : kind === 'misc' ? MISC_UPGRADES.find(u => u.id === id) : factions.flatMap(f => f.upgrades).find(u => u.id === id);
-}
-function selectedUpgradeData() {
-  if (!selectedUpgrade) return null;
-  const { kind, id } = selectedUpgrade;
-  const upgrade = findUpgrade(kind, id);
-  return upgrade ? { kind, upgrade } : null;
-}
-function upgradeDetailView() {
-  const selected = selectedUpgradeData();
-  if (!selected) return '';
-  const { kind, upgrade: u } = selected;
-  const owned = upgradeOwned(u, kind);
-  const name = kind === 'building' ? `${BUILDING_BY_ID[u.building].name} · 流程改善 ${u.upgradeLevel}` : kind === 'faction' ? `${FACTION_BY_ID[u.faction].name} · ${u.code}` : u.name;
-  const effect = kind === 'building' ? `该类设施产出 +${formatNumber(u.bonusPercent)}%${u.assistants ? '，数字员工 +1' : ''}${u.globalPercentPerTrophy ? `，每成就使其他设施 +${u.globalPercentPerTrophy}%` : ''}` : kind === 'faction' ? u.effects.join('；') : u.effect;
-  const cost = kind === 'faction' ? u.costText : money(u.cost);
-  const requirement = kind === 'building' ? `<small>已解锁条件：${BUILDING_BY_ID[u.building].name} ${u.requirement} 个</small>` : '';
-  const action = kind === 'building' ? 'buy-building-upgrade' : kind === 'misc' ? 'buy-misc-upgrade' : state.faction === 'mercenary' ? 'merc-upgrade' : 'buy-faction-upgrade';
-  const disabled = owned || !upgradeAffordable(u, kind);
-  return `<section class="upgrade-detail" id="upgradeDetail"><div><small>升级详情</small><h3>${name}</h3><p>${effect}</p>${u.sourceName ? `<div class="source-name">${u.sourceName}</div>` : ''}${requirement}<div class="meta">${cost}</div></div><div class="action-row"><button data-action="close-upgrade-detail">收起详情</button><button class="primary" data-action="${action}" data-id="${u.id}" ${disabled ? 'disabled' : ''}>${owned ? '已生效' : disabled ? '资源不足' : kind === 'faction' && state.faction === 'mercenary' ? '选入混编构筑' : '购买升级'}</button></div></section>`;
-}
-function facilityUpgradesView() {
-  const items = visibleBuildingUpgrades();
-  return `<div class="panel-head"><div><h2>设施升级</h2><p>仅显示已解锁项目，点击图标查看详情。</p></div></div>${upgradeDetailView()}${upgradeIconGrid(items, 'building', '增加设施数量后显示对应升级。')}`;
-}
-function miscUpgradesView() {
-  const items = visibleMiscUpgrades();
-  return `<div class="panel-head"><div><h2>通用升级</h2><p>仅显示已解锁项目，点击图标查看详情。</p></div></div>${upgradeDetailView()}${upgradeIconGrid(items, 'misc', '继续点击和积累产值以解锁通用升级。')}`;
-}
-function upgradesView() {
-  return `<div class="panel-head"><div><h2>升级</h2><p>点击图标查看效果与价格。</p></div></div>${upgradeDetailView()}<section class="subsection"><h3>设施升级</h3>${upgradeIconGrid(visibleBuildingUpgrades(), 'building', '暂无已解锁设施升级。')}</section><section class="subsection"><h3>通用升级</h3>${upgradeIconGrid(visibleMiscUpgrades(), 'misc', '暂无已解锁通用升级。')}</section>`;
-}
-function renderUpgradeRail(force = false) {
-  if (!force && performance.now() - lastUpgradeRailRender < 500) return;
-  const candidates = [
-    ...visibleBuildingUpgrades().filter(u => !state.upgrades.includes(u.id)).map(u => ({ u, kind: 'building' })),
-    ...visibleMiscUpgrades().filter(u => !state.upgrades.includes(u.id)).map(u => ({ u, kind: 'misc' })),
-  ].filter(({ u, kind }) => upgradeAffordable(u, kind))
-    .sort((a, b) => a.u.cost - b.u.cost)
-    .slice(0, 6);
-  const signature = candidates.map(({ u, kind }) => `${kind}:${u.id}`).join('|');
-  if (force || signature !== upgradeRailStructure) {
-    $('upgradeRail').innerHTML = candidates.map(({ u, kind }) => upgradeIconView(u, kind)).join('') || '<small class="rail-empty">暂无可购买升级</small>';
-    upgradeRailStructure = signature;
-  }
-  lastUpgradeRailRender = performance.now();
-}
-function neutralUnlockUnavailable(id) {
-  if (state.artifacts.includes(`${id}Unlock`)) return true;
-  if (!state.artifacts.includes(`${id}Clue1`) || !state.artifacts.includes(`${id}Clue2`)) return true;
-  if (id === 'titan' && state.buildings.hallOfLegends < 300) return true;
-  if (id === 'druid' && state.stats.total.factionCoins < 1e6) return true;
-  if (id === 'faceless' && state.stats.total.time < 129600) return true;
-  const pair = id === 'titan' ? ['angel', 'goblin'] : id === 'druid' ? ['elf', 'demon'] : ['fairy', 'undead'];
-  return state.coins < 1e30 || pair.some(fid => state.factionCoins[fid] < 25000);
-}
-function prestigeQuestUnavailable(id) {
-  if (!state.unlocked.underworld || state.artifacts.includes(`${id}Quest`)) return true;
-  const buildingsTotal = Object.values(state.buildings).reduce((sum, count) => sum + count, 0);
-  if (id === 'dwarf') {
-    const valid = state.alignment === 'good' && state.buildings.inn >= 800 && buildingsTotal >= 7000 && state.stats.r.clicks >= 10000;
-    return !valid || state.coins < 1e46 || ['fairy', 'elf', 'angel'].some(fid => state.factionCoins[fid] < 10000);
-  }
-  const valid = state.alignment === 'evil' && state.buildings.darkTemple >= 650 && state.trophies.length >= 325 && state.stats.total.spellsCast >= 10000;
-  return !valid || state.coins < 1e46 || ['goblin', 'undead', 'demon'].some(fid => state.factionCoins[fid] < 10000);
-}
-function updatePanelActions(d) {
-  if ($('mainPanel').hidden) return;
-  const tribute = activeTab === 'audit' ? mercenaryTributeCost(state) : null;
-  document.querySelectorAll('#mainPanel [data-action]').forEach(button => {
-    const action = button.dataset.action;
-    const id = button.dataset.id;
-    let disabled;
-    if (action === 'proof') disabled = proofUnavailable(id);
-    else if (action === 'reincarnate') disabled = state.gems < reincarnationRequirement(state.progression.reincarnations);
-    else if (action === 'buy-faction-upgrade' && !button.closest('#upgradeDetail')) {
-      const u = UPGRADE_BY_ID[id];
-      const advanced = ['dwarf', 'drow'].includes(u.faction);
-      const active = state.faction === u.faction || state.prestige === u.faction;
-      const wrongAlignment = state.alignment !== FACTION_BY_ID[u.faction].alignment;
-      const wrongFaction = state.faction === 'mercenary' || (!advanced && state.faction && state.faction !== u.faction) || (advanced && !state.faction);
-      disabled = active || wrongAlignment || wrongFaction || !upgradeAffordable(u, 'faction');
-    }
-    else if (action === 'exchange') disabled = state.coins < royalExchangeCost(state, id, d.mods);
-    else if (action === 'unlock-archaeology') disabled = state.unlocked.archaeology || state.gems <= 1e9 || state.stats.total.coins < 1e28 || state.coins < 1e29;
-    else if (action === 'excavate') disabled = !state.unlocked.archaeology || state.coins < excavationCost(state, d.mods);
-    else if (action === 'unlock-neutral') disabled = neutralUnlockUnavailable(id);
-    else if (action === 'unlock-underworld') disabled = state.unlocked.underworld || state.excavationCount < 200 || state.coins < 5e49;
-    else if (action === 'prestige-quest') disabled = prestigeQuestUnavailable(id);
-    else if (action === 'merc-tribute') disabled = state.progression.reincarnations < 3 || state.unlocked.mercenaryTribute || state.coins < tribute.coins || Object.keys(state.factionCoins).some(fid => state.factionCoins[fid] < tribute.factionCoins);
-    else if (action === 'merc-oath') disabled = !state.unlocked.mercenaryTribute || state.unlocked.mercenary || state.coins < 1e72;
-    else if (action === 'join-merc') disabled = !state.unlocked.mercenary;
-    else if (action === 'merc-spell') disabled = state.mercenary.spells.includes(id) || state.mercenary.spells.length >= 2;
-    if (disabled !== undefined) button.disabled = disabled;
-  });
-}
-function updateUpgradeStates() {
-  document.querySelectorAll('[data-action="upgrade-detail"]').forEach(button => {
-    const kind = button.dataset.kind;
-    const u = findUpgrade(kind, button.dataset.id);
-    if (!u) return;
-    const owned = upgradeOwned(u, kind);
-    const affordable = upgradeAffordable(u, kind);
-    button.classList.toggle('owned', owned);
-    button.classList.toggle('affordable', !owned && affordable);
-    button.classList.toggle('insufficient', !owned && !affordable);
-    const cost = button.querySelector('small');
-    if (cost) cost.textContent = owned ? '已生效' : kind === 'faction' ? u.costText : money(u.cost);
-    let corner = button.querySelector('.upgrade-corner');
-    if (owned && !corner) {
-      corner = document.createElement('span');
-      corner.className = 'upgrade-corner';
-      corner.setAttribute('aria-label', '已购买');
-      corner.textContent = '✓';
-      button.prepend(corner);
-    } else if (!owned && corner) corner.remove();
-  });
-  const selected = selectedUpgradeData();
-  if (!selected || !$('upgradeDetail')) return;
-  const { kind, upgrade: u } = selected;
-  const owned = upgradeOwned(u, kind);
-  const disabled = owned || !upgradeAffordable(u, kind);
-  const buy = $('upgradeDetail').querySelector('.primary');
-  if (!buy) return;
-  buy.disabled = disabled;
-  buy.textContent = owned ? '已生效' : disabled ? '资源不足' : kind === 'faction' && state.faction === 'mercenary' ? '选入混编构筑' : '购买升级';
-}
-function proofUnavailable(alignment) {
-  const neutralLocked = alignment === 'neutral' && !state.artifacts.some(a => ['titanUnlock', 'druidUnlock', 'facelessUnlock'].includes(a));
-  const cost = alignment === 'neutral' ? 1e16 : 25000;
-  return Boolean(state.faction || state.prestige) || neutralLocked || state.coins < cost;
-}
-function factionView() {
-  const current = FACTION_BY_ID[state.faction];
-  const prestige = FACTION_BY_ID[state.prestige];
-  let upgrades = [];
-  if (state.faction === 'mercenary') upgrades = factions.flatMap(f => f.upgrades.filter(u => u.kind !== 'heritage'));
-  else upgrades = [...(current?.upgrades || []), ...(prestige?.upgrades || [])];
-  upgrades = upgrades.filter(factionUpgradeVisible);
-  return `<div class="panel-head"><div><h2>部门与立场</h2><p>部门硬币、专属技能和分层升级均使用独立配置。</p></div></div>
-    <div class="action-row">${['good', 'evil', 'neutral'].map(a => `<button data-action="proof" data-id="${a}" class="${state.alignment === a ? 'active' : ''}" ${proofUnavailable(a) ? 'disabled' : ''}>${{ good: '进取证明 ¥25K', evil: '强压证明 ¥25K', neutral: '均衡证明 ¥10Qa' }[a]}</button>`).join('')}</div>
-    ${currencyList()}
-    <div class="card-grid">${factions.map(f => {
-      const treaty = f.upgrades[0];
-      const active = state.faction === f.id || state.prestige === f.id;
-      return `<article class="card ${active ? 'owned' : ''}"><span class="badge">${{ good: '进取', evil: '强压', neutral: '均衡' }[f.alignment]}</span><h3>${f.name}</h3><div class="source-name">${f.sourceName}</div><p>专属技能：${f.spellName}。派系硬币、升级与手册分层开放。</p><div class="meta">${treaty.costText}</div><button data-action="buy-faction-upgrade" data-id="${treaty.id}" ${active ? 'disabled' : ''}>${active ? '当前已加入' : '签署部门条约'}</button></article>`;
-    }).join('')}</div>
-    <section class="subsection"><h3>当前部门升级</h3>${upgradeDetailView()}${upgradeIconGrid(upgrades, 'faction', '请先签署一个部门条约。')}</section>
-    ${state.faction === 'mercenary' ? `<section class="subsection"><h3>佣兵技能混编 · 最多 2 个</h3><div class="card-grid">${SPELLS.filter(s => s.faction).map(s => `<article class="card"><h3>${s.name}</h3><p>${s.description}</p><button data-action="merc-spell" data-id="${s.id}" ${state.mercenary.spells.includes(s.id) ? 'disabled' : ''}>${state.mercenary.spells.includes(s.id) ? '已选择' : '选择技能'}</button></article>`).join('')}</div></section>` : ''}
-    ${current ? `<section class="subsection"><h3>部门挑战 · R2 开放</h3><div class="card-grid">${CHALLENGES.filter(c => c.faction === current.id).map(c => `<article class="card ${state.challenges.includes(c.id) ? 'owned' : ''}"><span class="badge">${state.challenges.includes(c.id) ? '已完成' : '待完成'}</span><h3>${c.name}</h3><div class="source-name">${c.sourceName}</div><p>${c.description}</p><div class="meta">奖励：${c.reward}</div></article>`).join('')}</div></section>` : ''}
-    ${current ? `<section class="subsection"><h3>资源置换</h3><p>每次置换提高该部门置换计数，并提供基础 10% 全局产出加成。</p><button data-action="exchange" data-id="${current.id}">${current.name}置换 · ${money(100 * 1.1 ** (state.stats.total.exchangesByFaction?.[current.id] || 0))}</button></section>` : ''}`;
-}
-function auditView() {
-  const tribute = mercenaryTributeCost(state);
-  return `<div class="panel-head"><div><h2>档案审计</h2><p>检索旧合同、被删除的部门与跨时间线遗物。</p></div></div>
-    <div class="card-grid">
-      <article class="card"><h3>考古与档案权限</h3><p>要求：超过 1B 期权、历史产值 10Oc，并支付 ¥100Oc。</p><button data-action="unlock-archaeology" ${state.unlocked.archaeology ? 'disabled' : ''}>${state.unlocked.archaeology ? '已永久解锁' : '解锁档案审计'}</button></article>
-      <article class="card"><h3>执行审计</h3><p>本次职业第 ${state.excavationCount} 次 · 下一次成本按 1.2 倍增长 · 35% 概率发现影响力。</p><button data-action="excavate" ${!state.unlocked.archaeology ? 'disabled' : ''}>审计旧档案</button></article>
-      ${['titan', 'druid', 'faceless'].map(id => `<article class="card"><h3>${FACTION_BY_ID[id].name}解锁</h3><p>${id === 'titan' ? '两份石板线索，并持有 300 传奇工位。' : id === 'druid' ? '两份树皮线索，并累计发现 1M 影响力。' : '两份骨片线索，并累计游戏 36 小时。'}</p><button data-action="unlock-neutral" data-id="${id}" ${state.artifacts.includes(`${id}Unlock`) ? 'disabled' : ''}>${state.artifacts.includes(`${id}Unlock`) ? '已解锁' : '修复部门遗物 · ¥1No'}</button></article>`).join('')}
-      <article class="card"><h3>地下组织通行证</h3><p>要求本次职业 200 次审计，支付 ¥50Qid，永久开放高级部门任务。</p><button data-action="unlock-underworld" ${state.unlocked.underworld ? 'disabled' : ''}>${state.unlocked.underworld ? '已解锁' : '购买通行证'}</button></article>
-      ${['dwarf', 'drow'].map(id => `<article class="card"><h3>${FACTION_BY_ID[id].name}任务</h3><p>${id === 'dwarf' ? '进取立场、800 茶水间、7K 设施、本轮 10K 点击。' : '强压立场、650 黑盒运维中心、325 成就、历史 10K 次施法。'}</p><button data-action="prestige-quest" data-id="${id}" ${state.artifacts.includes(`${id}Quest`) ? 'disabled' : ''}>${state.artifacts.includes(`${id}Quest`) ? '已完成' : '完成高级部门任务'}</button></article>`).join('')}
-      <article class="card"><h3>R3 · 佣兵贡金</h3><p>价格随本轮时间增加：${money(tribute.coins)}，另需每种部门影响力 ${formatNumber(tribute.factionCoins)}。</p><button data-action="merc-tribute" ${state.unlocked.mercenaryTribute ? 'disabled' : ''}>${state.unlocked.mercenaryTribute ? '贡金已支付' : '支付佣兵贡金'}</button></article>
-      <article class="card"><h3>佣兵誓约</h3><p>支付 ¥1Tvg，永久解锁混编部门。</p><button data-action="merc-oath" ${state.unlocked.mercenary ? 'disabled' : ''}>${state.unlocked.mercenary ? '已永久解锁' : '签署佣兵誓约'}</button></article>
-    </div>
-    ${state.unlocked.mercenary ? `<section class="subsection"><h3>加入外包联盟</h3><div class="action-row">${['good', 'evil', 'neutral'].map(a => `<button data-action="join-merc" data-id="${a}">${{ good: '进取混编', evil: '强压混编', neutral: '均衡混编' }[a]}</button>`).join('')}</div></section>` : ''}
-    <section class="subsection"><h3>已发现遗物与档案</h3><div class="currency-list">${state.artifacts.map(x => `<span>${x}</span>`).join('') || '<span>尚无记录</span>'}</div></section>`;
-}
-function statRows(scope, title) {
-  const s = state.stats[scope];
-  return `<h3>${title}</h3><table class="stat-table">${[['时间', formatTime(s.time)], ['账面产值', money(s.coins)], ['点击次数', formatNumber(s.clicks)], ['点击收入', money(s.clickCoins)], ['施法次数', formatNumber(s.spellsCast)], ['发现影响力', formatNumber(s.factionCoins)], ['审计次数', formatNumber(s.excavations)], ['资源置换', formatNumber(s.exchanges || 0)]].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
-}
-function moreView() {
-  const req = reincarnationRequirement(state.progression.reincarnations);
-  return `<div class="panel-head"><div><h2>职业与存档</h2><p>投胎与数据管理；日常退休请直接使用工位上方的退休卡。</p></div></div>
-    <article class="card"><h3>投胎进入 R${state.progression.reincarnations + 1}</h3><p>需要持有 ${formatNumber(req)} 期权，当前 ${formatNumber(state.gems)}。投胎会清空当前期权，重置深度高于退休。</p><div class="action-row"><button data-tab="stats">查看完整统计</button><button data-action="reincarnate" ${state.gems < req ? 'disabled' : ''}>投胎</button></div></article>
+function morePanel() {
+  const trophies = content('trophy');
+  const completed = Object.keys(state().story.completed).map(definition).filter(Boolean);
+  return `<div class="panel-head"><div><h2>职业与存档</h2><p>内容包 ${state().contentVersions.join('、')} · 存档 schema ${state().schemaVersion}</p></div></div>
+    <article class="card"><h3>投胎进入 R${state().progression.reincarnations + 1}</h3><p>需要至少 1 期权。清空当前期权并开启新的职业层级。</p><button data-action="reincarnate">投胎</button></article>
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
-    <section class="subsection" id="achievementMount"></section>
-    <section class="subsection" id="storyArchiveMount"></section>`;
+    <section class="subsection"><h3>奖杯</h3><div class="card-grid">${trophies.map(trophy => {
+      const unlocked = Boolean(state().permanentUnlocks[trophy.id]); const story = storyForTrophy(trophy.id);
+      return `<article class="card ${unlocked ? 'owned' : ''}"><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? trophy.description : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
+    }).join('')}</div></section>
+    <section class="subsection"><h3>剧情回看</h3><div class="action-row">${completed.map(story => `<button data-action="replay-story" data-id="${story.id}">${story.title}</button>`).join('') || '<p class="notice">暂无可回看的剧情。</p>'}</div></section>`;
 }
-function statsView() {
-  const business = currentBusiness();
-  return `<div class="panel-head"><div><h2>职业统计</h2><p>分别查看本轮、本次职业与全部历史数据。</p></div></div>
-    <details class="story-details"><summary>${business.scope} · 业务域记录</summary><p>${business.rank} · 奖杯与档案持续记录。</p></details>
-    <section class="subsection">${statRows('run', '本轮统计')}${statRows('r', '本次职业统计')}${state.progression.ascension > 0 ? statRows('ascension', '本次升阶统计') : ''}${statRows('total', '全部历史统计')}</section>`;
+function updatePanel() {
+  updateBuildingCards(); updateCastButtons();
+  document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card])').forEach(button => {
+    const model = view(button.dataset.id);
+    button.disabled = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
+    if (model.status === 'OWNED') button.textContent = '已生效';
+    else if (model.status === 'SELECTED') button.textContent = '当前已选择';
+    else if (model.status === 'NEED_RESOURCE') button.textContent = '资源不足';
+    const card = button.closest('[data-upgrade-card]');
+    if (card) card.querySelector('[data-field="cost"]').textContent = model.costs.map(cost => `${formatNumber(cost.value)} ${cost.resource === 'coins' ? '工资' : cost.resource}`).join(' + ');
+  });
+  document.querySelectorAll('[data-stat]').forEach(cell => {
+    const value = cell.dataset.stat.split('.').reduce((object, key) => object?.[key], state()) || 0;
+    cell.textContent = cell.dataset.format === 'time' ? formatTime(value) : cell.dataset.format === 'money' ? money(value) : formatNumber(value);
+  });
 }
-function renderWork() {
-  $('workContent').innerHTML = workView();
-  workStructure = workStructureSignature();
-  updateWork(computeState(state));
+function renderPanel() {
+  if (activeTab === 'work') { $('mainPanel').hidden = true; return; }
+  $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
+  $('mainPanel').classList.toggle('skills-dialog', activeTab === 'skills');
+  const body = activeTab === 'buildings' ? buildingPanel() : activeTab === 'upgrades' ? upgradesPanel()
+    : activeTab === 'factions' ? factionsPanel() : activeTab === 'skills' ? skillsPanel()
+      : activeTab === 'stats' ? statsPanel() : morePanel();
+  $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${body}`;
+  $('mainPanel').hidden = false; updatePanel();
 }
 function updateTabStates() {
   document.querySelectorAll('[data-tab]').forEach(button => {
     const active = button.dataset.tab === activeTab;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-expanded', String(active));
+    button.classList.toggle('active', active); button.setAttribute('aria-expanded', String(active));
   });
 }
 function openAuxPanel(tab, trigger) {
-  panelReturnFocus = trigger || document.activeElement;
-  activeTab = tab;
-  selectedUpgrade = null;
-  panelDirty = true;
-  updateTabStates();
-  if (window.matchMedia('(max-width: 900px)').matches && !panelHistory) {
-    history.pushState({ moyuPanel: true }, '');
-    panelHistory = true;
-  }
-  renderPanel(true);
-}
-function renderPanel(force = false) {
-  if (activeTab === 'work') {
-    $('mainPanel').hidden = true;
-    panelDirty = false;
-    return;
-  }
-  if (!force && !panelDirty) return;
-  $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
-  $('mainPanel').classList.toggle('skills-dialog', activeTab === 'skills');
-  const content = activeTab === 'buildings' ? buildingView()
-    : activeTab === 'building-upgrades' ? facilityUpgradesView()
-      : activeTab === 'misc-upgrades' ? miscUpgradesView()
-        : activeTab === 'upgrades' ? upgradesView()
-          : activeTab === 'factions' ? factionView()
-            : activeTab === 'audit' ? auditView()
-              : activeTab === 'skills' ? skillsView()
-                : activeTab === 'stats' ? statsView() : moreView();
-  $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${content}`;
-  if (activeTab === 'more') {
-    $('achievementMount').appendChild(story.ui.achievementElement);
-    $('storyArchiveMount').appendChild(story.ui.archiveElement);
-  }
-  $('mainPanel').hidden = false;
-  panelDirty = false;
-  updateBuildingCards();
-  updateUpgradeStates();
-  updatePanelActions(computeState(state));
-  if (force) $('mainPanel').querySelector('[data-action="close-panel"]')?.focus({ preventScroll: true });
+  panelReturnFocus = trigger || document.activeElement; activeTab = tab; updateTabStates();
+  if (matchMedia('(max-width: 900px)').matches && !panelHistory) { history.pushState({ moyuPanel: true }, ''); panelHistory = true; }
+  renderPanel(); $('mainPanel').querySelector('[data-action="close-panel"]')?.focus({ preventScroll: true });
 }
 function closeAuxPanel(fromPopstate = false) {
-  activeTab = 'work';
-  selectedUpgrade = null;
-  updateTabStates();
-  $('mainPanel').hidden = true;
-  panelDirty = false;
-  if (!fromPopstate && panelHistory) {
-    panelHistory = false;
-    history.back();
-  }
+  activeTab = 'work'; updateTabStates(); $('mainPanel').hidden = true;
+  if (!fromPopstate && panelHistory) { panelHistory = false; history.back(); }
   if (panelReturnFocus?.isConnected) panelReturnFocus.focus({ preventScroll: true });
 }
 
-function actionResult(result, success, failure = '当前条件或资源不足') {
-  if (result) { notify(success); panelDirty = true; lastUpgradeRailRender = 0; }
-  else notify(failure, true);
-  return result;
+function updateRetirement() {
+  if (!$('retirementPanel').firstElementChild) $('retirementPanel').innerHTML = `<section class="retirement-card" aria-label="退休结算"><div class="retirement-copy"><div class="retirement-title"><strong>退休</strong><small id="retirementRunCoins"></small></div><div class="retirement-values"><span>本次可结算期权 <b id="pendingGemsValue">0</b></span><span>当前累计期权 <b id="totalGemsValue">0</b></span></div><p class="retirement-feedback" id="retirementFeedback" role="status" hidden></p></div><button class="retirement-btn" id="retirementButton" data-action="abdicate">申请退休（需100M）</button></section>`;
+  const retirement = game.select('retirement');
+  $('pendingGemsValue').textContent = formatNumber(retirement.earned);
+  $('totalGemsValue').textContent = formatNumber(state().resources.gems);
+  $('retirementRunCoins').textContent = `本轮产值 ${money(state().stats.run.coins)} · 首次退休目标 ¥100M`;
+  $('retirementButton').textContent = retirement.eligible ? '退休并进入新工位' : '申请退休（需100M）';
+  $('retirementPanel').firstElementChild.classList.toggle('ready', retirement.eligible);
 }
-function persistStory(current) {
-  touchState(current);
-  saveState(current);
+function renderTop() {
+  const d = derived();
+  $('coins').textContent = money(state().resources.coins);
+  $('production').textContent = money(d.production);
+  $('gems').textContent = formatNumber(state().resources.gems);
+  $('mana').textContent = `${formatNumber(state().resources.mana)} / ${formatNumber(d.manaMax)}`;
+  $('manaRate').textContent = `+${formatNumber(d.manaRegen)} / 秒`;
+  $('manaFill').style.width = `${Math.max(0, Math.min(100, state().resources.mana / d.manaMax * 100))}%`;
+  $('manaProgress').setAttribute('aria-valuemax', String(d.manaMax)); $('manaProgress').setAttribute('aria-valuenow', String(state().resources.mana));
+  $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
+  $('rankText').textContent = `R${state().progression.reincarnations} · 地方分公司`;
+  const faction = state().selections.faction ? definition(state().selections.faction) : null;
+  $('factionName').textContent = faction ? faction.name : '尚未选择部门';
+  $('clickReward').textContent = money(d.clickReward); $('assistants').textContent = formatNumber(d.assistants);
+  $('runTime').textContent = formatTime(state().stats.run.time);
+  const saveStatus = game.select('saveStatus'); $('saveStatus').textContent = saveStatus.error ? '未保存 · 将自动重试' : saveStatus.dirty ? '有未保存更改' : '本地存档已就绪';
+  updateRetirement();
 }
-function completeRetirement() {
-  const snapshot = computeSnapshot(state);
-  if (!snapshot.retirement.eligible) return { ok: false, reason: 'target-not-met' };
-  const earned = pendingGems(state);
-  if (!confirm(`本次退休将获得 ${formatNumber(earned)} 期权。\n本轮工资、设施与升级将清零，当前部门关系将结束。\n奖杯、永久解锁、初始剧情、业务域与职阶将保留。确定结算吗？`)) {
-    return { ok: false, reason: 'cancelled' };
+function factFeedback(facts) {
+  for (const fact of facts) {
+    if (fact.type === 'building.purchased') notify(`设施采购完成：${definition(fact.payload.buildingId).name} +${fact.payload.quantity}`);
+    else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
+    else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
+    else if (fact.type === 'spell.cast') notify(`已释放：${definition(fact.payload.spellId).name}`);
+    else if (fact.type === 'trophy.unlocked') notify(`获得奖杯：${definition(fact.payload.trophyId).name}`);
+    else if (fact.type === 'abdication.completed') notify(`退休结算完成，获得 ${formatNumber(fact.payload.earned)} 期权`);
+    else if (fact.type === 'reincarnation.completed') notify(`已进入 R${fact.payload.reincarnations}`);
+    else if (fact.type === 'offline.settled') notify(`离线 ${formatTime(fact.payload.seconds)}，结算 ${money(fact.payload.earned)}`);
   }
-  const previousAbdications = state.stats.total.abdications || 0;
-  const runCoins = state.stats.run.coins;
-  const next = abdicate(state);
-  if (!next) return { ok: false, reason: 'target-not-met' };
-  state = next;
-  retirementMessage = `退休完成，获得 ${formatNumber(earned)} 期权`;
-  saveState(state);
-  notify('退休结算完成。新的职业周期已经开启');
-  emitGameEvent('abdication.completed', {
-    saved: true,
-    targetMet: true,
-    firstRetirement: previousAbdications === 0,
-    previousAbdications,
-    runCoins,
-  });
-  return { ok: true };
 }
-function setEventLogOpen(open, restoreFocus = false) {
-  $('eventLog').hidden = !open;
-  $('logToggle').setAttribute('aria-expanded', String(open));
-  if (open) $('logClose').focus({ preventScroll: true });
-  else if (restoreFocus) $('logToggle').focus({ preventScroll: true });
+function refresh(message = null) {
+  renderTop();
+  const inventoryChanged = !message || message.commandType !== 'tick' || message.changedPaths.some(path => /^(spellSources|selections|settings|buildings)/.test(path));
+  if (inventoryChanged) { renderQuickSkills(); renderFacilityRail(); }
+  updateCastButtons();
+  const structural = message?.commandType !== 'tick' || message?.changedPaths.some(path => /^(permanentUnlocks|story|owned|buildings|selections)/.test(path));
+  if (activeTab !== 'work' && structural) renderPanel(); else updatePanel();
+  syncStories();
+}
+const modal = createStoryModal({
+  document,
+  onClose: ({ id, action, replay }) => { if (!replay) game.dispatch({ type: 'story.close', id, skipped: action === 'skip' }); },
+  onChoice: ({ id, choiceId }) => {
+    const result = game.dispatch({ type: 'story.choice', id, choiceId });
+    if (result.ok && definition(id).choices.find(choice => choice.id === choiceId).close !== false) modal.close();
+  },
+});
+function syncStories() {
+  if (modal.current?.replay) return;
+  const next = game.select('storyQueue')[0];
+  if (next && modal.current?.story.id !== next.id) modal.show({ story: next });
+}
+function replayStory(id) {
+  const story = definition(id);
+  if (story && state().story.completed[id]) modal.show({ story, replay: true });
+}
+function commandResult(result) {
+  if (result?.ok) return true;
+  if (result?.reason === 'NEED_RESOURCE') notify('当前资源不足', true);
+  else if (result?.error) notify('操作未完成，状态已回滚', true);
+  return false;
 }
 
 document.addEventListener('click', event => {
   if (!event.target.closest('.event-strip') && !$('eventLog').hidden) setEventLogOpen(false);
   if (event.target.closest('#workArea') && activeTab !== 'work') closeAuxPanel();
   const tab = event.target.closest('[data-tab]');
-  if (tab) {
-    if (activeTab === tab.dataset.tab) { closeAuxPanel(); return; }
-    openAuxPanel(tab.dataset.tab, tab); return;
-  }
+  if (tab) { if (activeTab === tab.dataset.tab) closeAuxPanel(); else openAuxPanel(tab.dataset.tab, tab); return; }
   const button = event.target.closest('[data-action]');
   if (!button || button.disabled) return;
-  const action = button.dataset.action;
-  const id = button.dataset.id;
-  if (action === 'close-panel') { closeAuxPanel(); return; }
-  if (action === 'upgrade-detail') {
-    const targetTab = button.dataset.kind === 'building' ? 'building-upgrades' : button.dataset.kind === 'misc' ? 'misc-upgrades' : 'factions';
-    const stayInCombined = activeTab === 'upgrades' && button.dataset.kind !== 'faction';
-    if (activeTab !== targetTab && !stayInCombined) openAuxPanel(targetTab, button);
-    selectedUpgrade = { kind: button.dataset.kind, id };
-    panelDirty = true; renderPanel(true); return;
-  }
-  if (action === 'close-upgrade-detail') { selectedUpgrade = null; panelDirty = true; renderPanel(true); return; }
-  if (action === 'toggle-log') {
-    setEventLogOpen($('eventLog').hidden);
-    return;
-  }
-  if (action === 'close-log') {
-    setEventLogOpen(false, true);
-    return;
-  }
+  const action = button.dataset.action; const id = button.dataset.id;
   if (action === 'start') {
-    const isNewSave = !state.story.triggered['intro.onboarding']
-      && state.stats.total.clicks === 0;
     $('intro').classList.add('hidden');
-    notify('已入职。先点击显示器，或积累 ¥25K 购买部门立场。');
-    emitGameEvent('game.started', { isNewSave });
+    commandResult(game.dispatch({ type: 'start' })); return;
   }
-  if (action === 'work') workFeedback(event);
-  if (action === 'buy-amount') { state.settings.buyAmount = button.dataset.value === 'max' ? 'max' : Number(button.dataset.value); panelDirty = true; }
-  if (action === 'buy-building') {
-    const before = state.buildings[id] || 0;
-    const purchased = actionResult(buyBuilding(state, id), '设施采购完成');
-    if (purchased) emitGameEvent('building.purchased', {
-      buildingId: id, quantity: state.buildings[id] - before, totalOwned: state.buildings[id],
-    });
-  }
-  if (action === 'buy-building-upgrade') {
-    if (actionResult(buyBuildingUpgrade(state, id), '设施升级已生效')) {
-      emitGameEvent('building.upgraded', { buildingId: UPGRADE_BY_ID[id]?.building, upgradeId: id });
-    }
-  }
-  if (action === 'buy-misc-upgrade') actionResult(buyMiscUpgrade(state, id), '通用升级已生效');
-  if (action === 'buy-faction-upgrade') {
-    const previousFaction = state.faction;
-    const purchased = actionResult(buyFactionUpgrade(state, id), '部门升级已生效');
-    if (purchased && state.faction !== previousFaction) {
-      emitGameEvent('faction.joined', { factionId: state.faction, basic: BASIC_FACTIONS.has(state.faction) });
-    }
-  }
-  if (action === 'proof') actionResult(buyProof(state, id), '部门立场已确认');
-  if (action === 'toggle-quick-skill') {
-    updateQuickSkill(id, quickSkillIds(6).includes(id) ? 'remove' : 'pin');
-    refresh(true);
-    return;
-  }
-  if (action === 'prioritize-skill') {
-    updateQuickSkill(id, 'pin');
-    refresh(true);
-    return;
-  }
-  if (action === 'cast') {
-    if (actionResult(castSpell(state, id), `已释放：${SPELL_BY_ID[id].name}`, '精力不足或技能尚未解锁')) {
-      emitGameEvent('spell.cast', { spellId: id });
-    }
-  }
-  if (action === 'exchange') actionResult(buyRoyalExchange(state, id, 1) > 0, '资源置换完成');
-  if (action === 'unlock-archaeology') actionResult(unlockArchaeology(state), '档案审计已永久解锁');
-  if (action === 'excavate') {
-    const before = state.artifacts.length;
-    if (actionResult(excavate(state), '审计完成') && state.artifacts.length > before) {
-      emitGameEvent('artifact.found', { artifactIds: state.artifacts.slice(before) });
-    }
-  }
-  if (action === 'unlock-neutral') actionResult(unlockNeutralFaction(state, id), '中立部门已解锁');
-  if (action === 'unlock-underworld') actionResult(unlockUnderworld(state), '高级部门任务已解锁');
-  if (action === 'prestige-quest') actionResult(completePrestigeQuest(state, id), '高级部门任务已完成');
-  if (action === 'merc-tribute') actionResult(payMercenaryTribute(state), '佣兵贡金已支付');
-  if (action === 'merc-oath') actionResult(mercenaryOath(state), '外包联盟已永久解锁');
-  if (action === 'join-merc') actionResult(joinMercenary(state, id), '已加入外包联盟，请选择技能与升级');
-  if (action === 'merc-spell') actionResult(selectMercenarySpell(state, id), '技能已加入混编构筑');
-  if (action === 'merc-upgrade') actionResult(buyMercenaryUpgrade(state, id), '升级已加入混编构筑');
-  if (action === 'save') { saveState(state); $('saveStatus').textContent = '已保存'; notify('存档已写入本地'); }
-  if (action === 'export') { saveState(state); $('exportText').value = localStorage.getItem(SAVE_KEY); $('exportText').select(); notify('存档已导出，请复制保存'); }
-  if (action === 'import') $('importFile').click();
+  if (action === 'work') { if (commandResult(game.dispatch({ type: 'work' }))) workFeedback(event); return; }
+  if (action === 'purchase') { commandResult(game.dispatch({ type: 'purchase', id, amount: state().settings.buyAmount })); return; }
+  if (action === 'cast') { commandResult(game.dispatch({ type: 'cast', id })); return; }
+  if (action === 'buy-amount') { game.dispatch({ type: 'setting', key: 'buyAmount', value: button.dataset.value === 'max' ? 'max' : Number(button.dataset.value) }); return; }
+  if (action === 'toggle-quick-skill') { updateQuickSkill(id, quickSkillIds(6).includes(id) ? 'remove' : 'pin'); return; }
+  if (action === 'prioritize-skill') { updateQuickSkill(id, 'pin'); return; }
+  if (action === 'toggle-log') { setEventLogOpen($('eventLog').hidden); return; }
+  if (action === 'close-log') { setEventLogOpen(false, true); return; }
+  if (action === 'close-panel') { closeAuxPanel(); return; }
   if (action === 'abdicate') {
-    const result = story.ui.requestRetirement();
-    if (result?.ok) panelDirty = true;
+    if (game.select('retirement').eligible && !confirm('确定退休结算吗？本轮工资、设施、升级和部门关系将重置，奖杯与剧情保留。')) return;
+    commandResult(game.dispatch({ type: 'abdicate' })); return;
   }
-  if (action === 'reincarnate') {
-    if (!confirm(`确定投胎进入 R${state.progression.reincarnations + 1} 吗？当前期权将被清空。`)) return;
-    const previousReincarnations = state.progression.reincarnations;
-    const next = reincarnate(state);
-    if (next) {
-      state = next;
-      retirementMessage = '';
-      notify(`已进入 R${state.progression.reincarnations}。新的组织规则已生效`);
-      saveState(state);
-      emitGameEvent('reincarnation.completed', {
-        reincarnations: state.progression.reincarnations,
-        previousReincarnations,
-      });
-    } else notify('期权不足，无法投胎', true);
-  }
+  if (action === 'reincarnate') { if (confirm('确定投胎吗？当前期权将被清空。')) commandResult(game.dispatch({ type: 'reincarnate' })); return; }
+  if (action === 'replay-story') { replayStory(id); return; }
+  if (action === 'save') { game.save().then(result => notify(result.ok ? '存档已写入本地' : '保存失败，将自动重试', !result.ok)); return; }
+  if (action === 'export') { game.save().then(() => { $('exportText').value = saveAdapter.listSlots().main || ''; $('exportText').select(); notify('存档已导出，请复制保存'); }); return; }
+  if (action === 'import') { $('importFile').click(); return; }
   if (action === 'hard-reset') {
     if (!confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
-    resetting = true;
-    localStorage.removeItem(SAVE_KEY);
-    localStorage.removeItem(SCHEMA2_BACKUP_KEY);
-    location.reload();
-    return;
+    saveAdapter.remove(); location.reload();
   }
-  refresh(action === 'work' ? false : true);
 });
 $('importFile').addEventListener('change', async event => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  try {
-    const parsed = JSON.parse(await file.text());
-    if (!parsed.contentVersion || !parsed.stats) throw new Error('invalid');
-    state = normalizeState(parsed);
-    saveState(state); story.ui.sync(); panelDirty = true; notify('存档导入成功'); refresh(true);
-  } catch { notify('导入失败：文件不是有效的游戏存档', true); }
+  const file = event.target.files?.[0]; if (!file) return;
+  try { saveAdapter.import(await file.text()); location.reload(); }
+  catch { notify('导入失败：文件不是有效的游戏存档', true); }
   event.target.value = '';
 });
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && !$('eventLog').hidden) { setEventLogOpen(false, true); return; }
   if (event.key === 'Escape' && activeTab !== 'work') closeAuxPanel();
   if (event.code === 'Space' && $('intro').classList.contains('hidden') && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
-    event.preventDefault(); workFeedback(); refresh();
+    event.preventDefault(); if (commandResult(game.dispatch({ type: 'work' }))) workFeedback();
   }
 });
-window.addEventListener('popstate', () => {
-  if (activeTab !== 'work') closeAuxPanel(true);
-  panelHistory = false;
-});
-window.addEventListener('beforeunload', () => { if (!resetting) saveState(state); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && !resetting) saveState(state); });
+window.addEventListener('popstate', () => { if (activeTab !== 'work') closeAuxPanel(true); panelHistory = false; });
+window.addEventListener('resize', () => { if (game) { quickStructure = ''; renderQuickSkills(); updateCastButtons(); } });
+window.addEventListener('beforeunload', () => { game?.save(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) game?.save(); });
 
-const away = Math.max(0, (Date.now() - state.lastSave) / 1000);
-if (away > 10 && computeState(state).production > 0) {
-  const earned = applyOffline(state, away);
-  if (earned > 0) {
-    logs.unshift(`离线 ${formatTime(away)}，结算 ${money(earned)}。`);
-    emitGameEvent('offline.settled', { seconds: away, coins: earned });
-  }
-}
-if (state.stats.total.clicks > 0 || state.story.triggered['intro.onboarding']) {
-  $('intro').classList.add('hidden');
-}
-refresh(true);
-renderUpgradeRail(true);
-updateTabStates();
-let lastTick = performance.now();
-setInterval(() => {
-  const now = performance.now();
-  const previousChallenges = new Set(state.challenges);
-  tick(state, (now - lastTick) / 1000); lastTick = now;
-  for (const challengeId of state.challenges) {
-    if (!previousChallenges.has(challengeId)) emitGameEvent('challenge.completed', { challengeId });
-  }
-  story.ui.handleTick(now);
+async function bootstrap() {
+  game = createGameRuntime({ content: CONTENT, saveAdapter, mode: 'production' });
+  await game.start(); graph = game.graph;
+  $('workContent').innerHTML = workView();
+  if (state().stats.total.clicks > 0 || Object.keys(state().buildings).length || state().story.pending.length || Object.keys(state().story.completed).length) $('intro').classList.add('hidden');
+  game.subscribe(message => { if (message.type === 'commit') factFeedback(message.facts); refresh(message); });
   refresh();
-}, 200);
-setInterval(() => { if (!resetting) { saveState(state); $('saveStatus').textContent = '已自动保存'; } }, 15000);
+  let lastTick = performance.now();
+  setInterval(() => {
+    const now = performance.now(); const delta = (now - lastTick) / 1000; lastTick = now;
+    if (!document.hidden) game.tick(delta);
+  }, 200);
+  setInterval(() => { if (game.select('saveStatus').dirty) game.save(); }, 15000);
+}
+bootstrap().catch(error => {
+  console.error(error);
+  $('intro').classList.remove('hidden');
+  document.querySelector('.intro-card').innerHTML = `<h1>内容加载失败</h1><p>游戏没有覆盖原存档。请检查内容包或恢复上一次良好版本。</p><pre>${error.message}</pre>`;
+});

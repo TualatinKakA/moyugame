@@ -93,6 +93,19 @@
   color: #b9c9d1;
 }
 
+.story-choices {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.story-button-choice {
+  width: 100%;
+  color: #e2edf1;
+  background: #22394a;
+  text-align: left;
+}
+
 .story-actions {
   display: flex;
   flex-wrap: wrap;
