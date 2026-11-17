@@ -53,6 +53,11 @@ src/
 
 仓库可使用 **Settings → Pages → Deploy from a branch → main / (root)** 发布。项目为原生 HTML、CSS 和 JavaScript 模块，无构建步骤。
 
+## 设计与系统文档
+
+- [剧情与成就系统构建方案](docs/剧情与成就系统构建方案.md)
+- [当前构建与原版最新 Wiki 内容对照表](docs/当前构建与原版最新Wiki内容对照表.md)
+
 ## 机制资料
 
 数值核对使用 [G00F's Not a Wiki](https://musicfamily.org/realm/) 中的建筑、派系、法术、升级、重置与审计资料。项目使用原创职场题材和界面，不复制其美术资源。
