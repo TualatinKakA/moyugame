@@ -87,7 +87,8 @@ test('R1-R3 progression modifiers are scoped correctly', () => {
   assert.equal(d.mods.offlineAdd, 1500);
   assert.equal(d.mods.fcChanceAdd, 30);
   assert.ok(Math.abs(d.mods.gemPerGemAdd - 0.6) < 1e-9);
-  assert.equal(s._derived.manaRegen, 7);
+  assert.equal(d.manaRegen, 7);
+  assert.equal(s._derived, undefined);
 });
 
 test('abdication preserves permanent content and clears the run', () => {

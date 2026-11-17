@@ -17,6 +17,7 @@ export function createState() {
   const now = Date.now();
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
+    revision: 0,
     contentVersion: CONTENT_VERSION,
     contentPacks: [CONTENT_VERSION],
     createdAt: now, sessionStartedAt: now, lastSave: now,
@@ -43,10 +44,12 @@ export function createState() {
 export function normalizeState(saved) {
   const base = createState();
   if (!saved || typeof saved !== 'object') return base;
-  const savedProgression = saved.progression && typeof saved.progression === 'object' ? saved.progression : {};
+  const { _derived, ...persistent } = saved;
+  const savedProgression = persistent.progression && typeof persistent.progression === 'object' ? persistent.progression : {};
   const state = {
-    ...base, ...saved,
+    ...base, ...persistent,
     schemaVersion: CURRENT_SCHEMA_VERSION,
+    revision: Math.max(0, Math.floor(Number(persistent.revision) || 0)),
     contentPacks: Array.isArray(saved.contentPacks) && saved.contentPacks.length ? [...saved.contentPacks] : [saved.contentVersion || CONTENT_VERSION],
     progression: {
       ...base.progression, ...savedProgression,
@@ -82,6 +85,11 @@ export function normalizeState(saved) {
 }
 
 export const migrateState = normalizeState;
+
+export function touchState(state) {
+  state.revision = Math.max(0, Math.floor(Number(state.revision) || 0)) + 1;
+  return state.revision;
+}
 
 export function saveState(state, storage = globalThis.localStorage) {
   state.lastSave = Date.now();
