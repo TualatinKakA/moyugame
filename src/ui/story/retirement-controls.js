@@ -29,7 +29,9 @@ export function createRetirementControls({
   function render() {
     const eligible = Boolean(isEligible());
     root.dataset.eligible = eligible ? 'true' : 'false';
-    help.textContent = eligible ? '产值考核已完成，可以办理退休结算。' : '完成本轮目标产值考核后才能退休；提前申请将被人事退回。';
+    help.textContent = eligible
+      ? '本轮账面产值已达到 100M（¥100,000,000），可以办理退休结算。'
+      : '首次退休要求本轮账面产值达到 100M（¥100,000,000）；提前申请将被人事退回。';
   }
 
   function request() {

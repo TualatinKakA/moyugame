@@ -311,6 +311,8 @@ test('main retirement button rejects unqualified requests and only calls the ada
   assert.equal(calls.length, 0);
   assert.equal(ui.modal.current.story.id, 'intro.retirement_denied');
   assert.ok(document.body.textContent.includes('考核未完成'));
+  assert.ok(document.body.textContent.includes('100M（¥100,000,000）'));
+  assert.ok(ui.retirementElement.textContent.includes('100M（¥100,000,000）'));
   ui.modal.close();
   ui.retirementElement.querySelector('button').click();
   assert.equal(calls.length, 0);
