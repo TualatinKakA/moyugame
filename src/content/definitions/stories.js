@@ -44,7 +44,7 @@ export const STORY_DEFINITIONS = [
   story({
     id: 'intro.first_retirement', title: '第一次退休', buttonLabel: '开始新的职业周期', image: 'intro-first-retirement.svg',
     imageAlt: '员工工牌进入历史档案，新的空白工位已经准备好',
-    paragraphs: ['你的第一张工牌被放入历史档案。', '设施、账面工资和本轮部门关系已经结算，奖杯与序章记录将保留。', '新的工位已经准备好。序章至此完成，但公司的组织规模仍没有可确认的上限。'],
+    paragraphs: ['你的第一张工牌被放入历史档案。', '设施、账面工资和本轮部门关系已经结算，奖杯与序章记录将保留。', '新的工位已经准备好。合同已经归档，但公司的组织规模仍没有可确认的上限。'],
     reaction: { event: 'abdication.completed', priority: 500 },
     completionActions: [{ type: 'completeStoryGroup', group: 'prologue' }],
   }),

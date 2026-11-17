@@ -1,5 +1,6 @@
 import { evaluateFormula } from './formula.js';
 import { pathValue } from './content-registry.js';
+import { reincarnationPower } from './progression.js';
 
 const PHASES = ['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'global', 'factionCoin', 'click', 'utility'];
 const buildings = graph => graph.arraysByKind.get('building') || [];
@@ -62,6 +63,9 @@ function applyEffect(mods, effect, amount, targetId) {
 
 export function computeDerived(state, graph, groupCache = new Map(), buildingOverrides = {}) {
   const mods = createModifiers();
+  const power = reincarnationPower(state.progression.reincarnations);
+  mods.globalAdd += power.productionPercent;
+  mods.manaRegenAdd += power.manaRegenAdd;
   const entries = [];
   for (const definition of graph.definitions) {
     if (!owned(state, definition)) continue;
@@ -100,7 +104,8 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     outputs, production, buildingProduction, assistants,
     clickReward: Math.max(1, (1 + mods.clickAdd / 100) * mods.clickMult),
     manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: Math.max(0, 1 + mods.manaRegenAdd),
-    fcChance: 10, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
+    fcChance: 10 + power.factionCoinChanceAdd, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
+    offlineMultiplier: power.offlineMultiplier,
     buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
   });
 }
@@ -114,7 +119,7 @@ export class RuntimeCache {
     let dirty = false;
     const groups = new Set();
     for (const path of changedPaths) {
-      if (/^(buildings|owned|permanentUnlocks|timers\.spells|selections|resources\.factionCoins)/.test(path)) dirty = true;
+      if (/^(buildings|owned|permanentUnlocks|timers\.spells|selections|resources\.factionCoins|progression)/.test(path)) dirty = true;
       for (const dependency of [path, 'buildings', 'owned', 'permanentUnlocks', 'timers.spells', 'resources.factionCoins']) {
         if (dependency !== path && !path.startsWith(`${dependency}.`)) continue;
         for (const group of this.graph.effectDependencies.get(dependency) || []) groups.add(group);

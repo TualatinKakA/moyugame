@@ -143,6 +143,10 @@ button.danger { color: var(--red); }
 button.card.building-card { position: relative; width: 100%; min-height: 94px; margin: 0; padding: 8px; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-rows: auto auto auto; align-items: center; gap: 4px 7px; text-align: left; }
 button.card.building-card:hover:not(:disabled) { border-color: var(--green); background: #273022; }
 .building-icon { grid-column: 1; grid-row: 1; width: 30px; height: 30px; object-fit: contain; image-rendering: auto; }
+.content-icon { display: block; width: 40px; height: 40px; margin-bottom: 8px; object-fit: contain; }
+.content-icon.locked { opacity: .35; filter: grayscale(1); }
+.inline-icon { flex: 0 0 auto; width: 20px; height: 20px; object-fit: contain; vertical-align: middle; }
+.skill-btn b, .skill-copy h3 { display: flex; align-items: center; gap: 5px; }
 .building-name { grid-column: 2; grid-row: 1; min-width: 0; }
 .building-name b { display: block; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .building-name small { color: var(--green); font: 10px Consolas, monospace; }
@@ -376,7 +380,7 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
 @media (min-width: 901px) and (max-height: 800px) {
   .work-area { gap: 8px; }
   .skill-btn { min-height: 72px; }
-  .work-btn { top: auto; bottom: 60px; transform: scale(.75); transform-origin: center bottom; }
+  .work-btn { top: auto; bottom: 56px; transform: scale(.75); transform-origin: center bottom; }
   .work-btn:active:not(:disabled) { transform: scale(.75); }
 }
 @media (prefers-reduced-motion: reduce) {

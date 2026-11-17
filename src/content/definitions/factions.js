@@ -7,26 +7,26 @@ export const ALIGNMENT_DEFINITIONS = [
   visible: { op: 'notSelected', key: 'alignment' }, unlock: { op: 'always' },
   purchase: { costs: selectionCost, requires: [{ op: 'notSelected', key: 'alignment' }] },
   effects: [], grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'choiceCard', panel: 'factions' },
+  ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/${item.id === 'good' ? 'id-card' : 'cash'}.png` },
 }));
 
 export const FACTION_DEFINITIONS = [
   {
     id: 'fairy', kind: 'faction', contentVersion: 'base-v1', name: '产品部', sourceName: 'Fairy', alignment: 'good',
     description: '强化见习工位、茶水间与打印维修间，偏向低阶设施协同。',
-    spellId: 'fairyChanting',
+    spellId: 'fairyChanting', icon: 'laptop',
   },
   {
     id: 'goblin', kind: 'faction', contentVersion: 'base-v1', name: '财务部', sourceName: 'Goblin', alignment: 'evil',
     description: '将设施规模、影响力与工资结算转化为长期收益。',
-    spellId: 'goblinsGreed',
+    spellId: 'goblinsGreed', icon: 'cash',
   },
 ].map(faction => ({
   ...faction, era: { minR: 0 },
   visible: { op: 'selected', key: 'alignment', value: faction.alignment }, unlock: { op: 'always' },
   purchase: { costs: [], requires: [{ op: 'notSelected', key: 'faction' }] },
   effects: [], grants: [{ type: 'grantSpellSource', id: faction.spellId, source: faction.id }],
-  reactions: [], scope: 'run', ui: { kind: 'choiceCard', panel: 'factions' },
+  reactions: [], scope: 'run', ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/${faction.icon}.png` },
 }));
 
 const upgrade = ({ id, name, description, faction, cost, effects }) => ({
@@ -38,7 +38,7 @@ const upgrade = ({ id, name, description, faction, cost, effects }) => ({
     requires: [{ op: 'notOwned', id }, { op: 'selected', key: 'faction', value: faction }],
   },
   effects, grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', faction },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', faction, icon: `assets/images/${faction === 'fairy' ? 'laptop' : 'cash'}.png` },
 });
 const effect = (group, phase, stat, target, operation, value) => ({
   group, phase, stat, target, operation, value, stacking: operation === 'add' ? 'add' : 'multiply',

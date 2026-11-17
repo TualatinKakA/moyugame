@@ -5,6 +5,7 @@ import { compileContentGraph, ContentValidationError } from '../src/systems/cont
 import { createGameRuntime } from '../src/systems/runtime.js';
 import { createSaveAdapter, createMemoryStorage, SAVE_KEY } from '../src/systems/persistence.js';
 import { createSaveState, migrateAndNormalizeState, stateHash } from '../src/systems/state.js';
+import { gemsForRunCoins, reincarnationRequirement } from '../src/systems/progression.js';
 
 function fixture(initial = null, { failSave = false, nowStart = 1000 } = {}) {
   let now = nowStart;
@@ -149,12 +150,12 @@ test('offline settlement uses event segments rather than 200ms replay', async ()
   const seeded = initial(); seeded.buildings.farm = 10; seeded.lastWallClock = 0;
   const { game } = fixture(seeded, { nowStart: 20000 });
   await game.start();
-  assert.equal(game.select('state').resources.coins, 1e12 + 400);
+  assert.equal(game.select('state').resources.coins, 1e12 + 200);
   assert.equal(game.select('state').stats.total.offlineTime, 20);
 });
 
-test('abdication and reincarnation preserve trophies and prologue while resetting scoped facts', async () => {
-  const seeded = initial(); seeded.stats.run.coins = 1e8; seeded.permanentUnlocks['trophy.first_click'] = true;
+test('abdication uses original gem growth and preserves trophies and prologue', async () => {
+  const seeded = initial(); seeded.stats.run.coins = 1e12; seeded.permanentUnlocks['trophy.first_click'] = true;
   const { game } = fixture(seeded);
   await game.start();
   const retired = game.dispatch({ type: 'abdicate' });
@@ -165,9 +166,26 @@ test('abdication and reincarnation preserve trophies and prologue while resettin
   assert.deepEqual(game.select('storyQueue').map(item => item.id), ['intro.first_retirement']);
   game.dispatch({ type: 'story.close', id: 'intro.first_retirement' });
   assert.equal(game.select('state').story.groups.prologue, true);
+  assert.equal(game.dispatch({ type: 'reincarnate' }).ok, false, 'one gem is not enough for original R1');
+});
+
+test('original reincarnation threshold, reset and R1 power apply together', async () => {
+  assert.equal(gemsForRunCoins(1e12), 1);
+  assert.equal(gemsForRunCoins(3e12), 2);
+  assert.equal(reincarnationRequirement(0), 1e27);
+  assert.equal(reincarnationRequirement(1), 1e30);
+  const seeded = initial(); seeded.resources.gems = 1e27;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.select('reincarnation').visible, true);
   assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
   assert.equal(game.select('state').progression.reincarnations, 1);
   assert.equal(game.select('state').resources.gems, 0);
+  assert.equal(game.select('reincarnation').visible, false);
+  assert.equal(game.select('derived').manaRegen, 3);
+  assert.equal(game.select('derived').fcChance, 20);
+  assert.equal(game.select('derived').offlineMultiplier, 5.5);
+  assert.equal(game.select('reincarnation').requirement, 1e30);
 });
 
 test('ordinary tick evaluates no content reactions and reuses derived cache', async () => {

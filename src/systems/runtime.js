@@ -10,6 +10,7 @@ import { systemClock } from '../core/clock.js';
 import { drawRandom } from '../core/rng.js';
 import { evaluateFormula } from './formula.js';
 import { planOfflineSegments } from './offline.js';
+import { gemsForRunCoins, reincarnationRequirement } from './progression.js';
 
 const increment = (tx, path, amount) => tx.write(path, (pathValue(tx.state, path) || 0) + amount);
 const spellActive = (state, id) => {
@@ -257,11 +258,12 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       tx.emit('story.choice', { storyId: id, choiceId });
     });
   }
-  function resetRun(tx, { includeR = false } = {}) {
+  function resetRun(tx, { includeR = false, preserveAllChallenges = false } = {}) {
     const fresh = createSaveState({ seed: tx.state.rng.seed, now: clock.wallNow(), contentVersions: graph.contentVersions });
     for (const key of ['buildings', 'selections', 'spellSources', 'timers']) tx.write(key, resettable(tx.state)[key]);
     const preservedChallenges = Object.fromEntries(Object.entries(tx.state.challenges).filter(([id]) => {
       const scope = graph.definitionsById.get(id)?.scope;
+      if (preserveAllChallenges) return true;
       return includeR ? ['ascension', 'total'].includes(scope) : ['r', 'ascension', 'total'].includes(scope);
     }));
     tx.write('challenges', preservedChallenges);
@@ -275,8 +277,11 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   }
   function abdicate() {
     return runTransaction('abdicate', tx => {
-      const earned = Math.floor(Math.sqrt((tx.state.stats.run.coins || 0) / 1e8));
-      if (earned < 1) { tx.emit('abdication.rejected', { reason: 'TARGET_NOT_MET' }); return { rejected: false }; }
+      const runCoins = tx.state.stats.run.coins || 0;
+      const earned = gemsForRunCoins(runCoins);
+      const firstRetirement = (tx.state.stats.total.abdications || 0) === 0;
+      const eligible = firstRetirement ? runCoins >= 1e8 : earned >= 1;
+      if (!eligible) { tx.emit('abdication.rejected', { reason: 'TARGET_NOT_MET' }); return { rejected: false }; }
       increment(tx, 'resources.gems', earned);
       increment(tx, 'stats.total.abdications', 1);
       resetRun(tx);
@@ -287,12 +292,13 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   }
   function reincarnate() {
     return runTransaction('reincarnate', tx => {
-      if (tx.state.resources.gems < 1) return { rejected: true, reason: 'NEED_RESOURCE' };
+      const requirement = reincarnationRequirement(tx.state.progression.reincarnations);
+      if (tx.state.resources.gems < requirement) return { rejected: true, reason: 'NEED_RESOURCE' };
       tx.write('resources.gems', 0);
       tx.write('resources.factionCoins', {});
       const nextReincarnation = (tx.state.progression?.reincarnations || 0) + 1;
       increment(tx, 'stats.total.reincarnations', 1);
-      resetRun(tx, { includeR: true });
+      resetRun(tx, { includeR: true, preserveAllChallenges: true });
       tx.write('progression', {
         reincarnations: nextReincarnation,
         ascension: 0, ascensionStartR: 0, ascensionHistory: [],
@@ -303,11 +309,12 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
 
-  function tickSimulation(tx, delta) {
+  function tickSimulation(tx, delta, offline = false) {
     const derived = cache.get();
+    const production = derived.production * (offline ? derived.offlineMultiplier : 1);
     for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.time`, delta);
-    increment(tx, 'resources.coins', derived.production * delta);
-    for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, derived.production * delta);
+    increment(tx, 'resources.coins', production * delta);
+    for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, production * delta);
     tx.write('resources.mana', Math.min(derived.manaMax, tx.state.resources.mana + derived.manaRegen * delta));
     const due = scheduler.due(tx.state.stats.run.time);
     for (const task of due) {
@@ -336,7 +343,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     diagnostics.offlineTruncated = plan.truncated;
     runTransaction('offline', tx => {
       const before = tx.state.resources.coins;
-      for (const segment of plan.segments) tickSimulation(tx, segment);
+      for (const segment of plan.segments) tickSimulation(tx, segment, true);
       const earned = tx.state.resources.coins - before;
       for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, seconds - plan.remaining);
       tx.emit('offline.settled', { seconds, earned, segments: plan.segments.length, truncated: plan.truncated });
@@ -372,8 +379,13 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (selector === 'graph') return graph;
     if (selector === 'storyQueue') return state.story.pending.map(item => graph.definitionsById.get(item.id));
     if (selector === 'retirement') {
-      const earned = Math.floor(Math.sqrt((state.stats.run.coins || 0) / 1e8));
-      return { earned, eligible: earned >= 1, target: 1e8 };
+      const earned = gemsForRunCoins(state.stats.run.coins || 0);
+      const firstRetirement = (state.stats.total.abdications || 0) === 0;
+      return { earned, eligible: firstRetirement ? state.stats.run.coins >= 1e8 : earned >= 1, target: firstRetirement ? 1e8 : 0 };
+    }
+    if (selector === 'reincarnation') {
+      const requirement = reincarnationRequirement(state.progression.reincarnations);
+      return { requirement, visible: state.resources.gems >= requirement, nextR: state.progression.reincarnations + 1 };
     }
     if (selector === 'stateHash') return stateHash(state);
     if (selector === 'saveStatus') return { dirty: persistence.saveDirty, error: persistence.lastSaveError };

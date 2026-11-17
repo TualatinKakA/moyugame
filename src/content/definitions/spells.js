@@ -1,9 +1,10 @@
+const SPELL_ICONS = { taxCollection: 'cash', callToArms: 'briefcase', holyLight: 'tower', bloodFrenzy: 'headphones', fairyChanting: 'laptop', goblinsGreed: 'coin' };
 const spell = ({ id, name, description, cost, duration = 0, visible, effects = [], castActions = [] }) => ({
   id, kind: 'spell', contentVersion: 'base-v1', name, description,
   era: { minR: 0 }, visible, unlock: visible,
   cast: { costs: [{ resource: 'mana', amount: { constant: cost } }], requires: [visible] },
   duration, effects, grants: [], reactions: [], castActions, scope: 'run',
-  ui: { kind: 'spellCard', panel: 'spells' },
+  ui: { kind: 'spellCard', panel: 'spells', icon: `assets/images/${SPELL_ICONS[id]}.png` },
 });
 const effect = (group, phase, stat, target, operation, value) => ({ group, phase, stat, target, operation, value, stacking: operation === 'add' || operation === 'addPercent' ? 'add' : 'multiply' });
 

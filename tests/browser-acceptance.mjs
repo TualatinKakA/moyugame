@@ -59,7 +59,12 @@ try {
   const gamePage = await gameContext.newPage(); watch(gamePage);
   await gamePage.goto(origin, { waitUntil: 'domcontentloaded' });
   await gamePage.locator('#retirementPanel .retirement-card').waitFor();
+  const playerCopy = await gamePage.locator('body').textContent();
+  assert.doesNotMatch(playerCopy, /本地自动存档|数值规则独立配置|无外部运行依赖|内容包|schema|运行时|当前版本|本次更新|手机显示|桌面最多/);
   assert.equal(await gamePage.locator('#facilityRail [data-building-card]').count(), 3);
+  await gamePage.waitForFunction(() => [...document.querySelectorAll('.building-icon, .inline-icon')].every(image => image.complete && image.naturalWidth > 0));
+  assert.equal(await gamePage.locator('#facilityRail .building-icon').count(), 3);
+  assert.equal(await gamePage.locator('#workContent .skill-btn .inline-icon').count(), 2);
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 2);
   assert.equal(await gamePage.locator('#workContent .skill-bar').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 2);
   assert.equal(await gamePage.locator('#workContent .workstation-img').count(), 1);
@@ -142,7 +147,9 @@ try {
   retirePage.once('dialog', dialog => dialog.accept());
   await retirePage.locator('#retirementButton').click();
   await closeStory(retirePage, 'intro.first_retirement');
-  assert.equal(await retirePage.locator('#gems').textContent(), '1');
+  assert.equal(await retirePage.locator('#gems').textContent(), '0');
+  await retirePage.locator('#moreTabButton').click();
+  assert.equal(await retirePage.locator('[data-action="reincarnate"]').count(), 0, 'reincarnation is hidden below the original gem requirement');
   await retireContext.close();
 
   assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);

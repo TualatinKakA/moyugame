@@ -84,7 +84,7 @@ function buyControls() {
 }
 function buildingCard(item) {
   return `<button type="button" class="card building-card" data-action="purchase" data-building-card data-id="${item.id}">
-    <span class="building-icon" aria-hidden="true">${item.tier}</span><span class="building-name"><b>${item.name}</b><small data-field="count">× 0</small></span>
+    <img class="building-icon" src="${item.ui.icon}" alt=""><span class="building-name"><b>${item.name}</b><small data-field="count">× 0</small></span>
     <span class="building-output" data-field="output">本次 +¥ 0 / 秒</span><span class="building-price" data-field="cost"></span>
     <span class="building-buy"><b data-field="quantity"></b><small>点击采购</small></span></button>`;
 }
@@ -129,7 +129,7 @@ function quickSkillIds(limit = quickLimit()) {
   return configured.filter(id => ids.has(id)).slice(0, limit);
 }
 function skillButton(item) {
-  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b>${item.name}</b><small>${item.description}</small><em></em></button>`;
+  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</b><small>${item.description}</small><em></em></button>`;
 }
 function renderQuickSkills() {
   const available = visible('spell');
@@ -165,24 +165,24 @@ function buildingPanel() {
   return `<div class="panel-head"><div><h2>设施采购</h2><p>点击设施卡，按当前数量直接采购。</p></div>${buyControls()}</div><div class="card-grid building-grid">${visible('building').map(buildingCard).join('')}</div>`;
 }
 function upgradeCard(item) {
-  return `<article class="card" data-upgrade-card="${item.id}"><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
+  return `<article class="card" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
 }
 function upgradesPanel() {
   const items = visible('upgrade');
-  return `<div class="panel-head"><div><h2>升级</h2><p>可见性、前置、价格与效果均由当前内容包定义。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
+  return `<div class="panel-head"><div><h2>升级</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
 function choiceCard(item) {
-  return `<article class="card" data-choice-card="${item.id}"><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
+  return `<article class="card" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
 }
 function factionsPanel() {
-  return `<div class="panel-head"><div><h2>部门与立场</h2><p>当前序章只开放进取／强压立场及产品部／财务部。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
+  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
 }
 function skillsPanel() {
   const available = visible('spell');
   const quick = quickSkillIds(6);
-  return `<div class="panel-head"><div><h2>全部技能</h2><p>所有技能都可直接释放；常用技能按顺序进入主界面，手机显示前 3 个，桌面最多 6 个。</p></div></div><div class="skill-library">${available.map(item => {
+  return `<div class="panel-head"><div><h2>全部技能</h2><p>设置常用技能，或在这里直接释放。</p></div></div><div class="skill-library">${available.map(item => {
     const index = quick.indexOf(item.id); const isQuick = index >= 0;
-    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3>${item.name}</h3><p>${item.description}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
+    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</h3><p>${item.description}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
   }).join('')}</div>`;
 }
 const statRow = (label, path, format = 'number') => `<tr><td>${label}</td><td data-stat="${path}" data-format="${format}">0</td></tr>`;
@@ -196,12 +196,13 @@ function storyForTrophy(trophyId) {
 function morePanel() {
   const trophies = content('trophy');
   const completed = Object.keys(state().story.completed).map(definition).filter(Boolean);
-  return `<div class="panel-head"><div><h2>职业与存档</h2><p>内容包 ${state().contentVersions.join('、')} · 存档 schema ${state().schemaVersion}</p></div></div>
-    <article class="card"><h3>投胎进入 R${state().progression.reincarnations + 1}</h3><p>需要至少 1 期权。清空当前期权并开启新的职业层级。</p><button data-action="reincarnate">投胎</button></article>
+  const reincarnation = game.select('reincarnation');
+  return `<div class="panel-head"><div><h2>职业与存档</h2><p>管理本地档案，并查看已解锁的奖杯与剧情。</p></div></div>
+    ${reincarnation.visible ? `<article class="card"><h3>投胎进入 R${reincarnation.nextR}</h3><p>消耗当前全部期权，保留奖杯与历史记录，开启更深层的组织周期。</p><button data-action="reincarnate">投胎</button></article>` : ''}
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
     <section class="subsection"><h3>奖杯</h3><div class="card-grid">${trophies.map(trophy => {
       const unlocked = Boolean(state().permanentUnlocks[trophy.id]); const story = storyForTrophy(trophy.id);
-      return `<article class="card ${unlocked ? 'owned' : ''}"><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? trophy.description : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
+      return `<article class="card ${unlocked ? 'owned' : ''}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? trophy.description : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
     }).join('')}</div></section>
     <section class="subsection"><h3>剧情回看</h3><div class="action-row">${completed.map(story => `<button data-action="replay-story" data-id="${story.id}">${story.title}</button>`).join('') || '<p class="notice">暂无可回看的剧情。</p>'}</div></section>`;
 }
@@ -390,5 +391,5 @@ async function bootstrap() {
 bootstrap().catch(error => {
   console.error(error);
   $('intro').classList.remove('hidden');
-  document.querySelector('.intro-card').innerHTML = `<h1>内容加载失败</h1><p>游戏没有覆盖原存档。请检查内容包或恢复上一次良好版本。</p><pre>${error.message}</pre>`;
+  document.querySelector('.intro-card').innerHTML = `<h1>档案暂时无法读取</h1><p>你的原存档未被覆盖。请稍后重试，或联系档案管理员恢复记录。</p>`;
 });
