@@ -4,13 +4,16 @@ import FACTIONS from '../content/r0r3/factions.js';
 import { SPELLS, SPELL_BY_ID } from '../content/r0r3/spells.js';
 import { MISC_BY_ID } from '../content/r0r3/misc-upgrades.js';
 import { CHALLENGE_BY_ID } from '../content/r0r3/challenges.js';
-import { createModifiers, applyFactionUpgrade } from './effects.js';
-import { emptyStats, createState, STAT_SCOPES } from '../core/state.js';
+import { createModifiers, EffectAggregator, collectEffectSpecs } from './effects.js';
+import { createState, STAT_SCOPES, touchState } from '../core/state.js';
 import { evaluateFormula } from './formula.js';
 
 export const FACTION_BY_ID = Object.fromEntries(FACTIONS.map(f => [f.id, f]));
 export const ALL_UPGRADES = [...BUILDING_UPGRADES, ...FACTIONS.flatMap(f => f.upgrades.map(u => ({ ...u, faction: f.id })))];
 export const UPGRADE_BY_ID = Object.fromEntries(ALL_UPGRADES.map(u => [u.id, u]));
+export const BUILDING_UPGRADE_BY_ID = Object.fromEntries(BUILDING_UPGRADES.map(u => [u.id, u]));
+export const UPGRADES_BY_BUILDING = Object.fromEntries(BUILDINGS.map(b => [b.id, BUILDING_UPGRADES.filter(u => u.building === b.id)]));
+export const UPGRADES_BY_FACTION = Object.fromEntries(FACTIONS.map(f => [f.id, f.upgrades]));
 const LOW3 = ['farm', 'inn', 'blacksmith'];
 
 export function coinsToGems(coins) {
@@ -50,9 +53,19 @@ export function royalExchangeCost(state, factionId, mods = null) {
 function totalBuildings(state) {
   return Object.values(state.buildings).reduce((a, b) => a + b, 0);
 }
-function activeCount(state) {
-  return Object.values(state.activeSpells).filter(v => v > 0).length;
+
+const snapshotCache = new WeakMap();
+const cacheMetrics = { hits: 0, misses: 0 };
+
+function factionCoinChance(state, mods) {
+  let chance = Math.max(0, (10 + mods.fcChanceAdd) * mods.fcChanceMult);
+  if (mods.special.has('gemPower')) {
+    const gemUpgrades = ['gemPotency', 'gemSupremacy', 'gemSovereignty'].filter(id => state.upgrades.includes(id)).length;
+    chance += Math.floor((1.25 + gemUpgrades / 4) * Math.log(1 + state.gems) ** 0.9 / Math.log(10));
+  }
+  return chance;
 }
+
 function derivedContext(state, mods) {
   return {
     assistants: Math.max(0, Math.floor(mods.assistantsAdd * mods.assistantsMult)),
@@ -60,134 +73,13 @@ function derivedContext(state, mods) {
     manaRegen: Math.max(0, (1 + mods.manaRegenAdd + 2 * state.progression.reincarnations) * mods.manaRegenMult),
     exchangeBonus: Math.max(0, mods.exchangeAdd * mods.exchangeMult),
     longestSpellDuration: Math.max(0, ...SPELLS.filter(s => spellAvailable(state, s.id)).map(s => s.duration)),
+    fcChance: factionCoinChance(state, mods),
   };
-}
-function applyBuildingUpgrades(mods, state) {
-  for (const id of state.upgrades) {
-    const u = BUILDING_UPGRADES.find(x => x.id === id);
-    if (!u) continue;
-    mods.buildingAdd[u.building] = (mods.buildingAdd[u.building] || 0) + u.bonusPercent;
-    mods.assistantsAdd += u.assistants || 0;
-    if (u.globalPercentPerTrophy) mods.globalAdd += u.globalPercentPerTrophy * state.trophies.length;
-  }
-}
-function applyReincarnation(mods, state) {
-  const R = state.progression.reincarnations;
-  if (R >= 1) {
-    mods.globalAdd += 50 * R;
-    mods.offlineAdd += 500 * R;
-    mods.fcChanceAdd += 10 * R;
-  }
-  if (R >= 2) mods.gemPerGemAdd += 0.2 * R;
-}
-function applyActiveSpells(mods, state) {
-  for (const [id, remaining] of Object.entries(state.activeSpells)) {
-    if (remaining <= 0) continue;
-    const s = SPELL_BY_ID[id];
-    if (!s) continue;
-    const context = {
-      buildingsTotal: totalBuildings(state), clicksR: state.stats.r.clicks,
-      manaRegen: state._derived.manaRegen, factionCoinsTotal: state.stats.total.factionCoins,
-      trophies: state.trophies.length, gems: state.gems,
-      comboCasts: state.stats.total.comboCasts || 0,
-    };
-    if (s.formula && s.effect) {
-      const x = s.x === 'manaRegen' ? state._derived.manaRegen : context[s.x] || 0;
-      const formula = id === 'comboStrike' && state.trophies.includes('perfectCombo') ? '(40 * x ^ 0.9)%' : s.formula;
-      const value = evaluateFormula(formula, { x, R: state.progression.reincarnations, A: 0 });
-      if (s.effect.stat === 'globalAdd') mods.globalAdd += value;
-      if (s.effect.stat === 'buildingAdd') for (const target of s.effect.targets) mods.buildingAdd[target] = (mods.buildingAdd[target] || 0) + value;
-    }
-    if (id === 'holyLight') mods.clickMult *= 18.5;
-    if (id === 'bloodFrenzy') mods.alignmentAdd.evil += 1250;
-    if (id === 'fairyChanting') {
-      for (const target of LOW3) mods.buildingAdd[target] = (mods.buildingAdd[target] || 0) + 50000;
-      if (state.trophies.includes('fairyChoir')) mods.assistantsMult *= 3;
-    }
-    if (id === 'nightTime') mods.assistantProdAdd += (state.trophies.includes('trueNight') ? 40 : 30) * state.buildings.necropolis;
-    if (id === 'hellfireBlast' && state.trophies.includes('hellRush')) {
-      const value = evaluateFormula(s.formula, { x: state.trophies.length });
-      mods.buildingAdd.hallOfLegends = (mods.buildingAdd.hallOfLegends || 0) + value;
-    }
-    if (id === 'diamondPickaxe') {
-      mods.clickMult *= 1 + 0.25 * state.stats.r.excavations;
-      mods.fcChanceAdd += state.trophies.includes('minedwarf') ? 300 : 200;
-    }
-    if (id === 'brainwave') mods.globalAdd += (state.trophies.includes('facelessOvermind') ? 3 : 2) * state.spellBrainwaveStacks;
-    if (id === 'lightningStrike' && mods.lightningTarget) {
-      const count = state.buildings.ironStronghold;
-      multiply(mods.buildingMult, mods.lightningTarget, 1 + (state.trophies.includes('lightningStorm') ? 7.5 : 5) * count);
-      mods.fcChanceMult *= 1 + evaluateFormula(s.fcFormula, { x: state.gems }) / 100;
-    }
-    if (id === 'grandBalance' && mods.balanceTarget) {
-      const counts = Object.values(state.buildings).sort((a, b) => b - a);
-      const value = evaluateFormula(s.formula, { x: counts[0] || 0, y: counts[1] || 0, z: counts[2] || 0, A: 0 });
-      mods.buildingAdd[mods.balanceTarget] = (mods.buildingAdd[mods.balanceTarget] || 0) + value;
-    }
-  }
-}
-function finalizeDerived(state, mods) {
-  const d = derivedContext(state, mods);
-  state._derived = { ...state._derived, ...d };
-  return d;
-}
-
-function applyMiscUpgrades(mods, state) {
-  for (const id of state.upgrades) {
-    const u = MISC_BY_ID[id];
-    if (!u) continue;
-    mods.clickAdd += u.clickAdd || 0;
-    mods.globalAdd += u.globalAdd || 0;
-    mods.offlineAdd += u.offlineAdd || 0;
-    mods.clickProductionShare += u.productionShare || 0;
-    if (u.clickPercent) mods.clickMult *= 1 + u.clickPercent / 100;
-    if (u.globalPerAssistant) mods.globalAdd += u.globalPerAssistant * (state._derived?.assistants || 0);
-    if (u.alignmentAdd) mods.alignmentAdd[u.alignment || 'neutral'] += u.alignmentAdd;
-    if (['gemPotency', 'gemSupremacy', 'gemSovereignty'].includes(id)) mods.gemPerGemAdd += 1;
-  }
-}
-
-function applyChallengeEffects(mods, state) {
-  if (state.challenges.includes('fairy1')) mods.assistantsAdd += 2 * (state.stats.total.upgradesByFaction.fairy || 0);
-  if (state.challenges.includes('elf1')) mods.exchangeCostReduceByFaction.elf = 0.025;
-  if (state.challenges.includes('angel1')) mods.spellCostMult *= 0.9;
-  if (state.challenges.includes('demon1')) {
-    const count = state.stats.total.upgradesBought;
-    mods.globalAdd += count;
-    mods.fcChanceAdd += count;
-  }
-}
-
-export function computeState(state) {
-  let mods;
-  for (let pass = 0; pass < 2; pass++) {
-    mods = createModifiers();
-    applyReincarnation(mods, state);
-    applyBuildingUpgrades(mods, state);
-    for (const id of state.upgrades) {
-      const u = UPGRADE_BY_ID[id];
-      if (u?.faction) applyFactionUpgrade(mods, state, u);
-    }
-    for (const id of state.mercenary.upgrades) {
-      const u = UPGRADE_BY_ID[id];
-      if (u) applyFactionUpgrade(mods, state, u);
-    }
-    applyMiscUpgrades(mods, state);
-    applyChallengeEffects(mods, state);
-    const exchanges = state.stats.total.exchanges || 0;
-    mods.exchangeAdd += 10 * exchanges;
-    mods.globalAdd += 10 * exchanges;
-    mods.lightningTarget = state.lightningTarget || null;
-    mods.balanceTarget = state.balanceTarget || null;
-    applyActiveSpells(mods, state);
-    finalizeDerived(state, mods);
-  }
-  return calculateProduction(state, mods);
 }
 
 function calculateProduction(state, mods) {
   const outputs = {};
-  const gemBonus = state.upgrades.includes('gemPower')
+  const gemBonus = mods.special.has('gemPower')
     ? Math.max(0, 1 + state.gems * (0.02 + mods.gemPerGemAdd / 100) * mods.gemPowerMult)
     : 1;
   const global = (1 + mods.globalAdd / 100) * mods.globalMult * gemBonus;
@@ -195,7 +87,7 @@ function calculateProduction(state, mods) {
     const count = state.buildings[b.id] * mods.buildingCountMult * (mods.buildingCountMultById[b.id] || 1);
     const base = b.rate + (mods.buildingBaseAdd[b.id] || 0);
     const trophyRate = b.perTrophy ? state.trophies.length : 1;
-    const local = (1 + (mods.buildingAdd[b.id] || 0) / 100 + (mods.alignmentAdd[b.alignment] || 0) / 100);
+    const local = 1 + (mods.buildingAdd[b.id] || 0) / 100 + (mods.alignmentAdd[b.alignment] || 0) / 100;
     const localMult = mods.buildingMult[b.id] || 1;
     outputs[b.id] = count * base * trophyRate * local * localMult * global;
   }
@@ -208,15 +100,136 @@ function calculateProduction(state, mods) {
   if (mods.special.has('goldenPots')) clickBase += LOW3.reduce((sum, id) => sum + outputs[id], 0) * 0.2;
   if (mods.special.has('sylvanTreasure')) clickBase += buildingProduction * 0.5;
   const clickReward = clickBase * mods.clickMult;
-  let fcChance = Math.max(0, (10 + mods.fcChanceAdd) * mods.fcChanceMult);
-  if (state.upgrades.includes('gemPower')) {
-    const gemUpgrades = ['gemPotency', 'gemSupremacy', 'gemSovereignty'].filter(id => state.upgrades.includes(id)).length;
-    fcChance += Math.floor((1.25 + gemUpgrades / 4) * Math.log(1 + state.gems) ** 0.9 / Math.log(10));
+  return {
+    outputs, buildings: outputs, buildingProduction, assistantOutput, production,
+    productionTotal: production, clickReward, assistants, fcChance: factionCoinChance(state, mods),
+    factionCoinChance: factionCoinChance(state, mods), exchangeBonus: Math.max(0, mods.exchangeAdd * mods.exchangeMult),
+  };
+}
+
+function validateSnapshot(snapshot) {
+  for (const key of ['production', 'buildingProduction', 'assistantOutput', 'clickReward', 'assistants', 'manaMax', 'manaRegen', 'fcChance', 'exchangeBonus']) {
+    if (!Number.isFinite(snapshot[key])) throw new Error(`Snapshot ${key} is not finite`);
+    if (snapshot[key] < 0) throw new Error(`Snapshot ${key} is illegally negative`);
   }
-  const exchangeBonus = Math.max(0, mods.exchangeAdd * mods.exchangeMult);
-  const result = { outputs, buildingProduction, assistantOutput, production, clickReward, assistants, fcChance, exchangeBonus, mods };
-  state._derived = { ...state._derived, ...result, productionTotal: production };
-  return result;
+  for (const [id, value] of Object.entries(snapshot.outputs)) {
+    if (!Number.isFinite(value) || value < 0) throw new Error(`Snapshot building ${id} has illegal output ${value}`);
+  }
+}
+
+function deepFreeze(value, seen = new Set()) {
+  if (!value || typeof value !== 'object' || value instanceof Set || seen.has(value)) return value;
+  seen.add(value);
+  Object.freeze(value);
+  for (const nested of Object.values(value)) deepFreeze(nested, seen);
+  return value;
+}
+
+export function computeSnapshot(state, context = {}) {
+  const mods = createModifiers();
+  const specs = collectEffectSpecs(state);
+  const aggregator = new EffectAggregator(state);
+  const derived = {};
+  aggregator.run(specs, mods, derived, currentMods => derivedContext(state, currentMods));
+  const result = calculateProduction(state, mods);
+  const special = mods.special;
+  mods.special = Object.freeze({ has: id => special.has(id) });
+  const snapshot = {
+    ...result,
+    ...derivedContext(state, mods),
+    mods,
+    sources: aggregator.sources,
+    warnings: aggregator.warnings,
+    dependencies: [...aggregator.dependencies],
+    revision: state.revision,
+    context: {
+      R: state.progression.reincarnations,
+      A: state.progression.ascension,
+      ascensionStartR: state.progression.ascensionStartR,
+      contentPacks: [...state.contentPacks],
+      ...context,
+    },
+  };
+  validateSnapshot(snapshot);
+  return deepFreeze(snapshot);
+}
+
+function rawDependency(state, path) {
+  if (path === 'coins') return state.coins;
+  if (path === 'gems') return state.gems;
+  if (path === 'trophies') return state.trophies.length;
+  if (path === 'activeSpells') return Object.keys(state.activeSpells).filter(id => state.activeSpells[id] > 0).sort();
+  if (path === 'buildings' || path === 'buildings.total') return state.buildings;
+  if (path === 'buildings.low3') return LOW3.map(id => state.buildings[id]);
+  if (path.startsWith('buildings.max.')) return state.stats.r.buildingMax[path.slice(14)];
+  if (path.startsWith('buildings.alignment.')) return BUILDINGS.filter(b => b.alignment === path.split('.')[2]).map(b => state.buildings[b.id]);
+  if (path.startsWith('buildings.topCounts.')) return Object.values(state.buildings).sort((a, b) => b - a);
+  if (path.startsWith('buildings.')) return state.buildings[path.slice(10)];
+  if (path === 'R') return state.progression.reincarnations;
+  if (path === 'A') return state.progression.ascension;
+  if (path === 'clicks.r') return state.stats.r.clicks;
+  if (path === 'clicks.total') return state.stats.total.clicks;
+  if (path === 'spells.total') return state.stats.total.spellsCast;
+  if (path === 'spells.evilTotal') return state.stats.total.evilSpellsCast;
+  if (path === 'comboCasts.total') return state.stats.total.comboCasts;
+  if (path === 'factionCoins.total') return state.stats.total.factionCoins;
+  if (path.startsWith('factionCoins.')) return state.stats.total.factionCoinsByFaction[path.slice(13)];
+  if (path === 'taxCasts.total') return state.stats.total.taxCasts;
+  if (path === 'exchanges.total') return state.stats.total.exchanges;
+  if (path === 'excavations.r') return state.stats.r.excavations;
+  if (path === 'excavations.total') return state.stats.total.excavations;
+  if (path === 'excavationResets') return state.excavationResets;
+  if (path === 'time.total' || path === 'time.totalWithUndeadChallenge') return [state.stats.total.time, state.challenges.includes('undead1')];
+  if (path === 'time.longestSession.r') return state.stats.r.longestSession;
+  if (path.startsWith('time.faction.r.')) return state.stats.r.factionTime[path.split('.')[3]];
+  if (path.startsWith('time.faction.total.')) return state.stats.total.factionTime[path.split('.')[3]];
+  if (path === 'offline.r') return state.stats.r.offlineTime;
+  if (path === 'upgrades.total') return state.stats.total.upgradesBought;
+  if (path.startsWith('upgrades.')) return state.stats.total.upgradesByFaction[path.split('.')[1]];
+  if (path === 'brainwave.stacks') return state.spellBrainwaveStacks;
+  return path;
+}
+
+function snapshotFingerprint(state, snapshot) {
+  return JSON.stringify({
+    buildings: state.buildings,
+    upgrades: state.upgrades,
+    mercenary: state.mercenary.upgrades,
+    trophies: state.trophies,
+    progression: state.progression,
+    challenges: state.challenges,
+    alignment: state.alignment,
+    faction: state.faction,
+    gems: state.gems,
+    active: Object.keys(state.activeSpells).filter(id => state.activeSpells[id] > 0).sort(),
+    lightningTarget: state.lightningTarget,
+    balanceTarget: state.balanceTarget,
+    dynamic: snapshot.dependencies.map(path => [path, rawDependency(state, path)]),
+  });
+}
+
+export function getSnapshot(state) {
+  const cached = snapshotCache.get(state);
+  if (cached?.revision === state.revision && cached.fingerprint === snapshotFingerprint(state, cached.snapshot)) {
+    cacheMetrics.hits++;
+    return cached.snapshot;
+  }
+  cacheMetrics.misses++;
+  const snapshot = computeSnapshot(state);
+  snapshotCache.set(state, { revision: state.revision, snapshot, fingerprint: snapshotFingerprint(state, snapshot) });
+  return snapshot;
+}
+
+export function computeState(state) {
+  return getSnapshot(state);
+}
+
+export function invalidateSnapshot(state) {
+  snapshotCache.delete(state);
+}
+
+export function snapshotCacheInfo() {
+  return { ...cacheMetrics };
 }
 
 function earnCoins(state, amount, click = false) {
@@ -241,15 +254,17 @@ export function buyBuilding(state, id, amount = state.settings.buyAmount) {
     state.stats[scope].buildingMax[id] = Math.max(state.stats[scope].buildingMax[id] || 0, state.buildings[id]);
     state.stats[scope].buildingsMax = Math.max(state.stats[scope].buildingsMax || 0, total);
   }
+  touchState(state);
   return true;
 }
 
 export function buyBuildingUpgrade(state, id) {
-  const u = BUILDING_UPGRADES.find(x => x.id === id);
+  const u = BUILDING_UPGRADE_BY_ID[id];
   if (!u || state.upgrades.includes(id) || state.buildings[u.building] < u.requirement || state.coins < u.cost) return false;
   state.coins -= u.cost;
   state.upgrades.push(id);
   for (const scope of STAT_SCOPES) state.stats[scope].upgradesBought++;
+  touchState(state);
   return true;
 }
 
@@ -277,6 +292,7 @@ export function buyMiscUpgrade(state, id) {
   state.coins -= u.cost;
   state.upgrades.push(id);
   for (const scope of STAT_SCOPES) state.stats[scope].upgradesBought++;
+  touchState(state);
   return true;
 }
 
@@ -359,6 +375,7 @@ export function buyFactionUpgrade(state, id) {
     if (onlyLow3) completeChallenge(state, 'fairy1');
   }
   checkChallenges(state);
+  touchState(state);
   return true;
 }
 
@@ -372,6 +389,7 @@ export function buyProof(state, alignment) {
   state.alignment = alignment;
   state.faction = null;
   state.prestige = null;
+  touchState(state);
   return true;
 }
 
@@ -426,6 +444,7 @@ export function workClick(state) {
   const d = computeState(state);
   earnCoins(state, d.clickReward, true);
   for (const scope of STAT_SCOPES) state.stats[scope].clicks++;
+  touchState(state);
   if (nextRandom(state) < d.fcChance / 100) findFactionCoins(state, 1);
   if (d.mods.special.has('elvenLuck') && nextRandom(state) < 0.01) triggerElvenLuck(state);
   return d.clickReward;
@@ -475,11 +494,15 @@ export function castSpell(state, id, free = false) {
   }
   if (id !== 'godsHand' && state.activeSpells.godsHand > 0 && state.trophies.includes('godsRest')) findFactionCoins(state, Math.floor(computeState(state).fcChance ** 1.1));
   if (mods.special.has('goblinBank') && id !== 'taxCollection') castSpell(state, 'taxCollection', true);
+  touchState(state);
   return true;
 }
 
 function completeChallenge(state, id) {
-  if (!state.challenges.includes(id)) state.challenges.push(id);
+  if (!state.challenges.includes(id)) {
+    state.challenges.push(id);
+    touchState(state);
+  }
 }
 function challengeReady(state, id) {
   const c = CHALLENGE_BY_ID[id];
@@ -493,7 +516,12 @@ function checkChallenges(state) {
 
 function checkSpellTrophies(state, id) {
   const d = computeState(state);
-  const unlock = (trophy, condition = true) => { if (condition && !state.trophies.includes(trophy)) state.trophies.push(trophy); };
+  const unlock = (trophy, condition = true) => {
+    if (condition && !state.trophies.includes(trophy)) {
+      state.trophies.push(trophy);
+      touchState(state);
+    }
+  };
   if (id === 'fairyChanting') unlock('fairyChoir', d.assistants >= 45);
   if (id === 'moonBlessing') { const h = new Date().getHours(); unlock('sunBlessing', h >= 6 && h < 13); }
   if (id === 'godsHand') unlock('godsRest', new Date().getUTCDay() === 0);
@@ -515,13 +543,13 @@ export function tick(state, delta) {
     if (state.faction) state.stats[scope].factionTime[state.faction] = (state.stats[scope].factionTime[state.faction] || 0) + dt;
   }
   const d = computeState(state);
-  const manaGain = state._derived.manaRegen * dt;
-  state.mana = Math.min(state._derived.manaMax, state.mana + manaGain);
+  const manaGain = d.manaRegen * dt;
+  state.mana = Math.min(d.manaMax, state.mana + manaGain);
   for (const scope of STAT_SCOPES) {
     state.stats[scope].manaProduced += manaGain;
     state.stats[scope].assistantsMax = Math.max(state.stats[scope].assistantsMax, d.assistants);
-    state.stats[scope].manaMax = Math.max(state.stats[scope].manaMax, state._derived.manaMax);
-    state.stats[scope].manaRegenMax = Math.max(state.stats[scope].manaRegenMax, state._derived.manaRegen);
+    state.stats[scope].manaMax = Math.max(state.stats[scope].manaMax, d.manaMax);
+    state.stats[scope].manaRegenMax = Math.max(state.stats[scope].manaRegenMax, d.manaRegen);
   }
   earnCoins(state, d.production * dt);
   const assistantFc = d.fcChance / 100 * d.assistants * dt * (d.mods.special.has('elvenEmissary') ? 3 : 1);
@@ -554,6 +582,7 @@ export function tick(state, delta) {
     if (state.activeSpells[id] <= 0) {
       delete state.activeSpells[id];
       if (id === 'brainwave') state.spellBrainwaveStacks = 0;
+      touchState(state);
     }
   }
 }
@@ -614,16 +643,21 @@ export function buyRoyalExchange(state, factionId, amount = 1) {
       state.stats[scope].exchangesByFaction[factionId] = (state.stats[scope].exchangesByFaction[factionId] || 0) + 1;
     }
   }
+  if (bought) touchState(state);
   return bought;
 }
 export function unlockArchaeology(state) {
   if (state.unlocked.archaeology || state.gems <= 1e9 || state.stats.total.coins < 1e28 || state.coins < 1e29) return false;
   state.coins -= 1e29;
   state.unlocked.archaeology = true;
+  touchState(state);
   return true;
 }
 function addArtifact(state, id) {
-  if (!state.artifacts.includes(id)) state.artifacts.push(id);
+  if (!state.artifacts.includes(id)) {
+    state.artifacts.push(id);
+    touchState(state);
+  }
 }
 export function excavate(state) {
   if (!state.unlocked.archaeology) return false;
@@ -641,6 +675,7 @@ export function excavate(state) {
   if (n >= 25) addArtifact(state, 'druidClue2');
   if (n >= 15) addArtifact(state, 'facelessClue1');
   if (n >= 30) addArtifact(state, 'facelessClue2');
+  touchState(state);
   return true;
 }
 export function unlockNeutralFaction(state, id) {
@@ -654,12 +689,14 @@ export function unlockNeutralFaction(state, id) {
   state.coins -= 1e30;
   for (const fid of pair) state.factionCoins[fid] -= 25000;
   addArtifact(state, `${id}Unlock`);
+  touchState(state);
   return true;
 }
 export function unlockUnderworld(state) {
   if (state.unlocked.underworld || state.excavationCount < 200 || state.coins < 5e49) return false;
   state.coins -= 5e49;
   state.unlocked.underworld = true;
+  touchState(state);
   return true;
 }
 export function completePrestigeQuest(state, id) {
@@ -676,6 +713,7 @@ export function completePrestigeQuest(state, id) {
     for (const fid of ['goblin', 'undead', 'demon']) state.factionCoins[fid] -= 10000;
   } else return false;
   addArtifact(state, `${id}Quest`);
+  touchState(state);
   return true;
 }
 export function mercenaryTributeCost(state) {
@@ -690,12 +728,14 @@ export function payMercenaryTribute(state) {
   state.coins -= cost.coins;
   for (const id of factions) state.factionCoins[id] -= cost.factionCoins;
   state.unlocked.mercenaryTribute = true;
+  touchState(state);
   return true;
 }
 export function mercenaryOath(state) {
   if (!state.unlocked.mercenaryTribute || state.unlocked.mercenary || state.coins < 1e72) return false;
   state.coins -= 1e72;
   state.unlocked.mercenary = true;
+  touchState(state);
   return true;
 }
 export function joinMercenary(state, alignment) {
@@ -704,12 +744,14 @@ export function joinMercenary(state, alignment) {
   state.prestige = null;
   state.alignment = alignment;
   state.mercenary = { upgrades: [], spells: [] };
+  touchState(state);
   return true;
 }
 export function selectMercenarySpell(state, id) {
   if (state.faction !== 'mercenary' || !SPELL_BY_ID[id] || state.mercenary.spells.includes(id)) return false;
   if (state.mercenary.spells.length >= 2) return false;
   state.mercenary.spells.push(id);
+  touchState(state);
   return true;
 }
 export function buyMercenaryUpgrade(state, id) {
@@ -725,6 +767,7 @@ export function buyMercenaryUpgrade(state, id) {
   if ((state.factionCoins[u.faction] || 0) < cost) return false;
   state.factionCoins[u.faction] -= cost;
   state.mercenary.upgrades.push(id);
+  touchState(state);
   return true;
 }
 export function applyOffline(state, seconds) {
@@ -735,5 +778,6 @@ export function applyOffline(state, seconds) {
   const amount = computeState(state).production * time * efficiency;
   earnCoins(state, amount);
   for (const scope of STAT_SCOPES) state.stats[scope].offlineTime += time;
+  touchState(state);
   return amount;
 }
