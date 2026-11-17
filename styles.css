@@ -247,7 +247,7 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .mana-track { height: 6px; }
   .app-layout { display: block; height: calc(100dvh - 198px - env(safe-area-inset-bottom, 0px)); min-height: 0; }
   .left-rail { display: contents; }
-  .app-nav { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; height: calc(58px + env(safe-area-inset-bottom, 0px)); padding: 0 0 env(safe-area-inset-bottom, 0px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; background: #111411; border-top: 1px solid #475240; }
+  .app-nav { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; height: calc(58px + env(safe-area-inset-bottom, 0px)); padding: 0 0 env(safe-area-inset-bottom, 0px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; background: #111411; border-top: 1px solid #475240; }
   .app-nav button { min-height: 58px; padding: 0; border: 0; border-right: 1px solid #292f28; text-align: center; font-size: 11px; }
   .desktop-nav, .desktop-label, .rail-shortcuts { display: none !important; }
   .mobile-nav, .mobile-label { display: block; }

@@ -109,7 +109,8 @@ try {
   assert.equal(await visible(page, '#mainPanel [data-action="reincarnate"]'), true, 'reincarnation remains in More');
   await page.locator('[data-action="close-panel"]').click();
 
-  for (const tab of ['factions', 'audit', 'stats']) {
+  assert.equal(await page.locator('.app-nav [data-tab="audit"]').count(), 0, 'audit navigation is hidden');
+  for (const tab of ['factions', 'stats']) {
     await page.locator(`.app-nav [data-tab="${tab}"]`).click();
     assert.equal(await visible(page, '#mainPanel'), true, `${tab} panel opens`);
     await page.waitForTimeout(250);
