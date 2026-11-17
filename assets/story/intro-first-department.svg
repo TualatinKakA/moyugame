@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="部门协作记录">
+  <rect width="960" height="540" fill="#111a24"/>
+  <path d="M480 270L230 135M480 270l250-135M480 270L230 405M480 270l250 135" stroke="#547c91" stroke-width="8"/>
+  <circle cx="480" cy="270" r="86" fill="#243e50" stroke="#85b7bd" stroke-width="6"/>
+  <circle cx="480" cy="270" r="32" fill="#85b7bd"/>
+  <g fill="#e3e7e5" stroke="#9caeba" stroke-width="4">
+    <rect x="135" y="75" width="190" height="120" rx="16"/>
+    <rect x="635" y="75" width="190" height="120" rx="16"/>
+    <rect x="135" y="345" width="190" height="120" rx="16"/>
+    <rect x="635" y="345" width="190" height="120" rx="16"/>
+  </g>
+  <g stroke="#91a0a9" stroke-width="10" stroke-linecap="round">
+    <path d="M175 115h110M175 150h75M675 115h110M675 150h75M175 385h110M175 420h75M675 385h110M675 420h75"/>
+  </g>
+</svg>

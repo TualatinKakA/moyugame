@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="无名工资单">
+  <rect width="960" height="540" fill="#111a26"/>
+  <rect x="190" y="60" width="580" height="400" rx="24" fill="#203147" stroke="#41637e" stroke-width="4"/>
+  <rect x="235" y="105" width="490" height="280" rx="12" fill="#e8edf0"/>
+  <circle cx="295" cy="170" r="28" fill="#9aabb8"/>
+  <path d="M345 155h220M345 185h150" stroke="#a7b2b9" stroke-width="14" stroke-linecap="round"/>
+  <path d="M270 240h420M270 285h420M270 330h250" stroke="#bdc6cb" stroke-width="12" stroke-linecap="round"/>
+  <path d="M575 320h95" stroke="#308a78" stroke-width="22" stroke-linecap="round"/>
+  <path d="M400 460h160l30 40H370z" fill="#41637e"/>
+</svg>

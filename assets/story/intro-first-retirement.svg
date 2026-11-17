@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="退休证明与再次出现的工牌">
+  <rect width="960" height="540" fill="#101823"/>
+  <circle cx="730" cy="125" r="75" fill="#d6a85f" opacity=".28"/>
+  <rect x="125" y="90" width="400" height="330" rx="14" fill="#e8dfcc" transform="rotate(-5 325 255)"/>
+  <path d="M190 170h240M190 215h280M190 260h205M190 305h240" stroke="#a79e8d" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="440" cy="350" r="43" fill="#ad674f"/>
+  <rect x="545" y="140" width="260" height="180" rx="18" fill="#dce4e6" transform="rotate(7 675 230)"/>
+  <rect x="580" y="175" width="70" height="90" rx="8" fill="#96a8b2" transform="rotate(7 615 220)"/>
+  <path d="M680 195l80 10M680 230l80 10M680 265l55 7" stroke="#82959e" stroke-width="12" stroke-linecap="round"/>
+  <g fill="#a9474d">
+    <ellipse cx="310" cy="90" rx="24" ry="55" transform="rotate(-35 310 90)"/>
+    <ellipse cx="365" cy="90" rx="24" ry="55" transform="rotate(35 365 90)"/>
+    <ellipse cx="338" cy="60" rx="24" ry="55"/>
+    <circle cx="338" cy="105" r="28" fill="#c68b62"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="空白工位与员工工牌">
+  <rect width="960" height="540" fill="#101722"/>
+  <rect x="80" y="80" width="800" height="380" rx="24" fill="#182536"/>
+  <rect x="570" y="120" width="230" height="140" rx="12" fill="#243b52" stroke="#75a7c7" stroke-width="4"/>
+  <rect x="600" y="275" width="170" height="14" rx="7" fill="#75a7c7"/>
+  <path d="M130 390h350l-35-150H165z" fill="#223247"/>
+  <rect x="175" y="175" width="220" height="140" rx="16" fill="#e5e0d2" transform="rotate(-6 285 245)"/>
+  <rect x="205" y="205" width="64" height="74" rx="8" fill="#9da9b2" transform="rotate(-6 237 242)"/>
+  <path d="M295 220l75-8M295 248l75-8M295 276l52-6" stroke="#6e7880" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="300" cy="130" r="28" fill="#d6a85f" opacity=".8"/>
+</svg>
