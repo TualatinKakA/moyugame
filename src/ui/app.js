@@ -116,13 +116,13 @@ function notify(text, error = false) {
 function refresh(panel = false) {
   if (panel) panelDirty = true;
   const d = computeState(state);
-  const manaMax = state._derived.manaMax;
+  const manaMax = d.manaMax;
   const manaPercent = Math.max(0, Math.min(100, state.mana / manaMax * 100));
   $('coins').textContent = money(state.coins);
   $('production').textContent = money(d.production);
   $('gems').textContent = formatNumber(state.gems);
   $('mana').textContent = `${formatNumber(state.mana)} / ${formatNumber(manaMax)}`;
-  $('manaRate').textContent = `+${formatNumber(state._derived.manaRegen)} / 秒`;
+  $('manaRate').textContent = `+${formatNumber(d.manaRegen)} / 秒`;
   $('manaFill').style.width = `${manaPercent}%`;
   $('manaProgress').setAttribute('aria-valuemax', String(manaMax));
   $('manaProgress').setAttribute('aria-valuenow', String(state.mana));
@@ -132,8 +132,7 @@ function refresh(panel = false) {
   if (panelDirty) {
     renderWork();
     if (activeTab !== 'work') renderPanel();
-  } else if (activeTab !== 'work') {
-    renderPanel();
+    panelDirty = false;
   }
 }
 function renderSide() {
