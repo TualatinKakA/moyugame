@@ -660,7 +660,7 @@ document.addEventListener('click', event => {
   }
   if (action === 'start') {
     const isNewSave = !state.story.triggered['intro.onboarding']
-      && state.stats.total.time === 0 && state.stats.total.clicks === 0;
+      && state.stats.total.clicks === 0;
     $('intro').classList.add('hidden');
     notify('已入职。先点击显示器，或积累 ¥25K 购买部门立场。');
     emitGameEvent('game.started', { isNewSave });
@@ -774,7 +774,7 @@ if (away > 10 && computeState(state).production > 0) {
     emitGameEvent('offline.settled', { seconds: away, coins: earned });
   }
 }
-if (state.stats.total.time > 0 || state.stats.total.clicks > 0 || state.story.triggered['intro.onboarding']) {
+if (state.stats.total.clicks > 0 || state.story.triggered['intro.onboarding']) {
   $('intro').classList.add('hidden');
 }
 refresh(true);

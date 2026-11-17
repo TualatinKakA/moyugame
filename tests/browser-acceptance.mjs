@@ -204,9 +204,13 @@ try {
   const cleanPage = await cleanContext.newPage();
   cleanPage.on('pageerror', error => errors.push(error.message));
   await cleanPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await cleanPage.waitForTimeout(1200);
   await cleanPage.locator('[data-action="start"]').click();
+  await cleanPage.locator('.story-overlay[data-story-id="intro.onboarding"] [data-action="close-story"]').waitFor();
+  assert.match(await cleanPage.locator('.story-overlay .story-title').textContent(), /第一天/, 'opening delay does not skip onboarding');
   await cleanPage.locator('.story-overlay [data-action="close-story"]').click();
   await cleanPage.locator('.work-btn').click();
+  await cleanPage.locator('.story-overlay[data-story-id="intro.first_wage"] [data-action="close-story"]').waitFor();
   await cleanPage.locator('.story-overlay [data-action="close-story"]').click();
   await cleanPage.locator('[data-action="save"]').click();
   await cleanPage.locator('#moreTabButton').click();
