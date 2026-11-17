@@ -159,22 +159,43 @@ function renderSide() {
     lastLogSignature = logSignature;
   }
 }
+function availableSkills() {
+  return SPELLS.filter(s => spellAvailable(state, s.id));
+}
+function quickSkillLimit() {
+  if (window.innerWidth >= 1200) return 6;
+  if (window.innerWidth >= 901) return 4;
+  return 3;
+}
+function quickSkillIds(limit = quickSkillLimit()) {
+  const available = availableSkills();
+  const availableIds = new Set(available.map(s => s.id));
+  const configured = Array.isArray(state.settings.quickSkills)
+    ? state.settings.quickSkills
+    : available.map(s => s.id);
+  return configured.filter(id => availableIds.has(id)).slice(0, limit);
+}
 function workStructureSignature() {
-  return `R${state.progression.reincarnations}|${SPELLS.filter(s => spellAvailable(state, s.id)).map(s => s.id).join(',')}`;
+  return `R${state.progression.reincarnations}|${quickSkillLimit()}|${availableSkills().map(s => s.id).join(',')}|${quickSkillIds(6).join(',')}`;
 }
 function updateWork(d) {
   $('clickReward').textContent = money(d.clickReward);
   $('assistants').textContent = formatNumber(d.assistants);
   $('runTime').textContent = formatTime(state.stats.run.time);
-  document.querySelectorAll('#workContent [data-action="cast"]').forEach(button => {
+  document.querySelectorAll('[data-action="cast"]').forEach(button => {
     const spell = SPELL_BY_ID[button.dataset.id];
     const remaining = state.activeSpells[spell.id] || 0;
     button.classList.toggle('active', remaining > 0);
     button.disabled = state.mana < spell.cost;
     button.classList.toggle('insufficient', button.disabled);
     button.setAttribute('aria-label', `${spell.name}。${spell.description}${remaining > 0 ? `，剩余 ${formatNumber(remaining)} 秒` : `，消耗 ${formatNumber(spell.cost)} 精力`}`);
+    const statusText = remaining > 0 ? `生效中 ${formatNumber(remaining)} 秒` : `${formatNumber(spell.cost)} 精力`;
     const status = button.querySelector('em');
-    if (status) status.textContent = remaining > 0 ? `生效中 ${formatNumber(remaining)} 秒` : `${formatNumber(spell.cost)} 精力`;
+    if (status) status.textContent = statusText;
+    const row = button.closest('[data-skill-row]');
+    row?.classList.toggle('active', remaining > 0);
+    const rowStatus = row?.querySelector('[data-skill-status]');
+    if (rowStatus) rowStatus.textContent = statusText;
   });
 }
 function retirementView() {
@@ -204,10 +225,48 @@ function updateRetirement() {
 function buyControls() {
   return `<div class="buy-controls" aria-label="采购数量">${[1, 10, 'max'].map(x => `<button data-action="buy-amount" data-value="${x}" aria-pressed="${state.settings.buyAmount === x}" class="${state.settings.buyAmount === x ? 'active' : ''}">${String(x).toUpperCase()}</button>`).join('')}</div>`;
 }
+function skillButtonView(s) {
+  return `<button class="skill-btn ${state.activeSpells[s.id] > 0 ? 'active' : ''}" data-action="cast" data-id="${s.id}" title="${s.name}：${s.description}"><b>${s.name}</b><small>${s.description}</small><em>${state.activeSpells[s.id] > 0 ? `生效中 ${formatNumber(state.activeSpells[s.id])} 秒` : `${formatNumber(s.cost)} 精力`}</em></button>`;
+}
 function skillButtons() {
-  const available = SPELLS.filter(s => spellAvailable(state, s.id));
+  const available = availableSkills();
   if (!available.length) return '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
-  return `<div class="skill-bar">${available.map(s => `<button class="skill-btn ${state.activeSpells[s.id] > 0 ? 'active' : ''}" data-action="cast" data-id="${s.id}" title="${s.name}：${s.description}"><b>${s.name}</b><small>${s.description}</small><em>${state.activeSpells[s.id] > 0 ? `生效中 ${formatNumber(state.activeSpells[s.id])} 秒` : `${formatNumber(s.cost)} 精力`}</em></button>`).join('')}</div>`;
+  const quick = quickSkillIds().map(id => SPELL_BY_ID[id]);
+  return `<section class="skill-shortcuts" aria-label="快捷技能">
+    <div class="skill-bar-head"><small>快捷技能 · 按固定顺序显示</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>
+    ${quick.length ? `<div class="skill-bar">${quick.map(skillButtonView).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}
+  </section>`;
+}
+function skillsView() {
+  const available = availableSkills();
+  const quick = quickSkillIds(6);
+  return `<div class="panel-head"><div><h2>全部技能</h2><p>所有技能都可直接释放；常用技能按顺序进入主界面，手机显示前 3 个，桌面最多 6 个。</p></div></div>
+    <div class="skill-library">${available.map(s => {
+      const quickIndex = quick.indexOf(s.id);
+      const isQuick = quickIndex >= 0;
+      const remaining = state.activeSpells[s.id] || 0;
+      return `<article class="skill-row ${remaining > 0 ? 'active' : ''}" data-skill-row="${s.id}">
+        <div class="skill-copy"><h3>${s.name}</h3><p>${s.description}</p><small class="meta" data-skill-status>${remaining > 0 ? `生效中 ${formatNumber(remaining)} 秒` : `${formatNumber(s.cost)} 精力`}</small></div>
+        <div class="skill-actions">
+          <button class="primary" data-action="cast" data-id="${s.id}" ${state.mana < s.cost ? 'disabled' : ''}>释放</button>
+          ${isQuick && quickIndex > 0 ? `<button data-action="prioritize-skill" data-id="${s.id}">置顶</button>` : ''}
+          <button data-action="toggle-quick-skill" data-id="${s.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button>
+        </div>
+      </article>`;
+    }).join('')}</div>`;
+}
+function updateQuickSkill(id, mode) {
+  const available = availableSkills();
+  if (!available.some(s => s.id === id)) return;
+  const configured = Array.isArray(state.settings.quickSkills)
+    ? state.settings.quickSkills.filter(skillId => available.some(s => s.id === skillId))
+    : available.map(s => s.id);
+  let next = configured.filter(skillId => skillId !== id);
+  if (mode !== 'remove') next.unshift(id);
+  state.settings.quickSkills = [...new Set(next)].slice(0, 6);
+  saveState(state);
+  workStructure = '';
+  panelDirty = true;
 }
 function workView() {
   return `${skillButtons()}
@@ -557,13 +616,15 @@ function renderPanel(force = false) {
   }
   if (!force && !panelDirty) return;
   $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
+  $('mainPanel').classList.toggle('skills-dialog', activeTab === 'skills');
   const content = activeTab === 'buildings' ? buildingView()
     : activeTab === 'building-upgrades' ? facilityUpgradesView()
       : activeTab === 'misc-upgrades' ? miscUpgradesView()
         : activeTab === 'upgrades' ? upgradesView()
           : activeTab === 'factions' ? factionView()
             : activeTab === 'audit' ? auditView()
-              : activeTab === 'stats' ? statsView() : moreView();
+              : activeTab === 'skills' ? skillsView()
+                : activeTab === 'stats' ? statsView() : moreView();
   $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${content}`;
   if (activeTab === 'more') {
     $('achievementMount').appendChild(story.ui.achievementElement);
@@ -688,6 +749,16 @@ document.addEventListener('click', event => {
     }
   }
   if (action === 'proof') actionResult(buyProof(state, id), '部门立场已确认');
+  if (action === 'toggle-quick-skill') {
+    updateQuickSkill(id, quickSkillIds(6).includes(id) ? 'remove' : 'pin');
+    refresh(true);
+    return;
+  }
+  if (action === 'prioritize-skill') {
+    updateQuickSkill(id, 'pin');
+    refresh(true);
+    return;
+  }
   if (action === 'cast') {
     if (actionResult(castSpell(state, id), `已释放：${SPELL_BY_ID[id].name}`, '精力不足或技能尚未解锁')) {
       emitGameEvent('spell.cast', { spellId: id });

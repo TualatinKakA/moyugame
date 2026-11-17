@@ -43,7 +43,7 @@ export function createState() {
     stats: { run: emptyStats(), r: emptyStats(), ascension: emptyStats(), total: emptyStats() },
     story: createStoryState(),
     achievements: createAchievementState(),
-    settings: { buyAmount: 1, muted: true, offlineEfficiency: 0.5 },
+    settings: { buyAmount: 1, muted: true, offlineEfficiency: 0.5, quickSkills: null },
     rngState: 0x6d2b79f5,
   };
 }
@@ -69,7 +69,13 @@ export function normalizeState(saved) {
     factionCoins: { ...base.factionCoins, ...(saved.factionCoins || {}) },
     unlocked: { ...base.unlocked, ...(saved.unlocked || {}) },
     mercenary: { ...base.mercenary, ...(saved.mercenary || {}) },
-    settings: { ...base.settings, ...(saved.settings || {}) },
+    settings: {
+      ...base.settings,
+      ...(saved.settings || {}),
+      quickSkills: Array.isArray(saved.settings?.quickSkills)
+        ? [...new Set(saved.settings.quickSkills.filter(id => typeof id === 'string'))]
+        : null,
+    },
     stats: Object.fromEntries(STAT_SCOPES.map(scope => [scope, { ...base.stats[scope], ...(saved.stats?.[scope] || {}) }])),
     story: normalizeStoryState(migrated.story),
     achievements: normalizeAchievementState(migrated.achievements),

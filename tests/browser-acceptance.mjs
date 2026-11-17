@@ -200,6 +200,45 @@ try {
   assert.equal(await liveSkill.isEnabled(), true, 'skill enables automatically when mana reaches its cost');
   await liveContext.close();
 
+  const skillContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const skillState = createState();
+  skillState.alignment = 'good';
+  skillState.faction = 'fairy';
+  skillState.prestige = 'elf';
+  skillState.mercenary.spells = ['godsHand', 'nightTime'];
+  skillState.mana = 10000;
+  skillState.stats.total.clicks = 1;
+  await skillContext.addInitScript(({ key, json }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, json);
+  }, { key: SAVE_KEY, json: JSON.stringify(skillState) });
+  const skillPage = await skillContext.newPage();
+  skillPage.on('pageerror', error => errors.push(error.message));
+  await skillPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await skillPage.locator('#retirementPanel .retirement-card').waitFor();
+  assert.equal(await skillPage.locator('#workContent .skill-btn').count(), 3, 'mobile shows only three quick skills with seven unlocked');
+  await skillPage.setViewportSize({ width: 1440, height: 900 });
+  await skillPage.waitForFunction(() => document.querySelectorAll('#workContent .skill-btn').length === 6);
+  assert.equal(await skillPage.locator('#workContent .skill-bar').evaluate(el => getComputedStyle(el).gridTemplateRows.split(' ').length), 1, 'desktop quick skills stay on one row');
+  await skillPage.setViewportSize({ width: 390, height: 844 });
+  await skillPage.waitForFunction(() => document.querySelectorAll('#workContent .skill-btn').length === 3);
+  await skillPage.locator('#workContent [data-tab="skills"]').click();
+  assert.equal(await skillPage.locator('#mainPanel [data-skill-row]').count(), 7, 'skill library lists every unlocked skill');
+  await noOverflow(skillPage, 'mobile skill library');
+  await skillPage.locator('[data-skill-row="nightTime"] [data-action="toggle-quick-skill"]').click();
+  assert.equal(await skillPage.locator('#workContent .skill-btn').first().getAttribute('data-id'), 'nightTime', 'setting a favorite promotes it to the first quick slot');
+  await skillPage.locator('[data-skill-row="nightTime"] [data-action="toggle-quick-skill"]').click();
+  assert.equal(await skillPage.locator('#workContent [data-id="nightTime"]').count(), 0, 'removing a favorite only changes the quick bar');
+  assert.equal(await skillPage.locator('#mainPanel [data-skill-row="nightTime"]').count(), 1, 'removed favorite remains usable in the library');
+  await skillPage.locator('[data-skill-row="fairyChanting"] [data-action="prioritize-skill"]').click();
+  assert.equal(await skillPage.locator('#workContent .skill-btn').first().getAttribute('data-id'), 'fairyChanting', 'explicit prioritize controls quick ordering');
+  const quickSave = await skillPage.evaluate(key => JSON.parse(localStorage.getItem(key)).settings.quickSkills, SAVE_KEY);
+  assert.equal(quickSave[0], 'fairyChanting', 'quick skill preference is saved immediately');
+  await skillPage.locator('[data-skill-row="taxCollection"] [data-action="cast"]').click();
+  assert.match(await skillPage.locator('#toast').textContent(), /已释放：工资结算/, 'library cast button casts directly');
+  await skillPage.locator('[data-action="close-panel"]').click();
+  assert.equal(await skillPage.locator('#mainPanel').isHidden(), true);
+  await skillContext.close();
+
   const cleanContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const cleanPage = await cleanContext.newPage();
   cleanPage.on('pageerror', error => errors.push(error.message));
