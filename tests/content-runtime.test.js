@@ -291,3 +291,15 @@ test('Gem Power unlock applies production and FC bonuses then resets with the ru
   assert.notEqual(game.select('content', { id: 'gemPower' }).status, 'HIDDEN_SYSTEM');
 });
 
+test('player-facing names match the workplace naming reference without changing stable IDs', () => {
+  const graph = compileContentGraph(CONTENT);
+  const expected = {
+    good: '自驱立场', holyLight: '自驱动员',
+    'fairy-1': '需求培养土', 'fairy-2': '产品新人', 'fairy-3': '善意默认值',
+    'goblin-1': '强势现金流', 'goblin-2': '外包交易', 'goblin-3': '低成本物料',
+    'farm-tier1': '工位轮换', 'inn-tier1': '精品咖啡', 'blacksmith-tier1': '重型订书锤',
+    'warriorBarracks-tier1': '青铜任务卡', 'heavensGate-tier1': '黄金钥匙',
+    gemPower: '期权激励',
+  };
+  for (const [id, name] of Object.entries(expected)) assert.equal(graph.definitionsById.get(id).name, name, id);
+});
