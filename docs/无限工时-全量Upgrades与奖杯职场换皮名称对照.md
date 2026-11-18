@@ -43,8 +43,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 派系 | faction:Elven | Vanilla／Good | Elven | 技术部 |
 | 派系 | faction:Angel | Vanilla／Good | Angel | 战略部 |
 | 派系 | faction:Goblin | Vanilla／Evil | Goblin | 财务部 |
-| 派系 | faction:Undead | Vanilla／Evil | Undead | 夜班部 |
-| 派系 | faction:Demon | Vanilla／Evil | Demon | 运营部 |
+| 派系 | faction:Undead | Vanilla／Evil | Undead | 运维部 |
+| 派系 | faction:Demon | Vanilla／Evil | Demon | 执行部 |
 | 派系 | faction:Titan | Neutral | Titan | 架构部 |
 | 派系 | faction:Druid | Neutral | Druid | 流程部 |
 | 派系 | faction:Faceless | Neutral | Faceless | 创新部 |
@@ -115,12 +115,12 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 部门协议 | treaty:Goblin:FU-T1 | Goblin | Goblins Trade Treaty | 财务部准入协议 |
 | 部门协议 | treaty:Goblin:FU-T2 | Goblin | Goblins Friendship Pact | 财务部协作协议 |
 | 部门协议 | treaty:Goblin:FU-T3 | Goblin | Goblins Alliance | 财务部战略协议 |
-| 部门协议 | treaty:Undead:FU-T1 | Undead | Undead Trade Treaty | 夜班部准入协议 |
-| 部门协议 | treaty:Undead:FU-T2 | Undead | Undead Friendship Pact | 夜班部协作协议 |
-| 部门协议 | treaty:Undead:FU-T3 | Undead | Undead Alliance | 夜班部战略协议 |
-| 部门协议 | treaty:Demon:FU-T1 | Demon | Demons Trade Treaty | 运营部准入协议 |
-| 部门协议 | treaty:Demon:FU-T2 | Demon | Demons Friendship Pact | 运营部协作协议 |
-| 部门协议 | treaty:Demon:FU-T3 | Demon | Demons Alliance | 运营部战略协议 |
+| 部门协议 | treaty:Undead:FU-T1 | Undead | Undead Trade Treaty | 运维部准入协议 |
+| 部门协议 | treaty:Undead:FU-T2 | Undead | Undead Friendship Pact | 运维部协作协议 |
+| 部门协议 | treaty:Undead:FU-T3 | Undead | Undead Alliance | 运维部战略协议 |
+| 部门协议 | treaty:Demon:FU-T1 | Demon | Demons Trade Treaty | 执行部准入协议 |
+| 部门协议 | treaty:Demon:FU-T2 | Demon | Demons Friendship Pact | 执行部协作协议 |
+| 部门协议 | treaty:Demon:FU-T3 | Demon | Demons Alliance | 执行部战略协议 |
 | 部门协议 | treaty:Titan:FU-T1 | Titan | Titans Trade Treaty | 架构部准入协议 |
 | 部门协议 | treaty:Titan:FU-T2 | Titan | Titans Friendship Pact | 架构部协作协议 |
 | 部门协议 | treaty:Titan:FU-T3 | Titan | Titans Alliance | 架构部战略协议 |
@@ -157,8 +157,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 部门联席会 | union:Elf | Elf | Elven Union | 技术部联席会 |
 | 部门联席会 | union:Angel | Angel | Angels Union | 战略部联席会 |
 | 部门联席会 | union:Goblin | Goblin | Goblins Union | 财务部联席会 |
-| 部门联席会 | union:Undead | Undead | Undead Union | 夜班部联席会 |
-| 部门联席会 | union:Demon | Demon | Demons Union | 运营部联席会 |
+| 部门联席会 | union:Undead | Undead | Undead Union | 运维部联席会 |
+| 部门联席会 | union:Demon | Demon | Demons Union | 执行部联席会 |
 | 部门联席会 | union:Titan | Titan | Titans Union | 架构部联席会 |
 | 部门联席会 | union:Druid | Druid | Druids Union | 流程部联席会 |
 | 部门联席会 | union:Faceless | Faceless | Faceless Union | 创新部联席会 |
@@ -185,11 +185,11 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 部门强化 | GB1 | GB1 | Strong Currency | 强势现金流 |
 | 部门强化 | GB2 | GB2 | Slave Trading | 外包交易 |
 | 部门强化 | GB3 | GB3 | Cheap Materials | 低成本物料 |
-| 部门强化 | UD1 | UD1 | The Walking Dead | 夜班苏醒 |
+| 部门强化 | UD1 | UD1 | The Walking Dead | 系统唤醒 |
 | 部门强化 | UD2 | UD2 | Deadened Muscles | 疲劳管理 |
 | 部门强化 | UD3 | UD3 | Death Temples | 午夜运维台 |
 | 部门强化 | DM1 | DM1 | Torture Chambers | 员工谈心室 |
-| 部门强化 | DM2 | DM2 | Devil Tyrant | 运营暴君 |
+| 部门强化 | DM2 | DM2 | Devil Tyrant | 执行暴君 |
 | 部门强化 | DM3 | DM3 | Evil Conquerors | 高压征服者 |
 | 部门强化 | TT1 | TT1 | Colossal Forge | 巨型交付管线 |
 | 部门强化 | TT2 | TT2 | Charged Clicks | 带电点击 |
@@ -234,7 +234,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 部门强化 | UD5 | UD5 | Corpse Supply | 人力后备库 |
 | 部门强化 | UD6 | UD6 | Plagued Buildings | 设施疲劳传染 |
 | 部门强化 | DM4 | DM4 | Lava Pits | 热点需求池 |
-| 部门强化 | DM5 | DM5 | Demon Overseers | 运营监工 |
+| 部门强化 | DM5 | DM5 | Demon Overseers | 执行监工 |
 | 部门强化 | DM6 | DM6 | Demonic Presence | 高压存在感 |
 | 部门强化 | TT4 | TT4 | Titan Drill | 架构钻探 |
 | 部门强化 | TT5 | TT5 | Charged Structures | 带电设施 |
@@ -277,9 +277,9 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 部门强化 | GB9 | GB9 | Green Fingers Discount | 全绿预算折扣 |
 | 部门强化 | UD7 | UD7 | Dead Fields | 永不打烊楼层 |
 | 部门强化 | UD8 | UD8 | Tireless Workers | 不知疲倦员工 |
-| 部门强化 | UD9 | UD9 | Undead Resilience | 夜班韧性 |
+| 部门强化 | UD9 | UD9 | Undead Resilience | 持续运行韧性 |
 | 部门强化 | DM7 | DM7 | Infernal Magic | 炼狱推送算法 |
-| 部门强化 | DM8 | DM8 | Burning Legion | 燃烧运营团 |
+| 部门强化 | DM8 | DM8 | Burning Legion | 燃烧执行团 |
 | 部门强化 | DM9 | DM9 | Very Bad Guys | 狼性团队 |
 | 部门强化 | TT7 | TT7 | Cyclopean Strength | 单体巨构 |
 | 部门强化 | TT8 | TT8 | Heavy Coins | 重金结算 |
@@ -320,7 +320,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 部门强化 | GB10 | GB10 | Fools Gems | 愚人期权 |
 | 部门强化 | GB11 | GB11 | Money is Magic | 预算即效能 |
 | 部门强化 | GB12 | GB12 | Lousy Architecture | 廉价组织架构 |
-| 部门强化 | UD10 | UD10 | Flesh Servants | 夜班执行体 |
+| 部门强化 | UD10 | UD10 | Flesh Servants | 自动运维体 |
 | 部门强化 | UD11 | UD11 | Eternal Servitude | 长期服务协议 |
 | 部门强化 | UD12 | UD12 | Zombie Apocalypse | 僵尸项目潮 |
 | 部门强化 | DM10 | DM10 | Abyssal Furnace | 深渊执行炉 |
@@ -382,8 +382,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 传承手册 | heritage:Elven Heritage | — | Elven Heritage | 技术部传承手册 |
 | 传承手册 | heritage:Angelic Heritage | — | Angelic Heritage | 战略部传承手册 |
 | 传承手册 | heritage:Goblin Heritage | — | Goblin Heritage | 财务部传承手册 |
-| 传承手册 | heritage:Undead Heritage | — | Undead Heritage | 夜班部传承手册 |
-| 传承手册 | heritage:Demonic Heritage | — | Demonic Heritage | 运营部传承手册 |
+| 传承手册 | heritage:Undead Heritage | — | Undead Heritage | 运维部传承手册 |
+| 传承手册 | heritage:Demonic Heritage | — | Demonic Heritage | 执行部传承手册 |
 | 传承手册 | heritage:Titan Heritage | — | Titan Heritage | 架构部传承手册 |
 | 传承手册 | heritage:Druid Heritage | — | Druid Heritage | 流程部传承手册 |
 | 传承手册 | heritage:Faceless Heritage | — | Faceless Heritage | 创新部传承手册 |
@@ -398,8 +398,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 传承手册 | heritage:Advanced Elven Heritage | — | Advanced Elven Heritage | 技术部进阶传承手册 |
 | 传承手册 | heritage:Advanced Angelic Heritage | — | Advanced Angelic Heritage | 战略部进阶传承手册 |
 | 传承手册 | heritage:Advanced Goblin Heritage | — | Advanced Goblin Heritage | 财务部进阶传承手册 |
-| 传承手册 | heritage:Advanced Undead Heritage | — | Advanced Undead Heritage | 夜班部进阶传承手册 |
-| 传承手册 | heritage:Advanced Demonic Heritage | — | Advanced Demonic Heritage | 运营部进阶传承手册 |
+| 传承手册 | heritage:Advanced Undead Heritage | — | Advanced Undead Heritage | 运维部进阶传承手册 |
+| 传承手册 | heritage:Advanced Demonic Heritage | — | Advanced Demonic Heritage | 执行部进阶传承手册 |
 | 传承手册 | heritage:Advanced Titan Heritage | — | Advanced Titan Heritage | 架构部进阶传承手册 |
 | 传承手册 | heritage:Advanced Druid Heritage | — | Advanced Druid Heritage | 流程部进阶传承手册 |
 | 传承手册 | heritage:Advanced Faceless Heritage | — | Advanced Faceless Heritage | 创新部进阶传承手册 |
@@ -466,17 +466,17 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 挑战奖励 | reward:Goblin Challenge 2 | Goblin | Elite Warriors | 精英执行团队 |
 | 部门挑战 | Goblin Challenge 3 | Goblin | Goblin Challenge 3 | 财务部试炼·三 |
 | 挑战奖励 | reward:Goblin Challenge 3 | Goblin | Smuggled Jewels | 灰色资产转运 |
-| 部门挑战 | Undead Challenge 1 | Undead | Undead Challenge 1 | 夜班部试炼·一 |
+| 部门挑战 | Undead Challenge 1 | Undead | Undead Challenge 1 | 运维部试炼·一 |
 | 挑战奖励 | reward:Undead Challenge 1 | Undead | Deadly Impatience | 致命赶工 |
-| 部门挑战 | Undead Challenge 2 | Undead | Undead Challenge 2 | 夜班部试炼·二 |
+| 部门挑战 | Undead Challenge 2 | Undead | Undead Challenge 2 | 运维部试炼·二 |
 | 挑战奖励 | reward:Undead Challenge 2 | Undead | Experienced Helpers | 资深协助者 |
-| 部门挑战 | Undead Challenge 3 | Undead | Undead Challenge 3 | 夜班部试炼·三 |
-| 挑战奖励 | reward:Undead Challenge 3 | Undead | Death Knights | 夜班执行官 |
-| 部门挑战 | Demon Challenge 1 | Demon | Demon Challenge 1 | 运营部试炼·一 |
+| 部门挑战 | Undead Challenge 3 | Undead | Undead Challenge 3 | 运维部试炼·三 |
+| 挑战奖励 | reward:Undead Challenge 3 | Undead | Death Knights | 值班工程师 |
+| 部门挑战 | Demon Challenge 1 | Demon | Demon Challenge 1 | 执行部试炼·一 |
 | 挑战奖励 | reward:Demon Challenge 1 | Demon | Trophy Collectors | 档案收集员 |
-| 部门挑战 | Demon Challenge 2 | Demon | Demon Challenge 2 | 运营部试炼·二 |
+| 部门挑战 | Demon Challenge 2 | Demon | Demon Challenge 2 | 执行部试炼·二 |
 | 挑战奖励 | reward:Demon Challenge 2 | Demon | Legendary Antics | 传奇异常操作 |
-| 部门挑战 | Demon Challenge 3 | Demon | Demon Challenge 3 | 运营部试炼·三 |
+| 部门挑战 | Demon Challenge 3 | Demon | Demon Challenge 3 | 执行部试炼·三 |
 | 挑战奖励 | reward:Demon Challenge 3 | Demon | Passage to Tartarus | 高压组织通道 |
 | 部门挑战 | Titan Challenge 1 | Titan | Titan Challenge 1 | 架构部试炼·一 |
 | 挑战奖励 | reward:Titan Challenge 1 | Titan | Rich Followers | 高价值协作者 |
@@ -602,8 +602,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 出身模板 | bloodline:Elven | — | Elven | 技术部出身模板 |
 | 出身模板 | bloodline:Angel | — | Angel | 战略部出身模板 |
 | 出身模板 | bloodline:Goblin | — | Goblin | 财务部出身模板 |
-| 出身模板 | bloodline:Undead | — | Undead | 夜班部出身模板 |
-| 出身模板 | bloodline:Demon | — | Demon | 运营部出身模板 |
+| 出身模板 | bloodline:Undead | — | Undead | 运维部出身模板 |
+| 出身模板 | bloodline:Demon | — | Demon | 执行部出身模板 |
 | 出身模板 | bloodline:Titan | — | Titan | 架构部出身模板 |
 | 出身模板 | bloodline:Druid | — | Druid | 流程部出身模板 |
 | 出身模板 | bloodline:Faceless | — | Faceless | 创新部出身模板 |
@@ -641,8 +641,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 独特建筑与研究链 | ub:Undead:Undercities Quest | Undead | Undercities Quest | 地下夜班城任务 |
 | 独特建筑与研究链 | ub:Undead:Undercity | Undead | Undercity | 地下夜班城 |
 | 独特建筑与研究链 | ub:Undead:Laboratory | Undead | Laboratory | 方案转化实验室 |
-| 独特建筑与研究链 | ub:Undead:Flesh Workshop Quest | Undead | Flesh Workshop Quest | 夜班生产工坊任务 |
-| 独特建筑与研究链 | ub:Undead:Flesh Workshop Unique Building Upgrade | Undead | Flesh Workshop Unique Building Upgrade | 夜班生产工坊形态升级 |
+| 独特建筑与研究链 | ub:Undead:Flesh Workshop Quest | Undead | Flesh Workshop Quest | 持续运维工坊任务 |
+| 独特建筑与研究链 | ub:Undead:Flesh Workshop Unique Building Upgrade | Undead | Flesh Workshop Unique Building Upgrade | 持续运维工坊形态升级 |
 | 独特建筑与研究链 | ub:Demon:Infernal Realm Quest | Demon | Infernal Realm Quest | 高压执行域任务 |
 | 独特建筑与研究链 | ub:Demon:Infernal Realm | Demon | Infernal Realm | 高压执行域 |
 | 独特建筑与研究链 | ub:Demon:Strategy Room | Demon | Strategy Room | 执行指挥室 |
@@ -1024,8 +1024,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 履历谱系 | lineage:Elven Lineage | — | Elven Lineage | 技术部履历谱系 |
 | 履历谱系 | lineage:Angel Lineage | — | Angel Lineage | 战略部履历谱系 |
 | 履历谱系 | lineage:Goblin Lineage | — | Goblin Lineage | 财务部履历谱系 |
-| 履历谱系 | lineage:Undead Lineage | — | Undead Lineage | 夜班部履历谱系 |
-| 履历谱系 | lineage:Demon Lineage | — | Demon Lineage | 运营部履历谱系 |
+| 履历谱系 | lineage:Undead Lineage | — | Undead Lineage | 运维部履历谱系 |
+| 履历谱系 | lineage:Demon Lineage | — | Demon Lineage | 执行部履历谱系 |
 | 履历谱系 | lineage:Titan Lineage | — | Titan Lineage | 架构部履历谱系 |
 | 履历谱系 | lineage:Druid Lineage | — | Druid Lineage | 流程部履历谱系 |
 | 履历谱系 | lineage:Faceless Lineage | — | Faceless Lineage | 创新部履历谱系 |
@@ -1060,16 +1060,16 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 谱系特权 | perk:Goblin Perk 3 | — | Goblin Perk 3 | 财务部谱系特权·3 |
 | 谱系特权 | perk:Goblin Perk 4 | — | Goblin Perk 4 | 财务部谱系特权·4 |
 | 谱系特权 | perk:Goblin Perk 5 | — | Goblin Perk 5 | 财务部谱系特权·5 |
-| 谱系特权 | perk:Undead Perk 1 | — | Undead Perk 1 | 夜班部谱系特权·1 |
-| 谱系特权 | perk:Undead Perk 2 | — | Undead Perk 2 | 夜班部谱系特权·2 |
-| 谱系特权 | perk:Undead Perk 3 | — | Undead Perk 3 | 夜班部谱系特权·3 |
-| 谱系特权 | perk:Undead Perk 4 | — | Undead Perk 4 | 夜班部谱系特权·4 |
-| 谱系特权 | perk:Undead Perk 5 | — | Undead Perk 5 | 夜班部谱系特权·5 |
-| 谱系特权 | perk:Demon Perk 1 | — | Demon Perk 1 | 运营部谱系特权·1 |
-| 谱系特权 | perk:Demon Perk 2 | — | Demon Perk 2 | 运营部谱系特权·2 |
-| 谱系特权 | perk:Demon Perk 3 | — | Demon Perk 3 | 运营部谱系特权·3 |
-| 谱系特权 | perk:Demon Perk 4 | — | Demon Perk 4 | 运营部谱系特权·4 |
-| 谱系特权 | perk:Demon Perk 5 | — | Demon Perk 5 | 运营部谱系特权·5 |
+| 谱系特权 | perk:Undead Perk 1 | — | Undead Perk 1 | 运维部谱系特权·1 |
+| 谱系特权 | perk:Undead Perk 2 | — | Undead Perk 2 | 运维部谱系特权·2 |
+| 谱系特权 | perk:Undead Perk 3 | — | Undead Perk 3 | 运维部谱系特权·3 |
+| 谱系特权 | perk:Undead Perk 4 | — | Undead Perk 4 | 运维部谱系特权·4 |
+| 谱系特权 | perk:Undead Perk 5 | — | Undead Perk 5 | 运维部谱系特权·5 |
+| 谱系特权 | perk:Demon Perk 1 | — | Demon Perk 1 | 执行部谱系特权·1 |
+| 谱系特权 | perk:Demon Perk 2 | — | Demon Perk 2 | 执行部谱系特权·2 |
+| 谱系特权 | perk:Demon Perk 3 | — | Demon Perk 3 | 执行部谱系特权·3 |
+| 谱系特权 | perk:Demon Perk 4 | — | Demon Perk 4 | 执行部谱系特权·4 |
+| 谱系特权 | perk:Demon Perk 5 | — | Demon Perk 5 | 执行部谱系特权·5 |
 | 谱系特权 | perk:Titan Perk 1 | — | Titan Perk 1 | 架构部谱系特权·1 |
 | 谱系特权 | perk:Titan Perk 2 | — | Titan Perk 2 | 架构部谱系特权·2 |
 | 谱系特权 | perk:Titan Perk 3 | — | Titan Perk 3 | 架构部谱系特权·3 |
@@ -1166,7 +1166,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 职场遗物 | loreartifact:Rotten Organ | — | Rotten Organ | 腐烂夜班器官 |
 | 职场遗物 | loreartifact:Jaw Bone | — | Jaw Bone | 夜班颌骨 |
 | 职场遗物 | loreartifact:Demonic Figurine | — | Demonic Figurine | 高压执行摆件 |
-| 职场遗物 | loreartifact:Demon Horn | — | Demon Horn | 运营主管角 |
+| 职场遗物 | loreartifact:Demon Horn | — | Demon Horn | 执行主管角 |
 | 职场遗物 | loreartifact:Huge Titan Statue | — | Huge Titan Statue | 巨型架构雕像 |
 | 职场遗物 | loreartifact:Titan Shield | — | Titan Shield | 架构防护盾 |
 | 职场遗物 | loreartifact:Glyph Table | — | Glyph Table | 流程铭文板 |
@@ -1240,8 +1240,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 遗物组合 | artifactset:Elven Set | — | Elven Set | 技术部遗物组合 |
 | 遗物组合 | artifactset:Angel Set | — | Angel Set | 战略部遗物组合 |
 | 遗物组合 | artifactset:Goblin Set | — | Goblin Set | 财务部遗物组合 |
-| 遗物组合 | artifactset:Undead Set | — | Undead Set | 夜班部遗物组合 |
-| 遗物组合 | artifactset:Demon Set | — | Demon Set | 运营部遗物组合 |
+| 遗物组合 | artifactset:Undead Set | — | Undead Set | 运维部遗物组合 |
+| 遗物组合 | artifactset:Demon Set | — | Demon Set | 执行部遗物组合 |
 | 遗物组合 | artifactset:Titan Set | — | Titan Set | 架构部遗物组合 |
 | 遗物组合 | artifactset:Druid Set | — | Druid Set | 流程部遗物组合 |
 | 遗物组合 | artifactset:Faceless Set | — | Faceless Set | 创新部遗物组合 |
@@ -1270,14 +1270,14 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 历史制度与组合 | legacy:Goblin Silver Legacy | — | Goblin Silver Legacy | 财务部白银历史制度 |
 | 历史制度与组合 | legacy:Goblin Gold Legacy | — | Goblin Gold Legacy | 财务部黄金历史制度 |
 | 历史制度与组合 | legacy:Goblin Diamond Legacy | — | Goblin Diamond Legacy | 财务部钻石历史制度 |
-| 历史制度与组合 | legacy:Undead Bronze Legacy | — | Undead Bronze Legacy | 夜班部青铜历史制度 |
-| 历史制度与组合 | legacy:Undead Silver Legacy | — | Undead Silver Legacy | 夜班部白银历史制度 |
-| 历史制度与组合 | legacy:Undead Gold Legacy | — | Undead Gold Legacy | 夜班部黄金历史制度 |
-| 历史制度与组合 | legacy:Undead Diamond Legacy | — | Undead Diamond Legacy | 夜班部钻石历史制度 |
-| 历史制度与组合 | legacy:Demon Bronze Legacy | — | Demon Bronze Legacy | 运营部青铜历史制度 |
-| 历史制度与组合 | legacy:Demon Silver Legacy | — | Demon Silver Legacy | 运营部白银历史制度 |
-| 历史制度与组合 | legacy:Demon Gold Legacy | — | Demon Gold Legacy | 运营部黄金历史制度 |
-| 历史制度与组合 | legacy:Demon Diamond Legacy | — | Demon Diamond Legacy | 运营部钻石历史制度 |
+| 历史制度与组合 | legacy:Undead Bronze Legacy | — | Undead Bronze Legacy | 运维部青铜历史制度 |
+| 历史制度与组合 | legacy:Undead Silver Legacy | — | Undead Silver Legacy | 运维部白银历史制度 |
+| 历史制度与组合 | legacy:Undead Gold Legacy | — | Undead Gold Legacy | 运维部黄金历史制度 |
+| 历史制度与组合 | legacy:Undead Diamond Legacy | — | Undead Diamond Legacy | 运维部钻石历史制度 |
+| 历史制度与组合 | legacy:Demon Bronze Legacy | — | Demon Bronze Legacy | 执行部青铜历史制度 |
+| 历史制度与组合 | legacy:Demon Silver Legacy | — | Demon Silver Legacy | 执行部白银历史制度 |
+| 历史制度与组合 | legacy:Demon Gold Legacy | — | Demon Gold Legacy | 执行部黄金历史制度 |
+| 历史制度与组合 | legacy:Demon Diamond Legacy | — | Demon Diamond Legacy | 执行部钻石历史制度 |
 | 历史制度与组合 | legacy:Titan Bronze Legacy | — | Titan Bronze Legacy | 架构部青铜历史制度 |
 | 历史制度与组合 | legacy:Titan Silver Legacy | — | Titan Silver Legacy | 架构部白银历史制度 |
 | 历史制度与组合 | legacy:Titan Gold Legacy | — | Titan Gold Legacy | 架构部黄金历史制度 |
@@ -1983,7 +1983,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 独特建筑形态 | ubref:Heaven's Domains:Angel | Angel | Heaven's Domains | 云端战略域 |
 | 独特建筑形态 | ubref:Slave Markets:Proof of Balance, Goblin | Proof of Balance, Goblin | Slave Markets | 外包人力市场 |
 | 独特建筑形态 | ubref:Pavillons:Proof of Chaos, Demon | Proof of Chaos, Demon | Pavillons | 异常授权馆 |
-| 独特建筑形态 | ubref:Flesh Workshops:Proof of Order, Undead | Proof of Order, Undead | Flesh Workshops | 夜班生产工坊 |
+| 独特建筑形态 | ubref:Flesh Workshops:Proof of Order, Undead | Proof of Order, Undead | Flesh Workshops | 持续运维工坊 |
 | 独特建筑形态 | ubref:Goblin Banks:Goblin | Goblin | Goblin Banks | 集团资金中心 |
 | 独特建筑形态 | ubref:Nexuses:Proof of Order, Undead | Proof of Order, Undead | Nexuses | 秩序枢纽 |
 | 独特建筑形态 | ubref:Spider Sanctuaries:Evil Drow | Evil Drow | Spider Sanctuaries | 暗网协作中心 |
@@ -2160,8 +2160,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Elven Champion | — | Elven Champion | 技术部核心员工 |
 | 奖杯 | trophy:Angel Champion | — | Angel Champion | 战略部核心员工 |
 | 奖杯 | trophy:Goblin Champion | — | Goblin Champion | 财务部核心员工 |
-| 奖杯 | trophy:Undead Champion | — | Undead Champion | 夜班部核心员工 |
-| 奖杯 | trophy:Demon Champion | — | Demon Champion | 运营部核心员工 |
+| 奖杯 | trophy:Undead Champion | — | Undead Champion | 运维部核心员工 |
+| 奖杯 | trophy:Demon Champion | — | Demon Champion | 执行部核心员工 |
 | 奖杯 | trophy:Titan Champion | — | Titan Champion | 架构部核心员工 |
 | 奖杯 | trophy:Druid Champion | — | Druid Champion | 流程部核心员工 |
 | 奖杯 | trophy:Faceless Champion | — | Faceless Champion | 创新部核心员工 |
@@ -2177,8 +2177,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Elven Grand Champion | — | Elven Grand Champion | 技术部资深楷模 |
 | 奖杯 | trophy:Angel Grand Champion | — | Angel Grand Champion | 战略部资深楷模 |
 | 奖杯 | trophy:Goblin Grand Champion | — | Goblin Grand Champion | 财务部资深楷模 |
-| 奖杯 | trophy:Undead Grand Champion | — | Undead Grand Champion | 夜班部资深楷模 |
-| 奖杯 | trophy:Demon Grand Champion | — | Demon Grand Champion | 运营部资深楷模 |
+| 奖杯 | trophy:Undead Grand Champion | — | Undead Grand Champion | 运维部资深楷模 |
+| 奖杯 | trophy:Demon Grand Champion | — | Demon Grand Champion | 执行部资深楷模 |
 | 奖杯 | trophy:Titan Grand Champion | — | Titan Grand Champion | 架构部资深楷模 |
 | 奖杯 | trophy:Druid Grand Champion | — | Druid Grand Champion | 流程部资深楷模 |
 | 奖杯 | trophy:Faceless Grand Champion | — | Faceless Grand Champion | 创新部资深楷模 |
@@ -2189,8 +2189,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Elven Master | — | Elven Master | 技术部制度专家 |
 | 奖杯 | trophy:Angel Master | — | Angel Master | 战略部制度专家 |
 | 奖杯 | trophy:Goblin Master | — | Goblin Master | 财务部制度专家 |
-| 奖杯 | trophy:Undead Master | — | Undead Master | 夜班部制度专家 |
-| 奖杯 | trophy:Demon Master | — | Demon Master | 运营部制度专家 |
+| 奖杯 | trophy:Undead Master | — | Undead Master | 运维部制度专家 |
+| 奖杯 | trophy:Demon Master | — | Demon Master | 执行部制度专家 |
 | 奖杯 | trophy:Titan Master | — | Titan Master | 架构部制度专家 |
 | 奖杯 | trophy:Druid Master | — | Druid Master | 流程部制度专家 |
 | 奖杯 | trophy:Faceless Master | — | Faceless Master | 创新部制度专家 |
