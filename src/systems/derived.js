@@ -41,7 +41,7 @@ function percentFactor(operation, value) { return operation === 'multiplyPercent
 function createModifiers() {
   return {
     globalAdd: 0, globalMult: 1, buildingAdd: {}, buildingMult: {}, buildingBaseAdd: {}, buildingCostAdd: 0,
-    assistantsAdd: 0, assistantsMult: 1, assistantProdAdd: 0, assistantProdMult: 1,
+    assistantsAdd: 0, assistantsMult: 1, assistantProdAdd: 0, assistantProdMult: 1, assistantFcMult: 1,
     manaMaxAdd: 0, manaRegenAdd: 0, manaRegenMult: 1, clickBaseAdd: 0, clickAdd: 0, clickMult: 1,
     taxSecondsAdd: 0, gemPowerAdd: 0, gemPowerMult: 1, offlineAdd: 0, offlineMult: 1, fcChanceAdd: 0,
   };
@@ -58,6 +58,8 @@ function applyEffect(mods, effect, amount, targetId) {
     if (effect.operation === 'add') mods.assistantsAdd += amount; else mods.assistantsMult *= percentFactor(effect.operation, amount);
   } else if (effect.stat === 'assistants.production') {
     if (effect.operation === 'addPercent') mods.assistantProdAdd += amount; else mods.assistantProdMult *= percentFactor(effect.operation, amount);
+  } else if (effect.stat === 'assistants.factionCoin') {
+    mods.assistantFcMult *= effect.operation === 'multiply' ? amount : percentFactor(effect.operation, amount);
   } else if (effect.stat === 'mana.max') mods.manaMaxAdd += amount;
   else if (effect.stat === 'mana.regen') {
     if (effect.operation === 'add') mods.manaRegenAdd += amount;
@@ -135,6 +137,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     outputs, production, buildingProduction, assistantProduction, assistants, clickReward,
     manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, (1 + mods.manaRegenAdd) * mods.manaRegenMult),
     fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance + mods.fcChanceAdd, taxSeconds,
+    assistantFactionCoinMultiplier: mods.assistantFcMult,
     offlineMultiplier: (power.offlineMultiplier * (1 + mods.offlineAdd / 100) * mods.offlineMult),
     buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
   });

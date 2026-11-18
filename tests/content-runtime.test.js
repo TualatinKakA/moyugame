@@ -484,14 +484,14 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
 test('spell descriptions resolve effect targets through current building names', () => {
   const spell = CONTENT.definitions.find(item => item.id === 'fairyChanting');
   const graph = compileContentGraph(CONTENT);
-  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%。');
+  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%，数字员工影响力产出 ×3。');
   const renamed = {
     packs: CONTENT.packs,
     definitions: CONTENT.definitions.map(item => item.id === 'farm' ? { ...item, name: '附魔工位' } : item),
   };
   const renamedGraph = compileContentGraph(renamed);
   const renamedSpell = renamedGraph.definitionsById.get('fairyChanting');
-  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出提高 50000%。');
+  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出提高 50000%，数字员工影响力产出 ×3。');
 });
 
 test('assistant count and production modifiers compose through generic additive and multiplicative channels', async () => {
@@ -1075,4 +1075,38 @@ test('manual click FC uses the same click production buffs as assistant FC', asy
   const buffed = manualFact(game.dispatch({ type: 'work' }));
   assertClose(buffed.payload.amount, 19.425);
   assertClose(game.select('state').stats.run.factionCoins, 20.425);
+});
+
+
+test('Fairy Chanting triples assistant FC online and through offline expiry', async () => {
+  const makeSave = () => {
+    const seeded = initial();
+    seeded.selections.alignment = 'good';
+    seeded.spellSources.fairyChanting = { fairy: true };
+    seeded.buildings.farm = 10;
+    seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+    return seeded;
+  };
+  const { game } = fixture(makeSave());
+  await game.start();
+  assertClose(game.select('derived').assistantFactionCoinMultiplier, 1);
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
+  assert.equal(game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
+  assertClose(game.select('derived').assistantFactionCoinMultiplier, 3);
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.12);
+  game.tick(10);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.6);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.6);
+  assertClose(game.select('derived').assistantFactionCoinMultiplier, 1);
+  game.tick(1);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.62);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.62);
+
+  const offline = makeSave();
+  offline.lastWallClock = 0; offline.timers.spells.fairyChanting = { remaining: 10 };
+  const offlineFixture = fixture(offline, { nowStart: 20000 });
+  const started = await offlineFixture.game.start();
+  assertClose(started.offlineReport.factionCoinsFound.fairy, 0.8);
+  assertClose(started.offlineReport.factionCoinsFound.goblin, 0.8);
+  assertClose(offlineFixture.game.select('derived').assistantFactionCoinMultiplier, 1);
 });
