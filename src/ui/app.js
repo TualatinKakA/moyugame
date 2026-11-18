@@ -29,6 +29,13 @@ const coinSoundPools = Array.from({ length: 8 }, (_, index) => {
   });
   pool.index = 0; return pool;
 });
+const trophySound = new Audio('assets/audio/trophy-unlocked.wav');
+trophySound.preload = 'auto';
+trophySound.volume = 0.18;
+function playTrophySound() {
+  trophySound.currentTime = 0;
+  trophySound.play().catch(() => {});
+}
 const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
@@ -37,9 +44,12 @@ const content = kind => graph.arraysByKind.get(kind) || [];
 const view = id => game.select('content', { id });
 const visible = kind => content(kind).filter(item => view(item.id).status !== 'HIDDEN_SYSTEM');
 
-function notify(text, error = false) {
+function notify(text, error = false, kind = '') {
   logs.unshift(text); logs = logs.slice(0, 8);
-  $('toast').textContent = text; $('toast').classList.toggle('error', error); $('toast').classList.add('show');
+  $('toast').textContent = text;
+  $('toast').classList.toggle('error', error);
+  $('toast').classList.toggle('trophy-toast', kind === 'trophy');
+  $('toast').classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2600);
   renderLogs();
 }
@@ -324,7 +334,10 @@ function factFeedback(facts) {
     else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
     else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
     else if (fact.type === 'spell.cast') notify(`已释放：${definition(fact.payload.spellId).name}`);
-    else if (fact.type === 'trophy.unlocked') notify(`获得奖杯：${definition(fact.payload.trophyId).name}`);
+    else if (fact.type === 'trophy.unlocked') {
+      playTrophySound();
+      notify(`获得奖杯：${definition(fact.payload.trophyId).name}`, false, 'trophy');
+    }
     else if (fact.type === 'abdication.completed') notify(`退休结算完成，获得 ${formatNumber(fact.payload.earned)} 期权`);
     else if (fact.type === 'reincarnation.completed') notify(`已进入 R${fact.payload.reincarnations}`);
     else if (fact.type === 'offline.settled') notify(`离线 ${formatTime(fact.payload.seconds)}，结算 ${money(fact.payload.earned)}`);
@@ -375,7 +388,25 @@ function commandResult(result) {
   return false;
 }
 
+function setAssistantTooltip(open) {
+  const summary = $('assistantSummary');
+  const tooltip = $('assistantTooltip');
+  summary.classList.toggle('assistant-tooltip-open', open);
+  summary.setAttribute('aria-expanded', String(open));
+  tooltip.setAttribute('aria-hidden', String(!open));
+}
+$('assistantSummary').addEventListener('click', event => {
+  event.stopPropagation();
+  setAssistantTooltip($('assistantSummary').getAttribute('aria-expanded') !== 'true');
+});
+$('assistantSummary').addEventListener('keydown', event => {
+  if (['Enter', ' '].includes(event.key)) {
+    event.preventDefault();
+    setAssistantTooltip($('assistantSummary').getAttribute('aria-expanded') !== 'true');
+  } else if (event.key === 'Escape') setAssistantTooltip(false);
+});
 document.addEventListener('click', event => {
+  if (!event.target.closest('#assistantSummary')) setAssistantTooltip(false);
   if (!event.target.closest('.event-strip') && !$('eventLog').hidden) setEventLogOpen(false);
   if (event.target.closest('#workArea') && activeTab !== 'work') closeAuxPanel();
   const tab = event.target.closest('[data-tab]');
