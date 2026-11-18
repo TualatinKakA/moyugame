@@ -5,7 +5,7 @@ const triggered = (state, id, kind) => kind === 'story'
   : kind === 'challenge' ? Boolean(state.challenges[id]?.completed)
     : Boolean(state.permanentUnlocks[id]);
 
-export function processReactions(tx, graph, handlers) {
+export function processReactions(tx, graph, handlers, { derived = null } = {}) {
   const queue = [];
   let sequence = 0;
   const enqueue = (entry, event = null) => queue.push({ ...entry, event, sequence: sequence++ });
@@ -27,7 +27,7 @@ export function processReactions(tx, graph, handlers) {
       if (threshold !== undefined && !(old < threshold && currentValue >= threshold)) continue;
     }
     tx.diagnostics.evaluatedRules++;
-    if (!evaluateCondition(graph, current.reaction.when, { state: tx.state, event: current.event })) continue;
+    if (!evaluateCondition(graph, current.reaction.when, { state: tx.state, event: current.event, derived })) continue;
     if (definition.kind === 'story') {
       handlers.enqueueStory(tx, definition, current.event);
       tx.critical = true;

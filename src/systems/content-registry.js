@@ -20,6 +20,13 @@ function validValuePath(path, definitionsById) {
   if (path.startsWith('buildings.')) return definitionsById.get(path.slice(10))?.kind === 'building';
   return false;
 }
+function validDerivedEffectPath(path, phase) {
+  const order = [...PHASES];
+  const availableAt = path === 'derived.assistants' ? 'mana'
+    : path === 'derived.buildingProduction' || path.startsWith('derived.outputs.') ? 'factionCoin'
+      : path === 'derived.clickReward' ? 'utility' : null;
+  return availableAt !== null && order.indexOf(phase) >= order.indexOf(availableAt);
+}
 
 export class ContentValidationError extends Error {
   constructor(errors) {
@@ -65,6 +72,15 @@ export function pathValue(state, path) {
   return value;
 }
 
+export function formatDescription(definition, graph) {
+  return String(definition?.description || '').replace(/\{targets:([^}]+)\}/g, (_, group) => {
+    const effect = definition.effects?.find(item => item.group === group);
+    if (effect?.target.type !== 'buildings') return '';
+    const names = effect.target.ids.map(id => graph.definitionsById.get(id)?.name || id);
+    return names.length > 1 ? `${names.slice(0, -1).join('、')}与${names.at(-1)}` : names[0] || '';
+  });
+}
+
 function dependenciesFor(condition) {
   if (!condition) return [];
   if (condition.all || condition.any) return [...new Set((condition.all || condition.any).flatMap(dependenciesFor))];
@@ -101,8 +117,8 @@ function compileCondition(condition, sourceId, errors) {
       case 'owned': return ({ state }) => Boolean(state.permanentUnlocks[node.id] || Object.values(state.owned).some(scope => scope[node.id]));
       case 'notOwned': return ({ state }) => !state.permanentUnlocks[node.id] && !Object.values(state.owned).some(scope => scope[node.id]);
       case 'resourceAtLeast': return ({ state }) => (node.resource.startsWith('factionCoin.') ? state.resources.factionCoins[node.resource.slice(12)] : state.resources[node.resource]) >= node.value;
-      case 'statAtLeast': return ({ state }) => (pathValue(state, node.path) || 0) >= node.value;
-      case 'statEquals': return ({ state }) => (pathValue(state, node.path) || 0) === node.value;
+      case 'statAtLeast': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) >= node.value;
+      case 'statEquals': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) === node.value;
       case 'eventDataEquals': return ({ event }) => event?.payload?.[node.path] === node.value;
       case 'newSave': return ({ state }) => state.stats.total.clicks === 0 && Object.keys(state.buildings).length === 0 && !state.selections.faction;
       case 'spellSource': return ({ state }) => Boolean(state.spellSources[node.id] && Object.keys(state.spellSources[node.id]).length);
@@ -135,6 +151,7 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
   const purchaseDependents = new Map();
   const effectDependencies = new Map();
   const effectOrderByPhase = new Map([...PHASES].map(phase => [phase, []]));
+  const effectEntriesByPhase = new Map([...PHASES].map(phase => [phase, []]));
 
   const indexDependency = (index, path, id) => {
     if (!path) return;
@@ -170,7 +187,12 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
         errors.push(`${definition.id}: invalid effect schema`); continue;
       }
       validateValue(effect.value, definition.id, errors);
+      if (effect.stat === 'assistants.count' && !['add', 'multiply', 'multiplyPercent'].includes(effect.operation)) errors.push(`${definition.id}: unsupported assistants.count operation ${effect.operation}`);
+      if (effect.stat === 'assistants.production' && !['addPercent', 'multiply', 'multiplyPercent'].includes(effect.operation)) errors.push(`${definition.id}: unsupported assistants.production operation ${effect.operation}`);
       effectOrderByPhase.get(effect.phase).push(effect.group);
+      effectEntriesByPhase.get(effect.phase).push(Object.freeze({ definition, effect }));
+      const effectCondition = compile(effect.when, `${definition.id}/${effect.group}`);
+      for (const path of effectCondition.dependencies) indexDependency(effectDependencies, path, effect.group);
       for (const path of Object.values(effect.value.variables || {})) {
         indexDependency(effectDependencies, path, effect.group);
         if (path.startsWith('buildings.')) indexDependency(effectDependencies, 'buildings', effect.group);
@@ -200,6 +222,13 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
   }
 
   for (const definition of definitions) {
+    for (const match of String(definition.description || '').matchAll(/\{targets:([^}]+)\}/g)) {
+      const effect = definition.effects?.find(item => item.group === match[1]);
+      if (effect?.target.type !== 'buildings' || !effect.target.ids?.length) errors.push(`${definition.id}: invalid description target group ${match[1]}`);
+    }
+    for (const effect of definition.effects || []) for (const path of Object.values(effect.value.variables || {})) {
+      if (path.startsWith('derived.') && !validDerivedEffectPath(path, effect.phase)) errors.push(`${definition.id}: unavailable or cyclic derived dependency ${path} in ${effect.phase}`);
+    }
     for (const value of [
       ...(definition.effects || []).map(effect => effect.value),
       ...(definition.purchase?.costs || definition.cast?.costs || []).map(cost => cost.amount),
@@ -221,6 +250,7 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
     if (mode === 'production') throw new ContentValidationError(errors);
     throw new ContentValidationError(errors);
   }
+  for (const entries of effectEntriesByPhase.values()) entries.sort((a, b) => a.effect.group.localeCompare(b.effect.group) || a.definition.id.localeCompare(b.definition.id));
   for (const definition of definitions) deepFreeze(definition);
   const sortedIds = [...definitionsById.keys()].sort();
   const integerIdByString = new Map(sortedIds.map((id, index) => [id, index]));
@@ -239,6 +269,7 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
     purchaseDependents: freezeIndex(purchaseDependents),
     effectDependencies: freezeIndex(effectDependencies),
     effectOrderByPhase: freezeIndex(effectOrderByPhase),
+    effectEntriesByPhase: freezeIndex(effectEntriesByPhase),
     migrationAlias: Object.freeze({ ...aliases }),
     contentVersions: Object.freeze((content.packs || []).map(pack => pack.version)),
   };

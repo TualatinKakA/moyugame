@@ -68,11 +68,12 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (activeTransaction) return { ok: false, reason: 'TRANSACTION_REENTRY' };
     const transaction = beginTransaction(state);
     transaction.commandType = type;
+    const transactionDerived = cache.get();
     activeTransaction = transaction;
     try {
       const result = callback(transaction);
       if (result?.rejected) { transaction.rollback(); return { ok: false, reason: result.reason }; }
-      processReactions(transaction, graph, { enqueueStory, awardTrophy, applyActions, completeChallenge });
+      processReactions(transaction, graph, { enqueueStory, awardTrophy, applyActions, completeChallenge }, { derived: transactionDerived });
       const committed = commitTransaction(transaction);
       return { ...committed, result };
     } catch (error) {
@@ -225,7 +226,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return runTransaction('cast', tx => {
       const definition = graph.definitionsById.get(id);
       if (!definition || definition.kind !== 'spell') return { rejected: true, reason: 'UNKNOWN_SPELL' };
-      if (!evaluateCondition(graph, definition.visible, { state: tx.state })) return { rejected: true, reason: 'UNAVAILABLE_CONTEXT' };
+      if (!evaluateCondition(graph, definition.visible, { state: tx.state, derived: cache.get() })) return { rejected: true, reason: 'UNAVAILABLE_CONTEXT' };
       const selected = selectContent(tx.state, graph, cache.get(), id);
       if (!payCosts(tx, definition, selected.costs)) return { rejected: true, reason: 'NEED_RESOURCE' };
       for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.spellsCast`, 1);
@@ -251,7 +252,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return runTransaction('story.choice', tx => {
       const definition = graph.definitionsById.get(id);
       const choice = definition?.choices?.find(item => item.id === choiceId);
-      if (!choice || !tx.state.story.pending.some(item => item.id === id) || !evaluateCondition(graph, choice.when || null, { state: tx.state })) return { rejected: true, reason: 'INVALID_STORY_CHOICE' };
+      if (!choice || !tx.state.story.pending.some(item => item.id === id) || !evaluateCondition(graph, choice.when || null, { state: tx.state, derived: cache.get() })) return { rejected: true, reason: 'INVALID_STORY_CHOICE' };
       tx.write(`story.choices.${id}`, choiceId);
       applyActions(tx, choice.actions || [], definition);
       tx.critical = true;

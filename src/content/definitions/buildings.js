@@ -68,7 +68,7 @@ export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(buildin
   id: `${building.id}-tier${index + 1}`,
   kind: 'upgrade', contentVersion: 'base-v1',
   name: BUILDING_UPGRADE_NAMES[building.id][index],
-  description: `${building.name}产出提高 ${tier.percent}%。`,
+  description: `${building.name}产出提高 ${tier.percent}%${index < 2 ? '，数字员工 +1' : ''}。`,
   era: { minR: 0 },
   visible: { all: [building.visible, { op: 'buildingOwned', id: building.id, value: tier.amount }] },
   unlock: { op: 'always' },
@@ -80,7 +80,10 @@ export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(buildin
     group: `${building.id}-tier${index + 1}`, phase: 'buildingLocal', stat: 'building.production',
     target: { type: 'buildings', ids: [building.id] }, operation: 'multiplyPercent',
     value: { constant: tier.percent }, stacking: 'multiply',
-  }],
+  }, ...(index < 2 ? [{
+    group: `${building.id}-tier${index + 1}-assistant`, phase: 'assistants', stat: 'assistants.count',
+    target: { type: 'global' }, operation: 'add', value: { constant: 1 }, stacking: 'add',
+  }] : [])],
   grants: [], reactions: [], scope: 'run',
   ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'building', icon: building.ui.icon },
 })));

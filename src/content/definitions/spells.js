@@ -30,7 +30,7 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('bloodFrenzy', 'buildingLocal', 'building.production', { type: 'alignment', id: 'evil' }, 'addPercent', { constant: 1250 })],
   }),
   spell({
-    id: 'fairyChanting', name: '头脑风暴', description: '10 秒内使三类基础设施工位产出提高 50000%。', cost: 1000, duration: 10,
+    id: 'fairyChanting', name: '头脑风暴', description: '10 秒内使{targets:fairyChanting}产出提高 50000%。', cost: 1000, duration: 10,
     visible: { op: 'spellSource', id: 'fairyChanting' },
     effects: [effect('fairyChanting', 'buildingLocal', 'building.production', { type: 'buildings', ids: ['farm', 'inn', 'blacksmith'] }, 'multiplyPercent', { constant: 50000 })],
   }),
