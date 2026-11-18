@@ -85,7 +85,7 @@ try {
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 3, 'selected alignment stays beside the faction choice');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').textContent(), '当前立场');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').isDisabled(), true);
-  assert.equal(await gamePage.locator('#mainPanel [data-choice-card="evil"] button').textContent(), '本轮不可改选');
+  assert.equal(await gamePage.locator('#mainPanel [data-choice-card="evil"] button').textContent(), '选择');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="evil"] button').isDisabled(), true);
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="goblin"]').count(), 0);
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="fairy"]').click();

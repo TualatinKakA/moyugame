@@ -392,3 +392,16 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .coin-particle { display: none; }
   .coin-float, .work-btn.coin-hit .workstation-img { animation: none; }
 }
+
+.choice-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.choice-price {
+  flex-shrink: 0;
+  color: var(--muted);
+  font: 10px Consolas, monospace;
+}

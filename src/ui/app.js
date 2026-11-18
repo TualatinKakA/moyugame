@@ -196,8 +196,9 @@ function choiceCard(item) {
   const status = view(item.id).status;
   const selected = status === 'SELECTED';
   const locked = selected || status === 'LOCKED_REQUIREMENT';
-  const label = selected ? (item.kind === 'alignment' ? '当前立场' : '当前部门') : locked ? '本轮不可改选' : '选择';
-  return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
+  const label = selected ? (item.kind === 'alignment' ? '当前立场' : '当前部门') : '选择';
+  const price = item.kind === 'alignment' ? `<small class="choice-price">${money(item.purchase.costs[0].amount.constant)}</small>` : '';
+  return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3 class="choice-heading"><span>${item.name}</span>${price}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
 }
 function factionsPanel() {
   const factionUpgrades = sortedUpgrades(visible('upgrade').filter(item => item.ui.category === 'faction'));
