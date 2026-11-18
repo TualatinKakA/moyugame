@@ -38,7 +38,7 @@ const upgrade = ({ id, name, description, faction, cost, effects }) => ({
     requires: [{ op: 'notOwned', id }, { op: 'selected', key: 'faction', value: faction }],
   },
   effects, grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', faction, icon: `assets/images/${faction === 'fairy' ? 'laptop' : 'cash'}.png` },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: `assets/images/${faction === 'fairy' ? 'laptop' : 'cash'}.png` },
 });
 const effect = (group, phase, stat, target, operation, value) => ({
   group, phase, stat, target, operation, value, stacking: operation === 'add' ? 'add' : 'multiply',

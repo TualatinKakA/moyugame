@@ -82,5 +82,5 @@ export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(buildin
     value: { constant: tier.percent }, stacking: 'multiply',
   }],
   grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', icon: building.ui.icon },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'building', icon: building.ui.icon },
 })));

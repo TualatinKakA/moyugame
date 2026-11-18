@@ -142,6 +142,21 @@ try {
       await gamePage.waitForTimeout(100); assert.equal(await gamePage.locator('#mainPanel').isHidden(), true);
     }
   }
+  await gamePage.setViewportSize({ width: 1440, height: 900 });
+  await gamePage.locator('.app-nav [data-tab="building-upgrades"]').click();
+  assert.equal(await gamePage.locator('#mainPanel h2').textContent(), '设施升级');
+  assert.equal(await gamePage.locator('#mainPanel [data-upgrade-card="gemPower"]').count(), 0);
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.locator('.app-nav [data-tab="misc-upgrades"]').click();
+  assert.equal(await gamePage.locator('#mainPanel h2').textContent(), '通用升级');
+  assert.equal(await gamePage.locator('#mainPanel [data-upgrade-card="gemPower"]').count(), 1);
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.locator('.app-nav [data-tab="factions"]').click();
+  assert.equal(await gamePage.locator('#mainPanel [data-upgrade-card="fairy-1"]').count(), 1);
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.waitForTimeout(600);
+  await gamePage.locator('#upgradeRail [data-id="fairy-1"]').click();
+  assert.equal(await gamePage.locator('#upgradeRail [data-id="fairy-1"]').count(), 0, 'quick upgrade disappears after purchase');
   await gameContext.close();
 
   const retireState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });

@@ -15,6 +15,8 @@ let panelReturnFocus = null;
 let panelHistory = false;
 let quickStructure = '';
 let facilityStructure = '';
+let lastUpgradeRailRender = 0;
+let upgradeRailStructure = '';
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
 let lastCoinSound = 0;
@@ -115,6 +117,16 @@ function renderFacilityRail() {
   }
   updateBuildingCards();
 }
+function renderUpgradeRail() {
+  const now = performance.now();
+  if (now - lastUpgradeRailRender < 500) return;
+  lastUpgradeRailRender = now;
+  const candidates = visible('upgrade').filter(item => view(item.id).status === 'PURCHASABLE');
+  const signature = candidates.map(item => `${item.id}:${view(item.id).costs[0]?.value || 0}`).join('|');
+  if (signature === upgradeRailStructure) return;
+  upgradeRailStructure = signature;
+  $('upgradeRail').innerHTML = candidates.length ? candidates.map(item => `<button class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" title="${item.name}：${item.description}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(view(item.id).costs[0]?.value || 0)}</small></button>`).join('') : '<span class="rail-empty">暂无可购买升级</span>';
+}
 function workView() {
   return `<div id="skillMount"></div><section class="work-zone">
     <div class="office-window"><div class="window-view"></div></div>
@@ -168,15 +180,17 @@ function buildingPanel() {
 function upgradeCard(item) {
   return `<article class="card" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
 }
-function upgradesPanel() {
-  const items = visible('upgrade');
-  return `<div class="panel-head"><div><h2>升级</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
+function upgradesPanel(category = null) {
+  const items = visible('upgrade').filter(item => !category || item.ui.category === category);
+  const title = category === 'building' ? '设施升级' : category === 'general' ? '通用升级' : '升级';
+  return `<div class="panel-head"><div><h2>${title}</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
 function choiceCard(item) {
   return `<article class="card" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
 }
 function factionsPanel() {
-  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
+  const factionUpgrades = visible('upgrade').filter(item => item.ui.category === 'faction');
+  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3><div class="card-grid">${factionUpgrades.map(upgradeCard).join('') || '<p class="notice">签署部门条约后显示对应升级。</p>'}</div></section>`;
 }
 function skillsPanel() {
   const available = visible('spell');
@@ -227,8 +241,11 @@ function renderPanel() {
   if (activeTab === 'work') { $('mainPanel').hidden = true; return; }
   $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
   $('mainPanel').classList.toggle('skills-dialog', activeTab === 'skills');
-  const body = activeTab === 'buildings' ? buildingPanel() : activeTab === 'upgrades' ? upgradesPanel()
-    : activeTab === 'factions' ? factionsPanel() : activeTab === 'skills' ? skillsPanel()
+  const body = activeTab === 'buildings' ? buildingPanel()
+    : activeTab === 'building-upgrades' ? upgradesPanel('building')
+      : activeTab === 'misc-upgrades' ? upgradesPanel('general')
+        : activeTab === 'upgrades' ? upgradesPanel()
+          : activeTab === 'factions' ? factionsPanel() : activeTab === 'skills' ? skillsPanel()
       : activeTab === 'stats' ? statsPanel() : morePanel();
   $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${body}`;
   $('mainPanel').hidden = false; updatePanel();
@@ -290,7 +307,8 @@ function factFeedback(facts) {
   }
 }
 function refresh(message = null) {
-  renderTop();
+  if (message?.commandType && message.commandType !== 'tick') lastUpgradeRailRender = 0;
+  renderTop(); renderUpgradeRail();
   const inventoryChanged = !message || message.commandType !== 'tick' || message.changedPaths.some(path => /^(spellSources|selections|settings|buildings)/.test(path));
   if (inventoryChanged) { renderQuickSkills(); renderFacilityRail(); }
   updateCastButtons();
