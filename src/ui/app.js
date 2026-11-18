@@ -38,6 +38,7 @@ let manaEditorUnlocked = false;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
 let lastCoinSound = 0;
+const assistantFactionCoinGains = new Map();
 const coinSoundPools = Array.from({ length: 8 }, (_, index) => {
   const pool = Array.from({ length: 3 }, () => {
     const audio = new Audio(`assets/audio/coin-${String(index + 1).padStart(2, '0')}.ogg`);
@@ -56,6 +57,16 @@ const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
 const description = item => formatDescription(item, graph);
+const formatCost = cost => {
+  if (cost.resource === 'coins') return money(cost.value);
+  if (cost.resource === 'mana') return `${formatNumber(cost.value)} 精力`;
+  if (cost.resource.startsWith('factionCoin.')) {
+    const factionId = cost.resource.slice('factionCoin.'.length);
+    const faction = definition(factionId);
+    return `${formatNumber(cost.value)} ${faction?.name || factionId}影响力`;
+  }
+  return `${formatNumber(cost.value)} ${cost.resource}`;
+};
 const content = kind => graph.arraysByKind.get(kind) || [];
 const view = id => game.select('content', { id });
 const visible = kind => content(kind).filter(item => view(item.id).status !== 'HIDDEN_SYSTEM');
@@ -77,7 +88,7 @@ function playCoinSound() {
   audio.currentTime = 0; audio.volume = 0.13; audio.playbackRate = 0.94 + Math.random() * 0.24;
   audio.play().catch(() => {});
 }
-function workFeedback(event) {
+function workFeedback(event, facts = []) {
   playCoinSound();
   const zone = document.querySelector('#workArea .work-zone');
   const button = zone.querySelector('.work-btn');
@@ -89,6 +100,7 @@ function workFeedback(event) {
   const floater = document.createElement('span'); floater.className = 'coin-float';
   floater.textContent = `+${money(viewModelReward())}`; floater.style.left = `${x}px`; floater.style.top = `${y}px`;
   zone.appendChild(floater); setTimeout(() => floater.remove(), 800);
+  showManualFactionCoins(facts, zone, x, y);
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   for (let index = 0; index < 5; index++) {
     const particle = document.createElement('img'); particle.className = 'coin-particle';
@@ -100,6 +112,47 @@ function workFeedback(event) {
   }
 }
 function viewModelReward() { return derived().clickReward; }
+function formatFactionCoinGain(amount) {
+  if (amount < 10 && amount % 1 !== 0) return amount.toFixed(amount < 1 ? 2 : 1).replace(/\.?0+$/, '');
+  return formatNumber(amount);
+}
+function factionCoinGainText(factionId, amount) {
+  return `+${formatFactionCoinGain(amount)} ${definition(factionId).name}影响力`;
+}
+function showManualFactionCoins(facts, zone, x, y) {
+  facts.filter(fact => fact.type === 'factionCoins.found' && fact.payload.source === 'manualClick').forEach((fact, index) => {
+    const floater = document.createElement('span');
+    floater.className = 'faction-coin-float manual-faction-coin-float';
+    floater.dataset.fcSource = 'manualClick';
+    floater.dataset.faction = fact.payload.factionId;
+    floater.textContent = factionCoinGainText(fact.payload.factionId, fact.payload.amount);
+    floater.style.left = `${x}px`;
+    floater.style.top = `${Math.max(24, y - 26 - index * 20)}px`;
+    zone.appendChild(floater);
+    setTimeout(() => floater.remove(), 1100);
+  });
+}
+function queueAssistantFactionCoin({ factionId, amount }) {
+  assistantFactionCoinGains.set(factionId, (assistantFactionCoinGains.get(factionId) || 0) + amount);
+}
+function showAssistantFactionCoins() {
+  const batch = [...assistantFactionCoinGains.entries()].filter(([, amount]) => amount > 0);
+  assistantFactionCoinGains.clear();
+  const container = $('assistantFactionCoinFx');
+  if (!container || document.hidden || !batch.length) return;
+  batch.forEach(([factionId, amount], index) => {
+    setTimeout(() => {
+      const floater = document.createElement('span');
+      floater.className = 'faction-coin-float assistant-faction-coin-floater';
+      floater.dataset.fcSource = 'assistant';
+      floater.dataset.faction = factionId;
+      floater.textContent = factionCoinGainText(factionId, amount);
+      floater.style.top = `${index * -22}px`;
+      container.appendChild(floater);
+      setTimeout(() => floater.remove(), 1200);
+    }, index * 100);
+  });
+}
 function showAssistantIncome() {
   const container = $('assistantIncomeFx');
   if (!container || document.hidden) return;
@@ -248,7 +301,14 @@ function choiceCard(item) {
 }
 function factionsPanel() {
   const factionUpgrades = visible('upgrade').filter(item => item.ui.category === 'faction');
-  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3>${upgradeSections(factionUpgrades)}</section>`;
+  const header = '<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div>';
+  const alignmentSection = `<section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section>`;
+  const treatySection = `<section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
+  const upgradesSection = `<section class="subsection"><h3>部门升级</h3>${upgradeSections(factionUpgrades)}</section>`;
+  const sections = state().selections.alignment
+    ? `${treatySection}${upgradesSection}${alignmentSection}`
+    : `${alignmentSection}${treatySection}${upgradesSection}`;
+  return `${header}${sections}`;
 }
 function skillsPanel() {
   const available = visible('spell');
@@ -294,7 +354,7 @@ function updatePanel() {
     const card = button.closest('[data-upgrade-card]');
     if (card) {
       const item = definition(button.dataset.id);
-      const cost = model.costs.map(value => value.resource === 'coins' ? money(value.value) : `${formatNumber(value.value)} ${value.resource}`).join(' + ');
+      const cost = model.costs.map(formatCost).join(' + ');
       const hint = model.status === 'OWNED' ? '已生效' : model.status === 'NEED_RESOURCE' ? '资源不足' : model.status === 'LOCKED_REQUIREMENT' ? '尚未满足条件' : '点击购买';
       button.setAttribute('aria-disabled', String(unavailable));
       button.setAttribute('aria-label', `${item.name}，价格 ${cost || '无'}。${description(item)}${hint}。`);
@@ -382,6 +442,7 @@ function renderTop() {
 }
 function factFeedback(facts) {
   for (const fact of facts) {
+    if (fact.type === 'factionCoins.found' && fact.payload.source === 'assistant' && fact.payload.mode === 'online') queueAssistantFactionCoin(fact.payload);
     if (fact.type === 'building.purchased') notify(`设施采购完成：${definition(fact.payload.buildingId).name} +${fact.payload.quantity}`);
     else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
     else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
@@ -410,6 +471,7 @@ const modal = createStoryModal({
   document,
   onClose: ({ id, action, replay }) => {
     if (id === 'ui.alignment.confirm') { pendingAlignmentId = null; return; }
+    if (id === 'ui.hard-reset.confirm') return;
     if (!replay) game.dispatch({ type: 'story.close', id, skipped: action === 'skip' });
   },
   onChoice: ({ id, choiceId }) => {
@@ -420,12 +482,22 @@ const modal = createStoryModal({
       if (choiceId === 'confirm') commandResult(game.dispatch({ type: 'purchase', id: selectedId, amount: state().settings.buyAmount }));
       return;
     }
+    if (id === 'ui.hard-reset.confirm') {
+      modal.close();
+      if (choiceId === 'confirm') {
+        resetting = true;
+        game.stop();
+        saveAdapter.remove();
+        location.reload();
+      }
+      return;
+    }
     const result = game.dispatch({ type: 'story.choice', id, choiceId });
     if (result.ok && definition(id).choices.find(choice => choice.id === choiceId).close !== false) modal.close();
   },
 });
 function syncStories() {
-  if (modal.current?.replay || modal.current?.story.id === 'ui.alignment.confirm') return;
+  if (modal.current?.replay || ['ui.alignment.confirm', 'ui.hard-reset.confirm'].includes(modal.current?.story.id)) return;
   const next = game.select('storyQueue')[0];
   if (next && modal.current?.story.id !== next.id) modal.show({ story: next });
 }
@@ -615,7 +687,11 @@ document.addEventListener('click', event => {
     $('intro').classList.add('hidden');
     commandResult(game.dispatch({ type: 'start' })); return;
   }
-  if (action === 'work') { if (commandResult(game.dispatch({ type: 'work' }))) workFeedback(event); return; }
+  if (action === 'work') {
+    const result = game.dispatch({ type: 'work' });
+    if (commandResult(result)) workFeedback(event, result.facts);
+    return;
+  }
   if (action === 'purchase') {
     if (definition(id).kind === 'alignment') {
       pendingAlignmentId = id;
@@ -664,11 +740,14 @@ document.addEventListener('click', event => {
     return;
   }
   if (action === 'hard-reset') {
-    if (resetting || !confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
-    resetting = true;
-    game.stop();
-    saveAdapter.remove();
-    location.reload();
+    if (resetting) return;
+    modal.show({ story: {
+      id: 'ui.hard-reset.confirm',
+      title: '清除全部进度？',
+      paragraphs: ['将删除本机上的全部游戏进度，此操作不能撤销。'],
+      choices: [{ id: 'confirm', label: '确认清除全部进度' }],
+      buttonLabel: '取消',
+    } });
   }
 });
 document.addEventListener('submit', event => {
@@ -700,7 +779,9 @@ document.addEventListener('keydown', event => {
   }
   if (event.key === 'Escape' && activeTab !== 'work') closeAuxPanel();
   if (event.code === 'Space' && $('intro').classList.contains('hidden') && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
-    event.preventDefault(); if (commandResult(game.dispatch({ type: 'work' }))) workFeedback();
+    event.preventDefault();
+    const result = game.dispatch({ type: 'work' });
+    if (commandResult(result)) workFeedback(null, result.facts);
   }
 });
 window.addEventListener('popstate', () => { if (activeTab !== 'work') closeAuxPanel(true); panelHistory = false; });
@@ -724,6 +805,7 @@ async function bootstrap() {
     if (!document.hidden) game.tick(delta);
   }, 200);
   setInterval(showAssistantIncome, 1000);
+  setInterval(showAssistantFactionCoins, 1000);
   setInterval(() => { if (!resetting && game.select('saveStatus').dirty) game.save(); }, 15000);
 }
 bootstrap().catch(error => {

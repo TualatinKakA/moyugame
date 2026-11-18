@@ -1,7 +1,7 @@
 import { validateFormula } from './formula.js';
 
 const KINDS = new Set(['building', 'upgrade', 'alignment', 'faction', 'spell', 'trophy', 'story', 'challenge', 'research']);
-const PHASES = new Set(['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'global', 'factionCoin', 'click', 'utility']);
+const PHASES = new Set(['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'tax', 'global', 'factionCoin', 'click', 'utility']);
 const OPERATORS = new Set(['always', 'selected', 'notSelected', 'buildingOwned', 'owned', 'notOwned', 'resourceAtLeast', 'statAtLeast', 'statEquals', 'eventDataEquals', 'newSave', 'spellSource']);
 const ACTIONS = new Set(['grantResource', 'grantUnlock', 'grantOwned', 'grantSpellSource', 'removeSpellSource', 'select', 'clearSelection', 'startTimer', 'cancelTimer', 'enqueueStory', 'markStoryCompleted', 'awardTrophy', 'completeStoryGroup', 'emitFact', 'scheduleTask']);
 const EFFECT_OPERATIONS = new Set(['add', 'addPercent', 'multiply', 'multiplyPercent', 'max', 'min', 'override']);
@@ -14,7 +14,7 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 function validValuePath(path, definitionsById) {
-  if (path === 'target.count' || path === 'factionCoins.total' || path === 'buildings.total') return true;
+  if (['target.count', 'factionCoins.total', 'buildings.total', 'buildings.low3'].includes(path)) return true;
   if (/^(derived|resources|stats)\./.test(path)) return true;
   if (/^buildings\.alignment\.[^.]+$/.test(path)) return true;
   if (path.startsWith('buildings.')) return definitionsById.get(path.slice(10))?.kind === 'building';
@@ -23,6 +23,7 @@ function validValuePath(path, definitionsById) {
 function validDerivedEffectPath(path, phase) {
   const order = [...PHASES];
   const availableAt = path === 'derived.assistants' ? 'mana'
+    : path === 'derived.taxSeconds' ? 'global'
     : path === 'derived.buildingProduction' || path.startsWith('derived.outputs.') ? 'factionCoin'
       : path === 'derived.clickReward' ? 'utility' : null;
   return availableAt !== null && order.indexOf(phase) >= order.indexOf(availableAt);

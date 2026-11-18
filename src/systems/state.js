@@ -4,7 +4,7 @@ import { numeric } from './numeric.js';
 export const SCHEMA_VERSION = 5;
 const SCOPES = ['run', 'r', 'ascension', 'total'];
 const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'upgradesBought', 'abdications', 'reincarnations', 'offlineTime'];
-const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {} });
+const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {}, spellCasts: {}, buildingMax: {} });
 const record = () => ({});
 
 export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = ['base-v1'] } = {}) {
@@ -53,6 +53,8 @@ function cleanStats(input = {}, graph, quarantine) {
   const output = emptyStats();
   for (const field of NUMBER_FIELDS) output[field] = Math.max(0, finite(input[field]));
   output.factionCoinsByFaction = cleanNumberRecord(input.factionCoinsByFaction, graph, 'faction', quarantine);
+  output.spellCasts = cleanNumberRecord(input.spellCasts, graph, 'spell', quarantine);
+  output.buildingMax = cleanNumberRecord(input.buildingMax, graph, 'building', quarantine);
   return output;
 }
 function aliasId(id, graph) { return graph.migrationAlias[id] || id; }
@@ -129,6 +131,13 @@ function normalizeCurrent(saved, state, graph) {
   for (const [id, timer] of Object.entries(saved.timers?.spells || {})) {
     if (graph.definitionsById.get(id)?.kind === 'spell' && finite(timer?.remaining) > 0) state.timers.spells[id] = { remaining: finite(timer.remaining) };
   }
+  const greenFingersTimer = saved.timers?.tasks?.greenFingersDiscount;
+  if (greenFingersTimer) {
+    const remaining = greenFingersTimer.remaining !== undefined
+      ? finite(greenFingersTimer.remaining)
+      : finite(greenFingersTimer.dueAt) - state.stats.run.time;
+    if (remaining >= 0) state.timers.tasks.greenFingersDiscount = { remaining };
+  }
   state.story.pending = (saved.story?.pending || []).filter(item => graph.definitionsById.get(item.id)?.kind === 'story').map(item => ({ id: item.id, at: finite(item.at) }));
   for (const field of ['completed', 'rewarded']) for (const [id, value] of Object.entries(saved.story?.[field] || {})) {
     if (graph.definitionsById.get(id)?.kind === 'story' && value) state.story[field][id] = true;
@@ -172,6 +181,14 @@ export function assertStateInvariants(state, graph) {
   }
   for (const scope of SCOPES) for (const [id, value] of Object.entries(state.stats[scope].factionCoinsByFaction)) {
     if (!validFactionCoin(id) || !numeric.isNonNegative(value)) throw new Error(`Invariant: invalid faction coin found ${scope}/${id}`);
+  }
+  for (const scope of SCOPES) {
+    for (const [id, value] of Object.entries(state.stats[scope].spellCasts)) {
+      if (graph.definitionsById.get(id)?.kind !== 'spell' || !numeric.isNonNegative(value)) throw new Error(`Invariant: invalid spell cast count ${scope}/${id}`);
+    }
+    for (const [id, value] of Object.entries(state.stats[scope].buildingMax)) {
+      if (graph.definitionsById.get(id)?.kind !== 'building' || !Number.isSafeInteger(value) || value < 0) throw new Error(`Invariant: invalid building maximum ${scope}/${id}`);
+    }
   }
   const faction = state.selections.faction && graph.definitionsById.get(state.selections.faction);
   if (faction && faction.alignment !== state.selections.alignment) throw new Error('Invariant: faction alignment mismatch');

@@ -43,7 +43,9 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     scheduler.clear();
     if (!state) return;
     for (const [id, timer] of Object.entries(state.timers.spells)) scheduler.register(`spell:${id}`, timer.dueAt, { kind: 'spell', id });
-    for (const [id, timer] of Object.entries(state.timers.tasks)) scheduler.register(`task:${id}`, timer.dueAt, { kind: 'task', id });
+    for (const [id, timer] of Object.entries(state.timers.tasks)) {
+      if (id !== 'greenFingersDiscount') scheduler.register(`task:${id}`, timer.dueAt, { kind: 'task', id });
+    }
   }
   function commitTransaction(transaction) {
     assertStateInvariants(state, graph);
@@ -235,6 +237,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
           const currentMax = tx.state.stats[scope].buildingsMax || 0;
           const total = Object.values(tx.state.buildings).reduce((sum, count) => sum + count, 0);
           if (total > currentMax) tx.write(`stats.${scope}.buildingsMax`, total);
+          const buildingMax = tx.state.stats[scope].buildingMax[id] || 0;
+          if (tx.state.buildings[id] > buildingMax) tx.write(`stats.${scope}.buildingMax.${id}`, tx.state.buildings[id]);
         }
         tx.emit('building.purchased', { buildingId: id, quantity });
       } else {
@@ -243,6 +247,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
           tx.emit(definition.kind === 'faction' ? 'faction.joined' : 'alignment.selected', { [`${definition.kind}Id`]: id });
         } else {
           tx.write(`owned.${definition.scope}.${id}`, true);
+          if (id === 'goblin-9') tx.write('timers.tasks.greenFingersDiscount', { dueAt: tx.state.stats.run.time + 600 });
           if (definition.kind === 'upgrade') for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.upgradesBought`, 1);
           tx.emit('upgrade.purchased', { upgradeId: id });
         }
@@ -270,6 +275,13 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
 
+  function recordSpellCast(tx, id) {
+    for (const scope of ['run', 'r', 'ascension', 'total']) {
+      increment(tx, `stats.${scope}.spellsCast`, 1);
+      increment(tx, `stats.${scope}.spellCasts.${id}`, 1);
+    }
+  }
+
   function cast(id) {
     return runTransaction('cast', tx => {
       const definition = graph.definitionsById.get(id);
@@ -277,10 +289,16 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       if (!evaluateCondition(graph, definition.visible, { state: tx.state, derived: cache.get() })) return { rejected: true, reason: 'UNAVAILABLE_CONTEXT' };
       const selected = selectContent(tx.state, graph, cache.get(), id);
       if (!payCosts(tx, definition, selected.costs)) return { rejected: true, reason: 'NEED_RESOURCE' };
-      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.spellsCast`, 1);
+      recordSpellCast(tx, id);
       if (definition.duration > 0) tx.write(`timers.spells.${id}`, { dueAt: tx.state.stats.run.time + definition.duration });
       applyActions(tx, definition.castActions || [], definition);
       tx.emit('spell.cast', { spellId: id, free: false });
+      if (id !== 'taxCollection' && tx.state.owned.run['goblin-7']) {
+        const taxCollection = graph.definitionsById.get('taxCollection');
+        applyActions(tx, taxCollection.castActions || [], taxCollection);
+        recordSpellCast(tx, 'taxCollection');
+        tx.emit('spell.cast', { spellId: 'taxCollection', free: true });
+      }
     });
   }
 
@@ -358,6 +376,22 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
 
+  function triggerGreenFingersDiscount(tx, task, offline, derived) {
+    const count = Math.floor((tx.state.stats.run.time - task.dueAt) / 600) + 1;
+    let seconds = 0;
+    let earned = 0;
+    for (let index = 0; index < count; index++) {
+      const rollSeconds = 1 + Math.floor(random(tx, 'greenFingersDiscount') * 2500);
+      const reward = derived.production * rollSeconds;
+      seconds += rollSeconds;
+      earned += reward;
+      increment(tx, 'resources.coins', reward);
+      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, reward);
+    }
+    tx.write('timers.tasks.greenFingersDiscount', { dueAt: task.dueAt + count * 600 });
+    tx.emit('greenFingersDiscount.triggered', { count, seconds, earned, mode: offline ? 'offline' : 'online' });
+  }
+
   function tickSimulation(tx, delta, offline = false) {
     const derived = cache.get();
     const production = derived.production * (offline ? derived.offlineMultiplier : 1);
@@ -366,6 +400,10 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, production * delta);
     tx.write('resources.mana', Math.min(derived.manaMax, tx.state.resources.mana + derived.manaRegen * delta));
     settleAssistantFactionCoins(tx, delta, offline, derived);
+    const greenFingersTimer = tx.state.timers.tasks.greenFingersDiscount;
+    if (tx.state.owned.run['goblin-9'] && greenFingersTimer && greenFingersTimer.dueAt <= tx.state.stats.run.time) {
+      triggerGreenFingersDiscount(tx, greenFingersTimer, offline, derived);
+    }
     const due = scheduler.due(tx.state.stats.run.time);
     for (const task of due) {
       if (task.payload.kind === 'spell') {
@@ -426,6 +464,13 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     for (const [id, timer] of Object.entries(state.timers.spells)) {
       if (timer.dueAt === undefined) state.timers.spells[id] = { dueAt: state.stats.run.time + timer.remaining };
     }
+    for (const [id, timer] of Object.entries(state.timers.tasks)) {
+      if (timer.dueAt === undefined) state.timers.tasks[id] = { dueAt: state.stats.run.time + (timer.remaining || 0) };
+    }
+    if (state.owned.run['goblin-9'] && !state.timers.tasks.greenFingersDiscount) {
+      state.timers.tasks.greenFingersDiscount = { dueAt: state.stats.run.time + 600 };
+    }
+    if (!state.owned.run['goblin-9']) delete state.timers.tasks.greenFingersDiscount;
     cache = new RuntimeCache(state, graph);
     cache.rebuild(); rebuildScheduler(); started = true; stopped = false;
     const away = Math.max(0, (clock.wallNow() - state.lastWallClock) / 1000);

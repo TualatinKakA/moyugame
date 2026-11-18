@@ -2,7 +2,7 @@ import { evaluateFormula } from './formula.js';
 import { evaluateCondition, pathValue } from './content-registry.js';
 import { reincarnationPower } from './progression.js';
 
-const PHASES = ['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'global', 'factionCoin', 'click', 'utility'];
+const PHASES = ['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'tax', 'global', 'factionCoin', 'click', 'utility'];
 const buildings = graph => graph.arraysByKind.get('building') || [];
 const owned = (state, definition) => definition.kind === 'trophy' ? state.permanentUnlocks[definition.id]
   : definition.kind === 'challenge' ? state.challenges[definition.id]?.completed
@@ -42,7 +42,8 @@ function createModifiers() {
   return {
     globalAdd: 0, globalMult: 1, buildingAdd: {}, buildingMult: {}, buildingBaseAdd: {}, buildingCostAdd: 0,
     assistantsAdd: 0, assistantsMult: 1, assistantProdAdd: 0, assistantProdMult: 1,
-    manaMaxAdd: 0, manaRegenAdd: 0, clickAdd: 0, clickMult: 1, taxSecondsAdd: 0, gemPowerAdd: 0,
+    manaMaxAdd: 0, manaRegenAdd: 0, manaRegenMult: 1, clickBaseAdd: 0, clickAdd: 0, clickMult: 1,
+    taxSecondsAdd: 0, gemPowerAdd: 0, gemPowerMult: 1, offlineAdd: 0, offlineMult: 1, fcChanceAdd: 0,
   };
 }
 function applyEffect(mods, effect, amount, targetId) {
@@ -58,11 +59,20 @@ function applyEffect(mods, effect, amount, targetId) {
   } else if (effect.stat === 'assistants.production') {
     if (effect.operation === 'addPercent') mods.assistantProdAdd += amount; else mods.assistantProdMult *= percentFactor(effect.operation, amount);
   } else if (effect.stat === 'mana.max') mods.manaMaxAdd += amount;
-  else if (effect.stat === 'mana.regen') mods.manaRegenAdd += amount;
+  else if (effect.stat === 'mana.regen') {
+    if (effect.operation === 'add') mods.manaRegenAdd += amount;
+    else mods.manaRegenMult *= effect.operation === 'multiply' ? amount : percentFactor(effect.operation, amount);
+  } else if (effect.stat === 'click.base') mods.clickBaseAdd += amount;
   else if (effect.stat === 'click.reward') {
     if (additive) mods.clickAdd += amount; else mods.clickMult *= percentFactor(effect.operation, amount);
   } else if (effect.stat === 'taxCollection.seconds') mods.taxSecondsAdd += amount;
-  else if (effect.stat === 'gem.power') mods.gemPowerAdd += amount;
+  else if (effect.stat === 'gem.power') {
+    if (additive) mods.gemPowerAdd += amount;
+    else mods.gemPowerMult *= effect.operation === 'multiply' ? amount : percentFactor(effect.operation, amount);
+  } else if (effect.stat === 'offline.production') {
+    if (additive) mods.offlineAdd += amount;
+    else mods.offlineMult *= effect.operation === 'multiply' ? amount : percentFactor(effect.operation, amount);
+  } else if (effect.stat === 'factionCoin.chance') mods.fcChanceAdd += amount;
   else throw new Error(`Unknown derived effect stat ${effect.stat}`);
 }
 
@@ -96,9 +106,10 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
       }
     }
     if (phase === 'assistants') context.assistants = Math.max(0, Math.floor(mods.assistantsAdd * mods.assistantsMult));
+    if (phase === 'tax') context.taxSeconds = Math.max(0, 30 + mods.taxSecondsAdd);
     if (phase === 'global') {
       const outputs = {};
-      const gemPowerMultiplier = 1 + state.resources.gems * mods.gemPowerAdd / 100;
+      const gemPowerMultiplier = (1 + state.resources.gems * mods.gemPowerAdd / 100) * mods.gemPowerMult;
       globalMult = (1 + mods.globalAdd / 100) * mods.globalMult * gemPowerMultiplier;
       let buildingProduction = 0;
       for (const definition of buildings(graph)) {
@@ -110,9 +121,9 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
       }
       Object.assign(context, { outputs, buildingProduction, globalMult });
     }
-    if (phase === 'click') context.clickReward = Math.max(1, (1 + mods.clickAdd / 100) * mods.clickMult);
+    if (phase === 'click') context.clickReward = Math.max(1, (1 + mods.clickBaseAdd) * (1 + mods.clickAdd / 100) * mods.clickMult);
   }
-  const { outputs, buildingProduction, assistants, clickReward } = context;
+  const { outputs, buildingProduction, assistants, clickReward, taxSeconds } = context;
   // Realm Grinder Assistants continuously produce 5% of click reward each, without emitting clicks.
   const assistantProduction = Math.max(0, assistants * clickReward * 0.05
     * (1 + mods.assistantProdAdd / 100) * mods.assistantProdMult * globalMult);
@@ -122,9 +133,9 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     : 0;
   return Object.freeze({
     outputs, production, buildingProduction, assistantProduction, assistants, clickReward,
-    manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, 1 + mods.manaRegenAdd),
-    fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
-    offlineMultiplier: power.offlineMultiplier,
+    manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, (1 + mods.manaRegenAdd) * mods.manaRegenMult),
+    fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance + mods.fcChanceAdd, taxSeconds,
+    offlineMultiplier: (power.offlineMultiplier * (1 + mods.offlineAdd / 100) * mods.offlineMult),
     buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
   });
 }

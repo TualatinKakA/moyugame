@@ -238,9 +238,15 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
 .toast { position: fixed; left: 50%; bottom: 25px; z-index: 120; transform: translate(-50%, 15px); max-width: calc(100% - 30px); padding: 10px 16px; background: #2a3027; border: 1px solid #65775a; opacity: 0; pointer-events: none; transition: opacity .2s ease-out, transform .2s ease-out; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .coin-float { position: absolute; z-index: 9; pointer-events: none; color: var(--green); font: 700 18px Consolas, monospace; text-shadow: 0 2px 3px #000; animation: coin-float .8s ease-out forwards; }
+.faction-coin-float { position: absolute; z-index: 10; left: 0; pointer-events: none; color: var(--yellow); font: 700 14px/1.3 Consolas, "Microsoft YaHei", monospace; text-shadow: 0 2px 3px #000; white-space: nowrap; transform: translate(-50%, -50%); animation: faction-coin-float .95s ease-out forwards; }
 .coin-particle { position: absolute; z-index: 8; width: 28px; height: 30px; object-fit: contain; pointer-events: none; filter: drop-shadow(2px 3px 2px #0006); animation: coin-fly .72s cubic-bezier(.15,.65,.3,1) forwards; }
 .work-btn.coin-hit .workstation-img { animation: monitor-hit .18s ease-out; }
 @keyframes coin-float { to { transform: translateY(-75px); opacity: 0; } }
+@keyframes faction-coin-float {
+  0% { opacity: 0; transform: translate(-50%, -30%); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -160%); }
+}
 @keyframes coin-fly { 0% { transform: scale(.5) rotate(0); opacity: 0; } 18% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--spin)) scale(1.05); opacity: 0; } }
 @keyframes monitor-hit { 35% { transform: scale(.93) rotate(-2deg); } 70% { transform: scale(1.03) rotate(1deg); } }
 @media (min-width: 1200px) {
@@ -409,7 +415,7 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
   .coin-particle { display: none; }
-  .coin-float, .work-btn.coin-hit .workstation-img { animation: none; }
+  .coin-float, .faction-coin-float, .work-btn.coin-hit .workstation-img { animation: none; }
 }
 
 .choice-heading {
@@ -595,11 +601,23 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   100% { opacity: 0; transform: translateY(-42px); }
 }
 
+.assistant-fc-fx {
+  position: absolute;
+  z-index: 16;
+  left: 50%;
+  top: auto;
+  bottom: calc(100% + 6px);
+  pointer-events: none;
+}
+
+.assistant-fc-fx .faction-coin-float { font-size: 12px; }
+
 @media (max-width: 900px) {
   .assistant-income-fx {
     left: 70%;
     font-size: 10px;
   }
+  .assistant-fc-fx .faction-coin-float { font-size: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

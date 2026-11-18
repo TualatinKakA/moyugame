@@ -72,6 +72,8 @@ try {
   assert.equal(await gamePage.locator('.work-label').count(), 0);
 
   await gamePage.locator('.app-nav [data-tab="factions"]').click();
+  const factionSectionHeadings = () => gamePage.locator('#mainPanel > section.subsection > h3').allTextContents();
+  assert.deepEqual(await factionSectionHeadings(), ['选择立场', '签署部门条约', '部门升级']);
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 2, 'only two alignments before selection');
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
   await gamePage.locator('.story-overlay[data-story-id="ui.alignment.confirm"] [data-choice-id="confirm"]').click();
@@ -83,6 +85,7 @@ try {
     return image.complete && image.naturalWidth > 0;
   });
   await closeStory(gamePage, 'alignment.idealism');
+  assert.deepEqual(await factionSectionHeadings(), ['签署部门条约', '部门升级', '选择立场']);
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 3, 'selected alignment stays beside the faction choice');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').textContent(), '当前立场');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').isDisabled(), true);
@@ -247,10 +250,12 @@ try {
   const resetPage = await resetContext.newPage(); watch(resetPage);
   await resetPage.goto(origin, { waitUntil: 'domcontentloaded' });
   await resetPage.locator('#moreTabButton').click();
-  resetPage.once('dialog', dialog => dialog.accept());
+  await resetPage.locator('[data-action="hard-reset"]').click();
+  const confirmReset = resetPage.locator('.story-overlay[data-story-id="ui.hard-reset.confirm"] [data-choice-id="confirm"]');
+  await confirmReset.waitFor();
   await Promise.all([
     resetPage.waitForLoadState('load'),
-    resetPage.locator('[data-action="hard-reset"]').click(),
+    confirmReset.click(),
   ]);
   const cleared = await resetPage.evaluate(key => ({
     main: localStorage.getItem(key),

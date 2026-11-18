@@ -792,3 +792,213 @@ test('reincarnation clears run and r per-faction found while preserving ascensio
   assert.deepEqual(state.stats.ascension.factionCoinsByFaction, { fairy: 1, goblin: 3 });
   assert.deepEqual(state.stats.total.factionCoinsByFaction, { fairy: 1, goblin: 3 });
 });
+
+
+test('Fairy and Goblin Pact Alliance gates unlock tiers and spend only FC balances', async () => {
+  for (const [faction, alignment] of [['fairy', 'good'], ['goblin', 'evil']]) {
+    const seeded = initial();
+    seeded.resources.coins = 1e21;
+    seeded.resources.factionCoins[faction] = 1000;
+    const { game } = fixture(seeded);
+    await game.start();
+    game.dispatch({ type: 'purchase', id: alignment });
+    game.dispatch({ type: 'purchase', id: faction });
+    const status = id => game.select('content', { id }).status;
+    assert.equal(status(`${faction}-pact`), 'HIDDEN_SYSTEM');
+    for (const number of [1, 2, 3]) assert.equal(game.dispatch({ type: 'purchase', id: `${faction}-${number}` }).ok, true);
+    assert.equal(status(`${faction}-pact`), 'PURCHASABLE');
+    assert.equal(status(`${faction}-4`), 'HIDDEN_SYSTEM');
+    assert.equal(game.dispatch({ type: 'purchase', id: `${faction}-pact` }).ok, true);
+    assert.equal(game.select('state').resources.factionCoins[faction], 900);
+    for (const number of [4, 5, 6]) {
+      assert.equal(status(`${faction}-${number}`), 'PURCHASABLE');
+      assert.equal(game.dispatch({ type: 'purchase', id: `${faction}-${number}` }).ok, true);
+    }
+    assert.equal(status(`${faction}-alliance`), 'PURCHASABLE');
+    assert.equal(status(`${faction}-7`), 'HIDDEN_SYSTEM');
+    assert.equal(game.dispatch({ type: 'purchase', id: `${faction}-alliance` }).ok, true);
+    assert.equal(game.select('state').resources.factionCoins[faction], 400);
+    for (const number of [7, 8, 9]) assert.equal(status(`${faction}-${number}`), 'PURCHASABLE');
+    assert.equal(game.select('state').stats.run.factionCoins, 0);
+  }
+});
+
+test('Fairy tiers 2 and 3 apply exact base production click mana and assistant formulas dynamically', async () => {
+  const seeded = initial();
+  seeded.resources.coins = 1e21;
+  seeded.selections.alignment = 'good'; seeded.selections.faction = 'fairy';
+  seeded.buildings = { farm: 10, inn: 20, blacksmith: 30 };
+  for (const id of ['fairy-pact', 'fairy-alliance', 'fairy-4', 'fairy-5', 'fairy-6', 'fairy-7', 'fairy-8', 'fairy-9']) seeded.owned.run[id] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  const expected = low3 => {
+    const globalMult = 1 + 0.75 * low3 ** 0.75 / 100;
+    const baseOutput = (20 + 20 * (6 + 234) + 30 * (20 + 580)) * globalMult;
+    return { globalMult, baseOutput };
+  };
+  let derived = game.select('derived');
+  let values = expected(60);
+  assertClose(derived.buildingCostMultiplier, 1.11);
+  assertClose(derived.outputs.inn, 20 * 240 * values.globalMult);
+  assertClose(derived.outputs.blacksmith, 30 * 600 * values.globalMult);
+  assertClose(derived.clickReward, 1 + 0.2 * values.baseOutput);
+  assertClose(derived.manaRegen, 1 + 2.75 * 30 ** 0.275);
+  assert.equal(derived.assistants, Math.floor(1.2 * 60 ** 0.6));
+  assert.equal(game.dispatch({ type: 'purchase', id: 'blacksmith' }).ok, true);
+  derived = game.select('derived');
+  values = expected(61);
+  const updatedBaseOutput = (20 + 20 * 240 + 31 * 600) * values.globalMult;
+  assertClose(derived.manaRegen, 1 + 2.75 * 31 ** 0.275);
+  assertClose(derived.clickReward, 1 + 0.2 * updatedBaseOutput);
+  assert.equal(derived.assistants, Math.floor(1.2 * 61 ** 0.6));
+  assert.equal(game.select('state').stats.run.buildingMax.blacksmith, 31);
+});
+
+test('Goblin tier 2 uses per-spell casts current gold tax seconds and multiplicative gem power', async () => {
+  const seeded = initial();
+  seeded.resources.coins = 1e6; seeded.resources.gems = 10;
+  seeded.selections.alignment = 'evil'; seeded.selections.faction = 'goblin';
+  seeded.buildings = { farm: 10, witchConclave: 20 };
+  seeded.stats.run.spellCasts.taxCollection = 9;
+  for (const id of ['gemPower', 'goblin-3', 'goblin-4', 'goblin-5', 'goblin-6']) seeded.owned.run[id] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  const taxSeconds = 30 + Math.sqrt(30);
+  const globalPercent = 12 * Math.log(1 + taxSeconds) ** 3;
+  const manaMultiplier = 1 + 0.75 * Math.log10(1 + 1e6) ** 1.25 / 100;
+  let derived = game.select('derived');
+  assertClose(derived.taxSeconds, taxSeconds);
+  assertClose(derived.manaRegen, manaMultiplier);
+  assertClose(derived.offlineMultiplier, 0.5 * (1 + Math.log10(10) ** 2 / 100));
+  assertClose(derived.outputs.farm, 20 * (1 + globalPercent / 100) * 1.2 * 2.5);
+  const before = derived;
+  assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
+  assert.equal(game.select('state').stats.run.spellCasts.taxCollection, 10);
+  assert.equal(game.select('state').stats.r.spellCasts.taxCollection, 1);
+  derived = game.select('derived');
+  assertClose(derived.offlineMultiplier, 0.5 * (1 + Math.log10(11) ** 2 / 100));
+  assert.ok(derived.manaRegen > before.manaRegen, 'coin gain refreshes Goblin Economists');
+});
+
+test('Goblin Central Bank adds a free atomic Tax Collection without recursion', async () => {
+  const seeded = initial();
+  seeded.selections.alignment = 'evil'; seeded.selections.faction = 'goblin';
+  seeded.buildings.farm = 10; seeded.owned.run['goblin-7'] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  const before = game.select('derived');
+  const coins = game.select('state').resources.coins;
+  const result = game.dispatch({ type: 'cast', id: 'callToArms' });
+  assert.equal(result.ok, true);
+  assert.equal(game.select('state').resources.mana, 9600);
+  assertClose(game.select('state').resources.coins - coins, before.production * before.taxSeconds);
+  assert.equal(game.select('state').stats.run.spellCasts.callToArms, 1);
+  assert.equal(game.select('state').stats.run.spellCasts.taxCollection, 1);
+  assert.equal(game.select('state').stats.run.spellsCast, 2);
+  assert.ok(result.facts.some(fact => fact.type === 'spell.cast' && fact.payload.spellId === 'taxCollection' && fact.payload.free));
+  assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
+  assert.equal(game.select('state').stats.run.spellsCast, 3);
+  assert.equal(game.select('state').stats.run.spellCasts.taxCollection, 2);
+});
+
+test('Fools Gold reads per-building reincarnation maximum and refreshes FC chance', async () => {
+  const seeded = initial();
+  seeded.selections.alignment = 'evil'; seeded.selections.faction = 'goblin';
+  seeded.owned.run['goblin-8'] = true;
+  seeded.stats.r.buildingMax.witchConclave = 25;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.select('derived').fcChance, 10 + Math.floor(2 * 25 ** 0.6));
+  game.dispatch({ type: 'purchase', id: 'witchConclave', amount: 10 });
+  assert.equal(game.select('state').stats.r.buildingMax.witchConclave, 25);
+  assert.equal(game.select('derived').fcChance, 10 + Math.floor(2 * 25 ** 0.6));
+});
+
+test('Green Fingers Discount pays every elapsed period online and offline and resets with the run', async () => {
+  const onlineSave = createSaveState({ now: 1000 });
+  onlineSave.buildings.farm = 10; onlineSave.owned.run['goblin-9'] = true;
+  onlineSave.timers.tasks.greenFingersDiscount = { remaining: 600 };
+  const { game } = fixture(onlineSave);
+  await game.start();
+  let onlineFact;
+  game.subscribe(message => { onlineFact = message.facts.find(fact => fact.type === 'greenFingersDiscount.triggered') || onlineFact; });
+  game.tick(600);
+  assert.equal(onlineFact.payload.count, 1);
+  assert.equal(onlineFact.payload.mode, 'online');
+  assertClose(onlineFact.payload.earned, 20 * onlineFact.payload.seconds);
+  assert.equal(game.select('state').timers.tasks.greenFingersDiscount.dueAt, 1200);
+  game.tick(1200);
+  assert.equal(onlineFact.payload.count, 2);
+  assert.equal(game.select('state').timers.tasks.greenFingersDiscount.dueAt, 2400);
+  game.select('state').resources.gems = 1e27;
+  assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
+  assert.equal(game.select('state').owned.run['goblin-9'], undefined);
+  assert.equal(game.select('state').timers.tasks.greenFingersDiscount, undefined);
+
+  const offlineSave = createSaveState({ now: 0 });
+  offlineSave.lastWallClock = 0; offlineSave.buildings.farm = 10; offlineSave.owned.run['goblin-9'] = true;
+  offlineSave.timers.tasks.greenFingersDiscount = { remaining: 600 };
+  const offlineFixture = fixture(offlineSave, { nowStart: 2000000 });
+  let offlineFact;
+  offlineFixture.game.subscribe(message => { offlineFact = message.facts.find(fact => fact.type === 'greenFingersDiscount.triggered') || offlineFact; });
+  const started = await offlineFixture.game.start();
+  assert.equal(offlineFact.payload.count, 3);
+  assert.equal(offlineFact.payload.mode, 'offline');
+  assert.equal(offlineFact.payload.earned, 20 * offlineFact.payload.seconds);
+  assertClose(started.offlineReport.earned, 20000 + offlineFact.payload.earned);
+  assert.equal(offlineFixture.game.select('state').timers.tasks.greenFingersDiscount.dueAt, 2400);
+});
+
+test('new sparse spell and building maximum stats are backward compatible', () => {
+  const graph = compileContentGraph(CONTENT);
+  const saved = createSaveState();
+  saved.stats.run.spellCasts = { taxCollection: 3, unknown: 2 };
+  saved.stats.r.buildingMax = { witchConclave: 40 };
+  delete saved.stats.total.spellCasts; delete saved.stats.total.buildingMax;
+  const { state, report } = migrateAndNormalizeState(saved, graph);
+  assert.equal(report.migrated, false);
+  assert.deepEqual(state.stats.run.spellCasts, { taxCollection: 3 });
+  assert.deepEqual(state.stats.r.buildingMax, { witchConclave: 40 });
+  assert.deepEqual(state.stats.total.spellCasts, {});
+  assert.deepEqual(state.stats.total.buildingMax, {});
+  assert.equal(state.quarantined.unknownIds.unknown, 2);
+});
+
+
+test('Fairy and Goblin contracts and upgrades use 24 self-contained SVG icons with confirmed stacking', async () => {
+  const graph = compileContentGraph(CONTENT);
+  const paths = new Set();
+  for (const faction of ['fairy', 'goblin']) {
+    const factionDefinition = graph.definitionsById.get(faction);
+    assert.equal(factionDefinition.ui.icon, `assets/images/content-icons/factions/${faction}-contract-tier1.svg`);
+    const entries = [factionDefinition, graph.definitionsById.get(`${faction}-pact`), graph.definitionsById.get(`${faction}-alliance`)];
+    for (let number = 1; number <= 9; number++) entries.push(graph.definitionsById.get(`${faction}-${number}`));
+    assert.equal(entries.length, 12);
+    for (const entry of entries) {
+      assert.match(entry.ui.icon, /^assets\/images\/content-icons\/factions\//);
+      paths.add(entry.ui.icon);
+      const svg = await readFile(new URL(`../${entry.ui.icon}`, import.meta.url), 'utf8');
+      assert.match(svg, /<svg[^>]+width="64"[^>]+height="64"/);
+      assert.match(svg, /data:image\/png;base64,/);
+      assert.doesNotMatch(svg, /<script|<foreignObject|<animate|filter=/);
+    }
+    for (let tier = 1; tier <= 3; tier++) {
+      for (let variant = 1; variant <= 3; variant++) {
+        const id = `${faction}-${(tier - 1) * 3 + variant}`;
+        const svg = await readFile(new URL(`../${graph.definitionsById.get(id).ui.icon}`, import.meta.url), 'utf8');
+        const transforms = [...svg.matchAll(/<use[^>]+transform="([^"]+)"/g)].map(match => match[1]);
+        assert.equal(transforms.length, variant);
+        if (variant === 2) {
+          assert.match(transforms[0], /translate\(18 8\)/);
+          assert.match(transforms[1], /translate\(-2 8\)/);
+        }
+        if (variant === 3) {
+          assert.match(transforms[0], /translate\(8 0\)/);
+          assert.match(transforms[1], /translate\(18 18\)/);
+          assert.match(transforms[2], /translate\(-2 18\)/);
+        }
+      }
+    }
+  }
+  assert.equal(paths.size, 24);
+});
