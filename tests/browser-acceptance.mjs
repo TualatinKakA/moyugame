@@ -74,7 +74,19 @@ try {
   await gamePage.locator('.app-nav [data-tab="factions"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 2, 'only two alignments before selection');
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
-  assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 1, 'selected alignment is replaced by Fairy');
+  const alignmentImage = gamePage.locator('.story-overlay[data-story-id="alignment.commitment"] .story-image');
+  await alignmentImage.waitFor();
+  assert.match(await alignmentImage.getAttribute('src'), /alignment-commitment\.svg/);
+  await gamePage.waitForFunction(() => {
+    const image = document.querySelector('.story-overlay[data-story-id="alignment.commitment"] .story-image');
+    return image.complete && image.naturalWidth > 0;
+  });
+  await closeStory(gamePage, 'alignment.commitment');
+  assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 3, 'selected alignment stays beside the faction choice');
+  assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').textContent(), '当前立场');
+  assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').isDisabled(), true);
+  assert.equal(await gamePage.locator('#mainPanel [data-choice-card="evil"] button').textContent(), '本轮不可改选');
+  assert.equal(await gamePage.locator('#mainPanel [data-choice-card="evil"] button').isDisabled(), true);
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="goblin"]').count(), 0);
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="fairy"]').click();
   await closeStory(gamePage, 'intro.first_department');

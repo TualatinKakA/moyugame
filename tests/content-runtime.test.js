@@ -26,7 +26,7 @@ const initial = () => {
 test('content graph contains only Fairy and Goblin factions with declarative prologue content', async () => {
   const { game } = fixture();
   assert.deepEqual(game.graph.arraysByKind.get('faction').map(item => item.id), ['fairy', 'goblin']);
-  assert.equal(game.graph.arraysByKind.get('story').length, 6);
+  assert.equal(game.graph.arraysByKind.get('story').length, 7);
   assert.ok(game.graph.arraysByKind.get('trophy').length >= 8);
   assert.equal(game.graph.arraysByKind.get('building').some(item => item.alignment === 'neutral'), false);
   await game.start();
@@ -312,4 +312,26 @@ test('mana regeneration override applies immediately and persists through the se
   game.tick(0.5);
   assert.equal(game.select('state').resources.mana, 3.5);
   assert.equal(game.select('state').settings.manaRegenOverride, 7);
+});
+
+
+test('alignment commitment stays selected until retirement and awards its story trophy once', async () => {
+  const { game } = fixture(initial());
+  await game.start();
+  assert.equal(game.dispatch({ type: 'purchase', id: 'good' }).ok, true);
+  assert.equal(game.select('content', { id: 'good' }).status, 'SELECTED');
+  assert.deepEqual(game.select('storyQueue').map(item => item.id), ['alignment.commitment']);
+  assert.equal(game.select('state').permanentUnlocks['trophy.alignment.commitment'], true);
+  assert.equal(game.dispatch({ type: 'purchase', id: 'evil' }).reason, 'LOCKED_REQUIREMENT');
+  game.dispatch({ type: 'story.close', id: 'alignment.commitment' });
+  assert.equal(game.dispatch({ type: 'purchase', id: 'good' }).reason, 'SELECTED');
+  assert.equal(game.select('storyQueue').length, 0);
+
+  game.select('state').stats.run.coins = 1e8;
+  assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
+  assert.equal(game.select('state').selections.alignment, null);
+  game.dispatch({ type: 'story.close', id: 'intro.first_retirement' });
+  game.select('state').resources.coins = 1e12;
+  assert.equal(game.dispatch({ type: 'purchase', id: 'evil' }).ok, true);
+  assert.deepEqual(game.select('storyQueue'), []);
 });

@@ -4,7 +4,7 @@ export const ALIGNMENT_DEFINITIONS = [
   { id: 'evil', name: '务实', description: '稳定产出、离线收益与高阶设施。' },
 ].map(item => ({
   ...item, kind: 'alignment', contentVersion: 'base-v1', era: { minR: 0 },
-  visible: { op: 'notSelected', key: 'alignment' }, unlock: { op: 'always' },
+  visible: { op: 'always' }, unlock: { op: 'always' },
   purchase: { costs: selectionCost, requires: [{ op: 'notSelected', key: 'alignment' }] },
   effects: [], grants: [], reactions: [], scope: 'run',
   ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/${item.id === 'good' ? 'id-card' : 'cash'}.png` },

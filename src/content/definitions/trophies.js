@@ -25,6 +25,9 @@ export const TROPHY_DEFINITIONS = [
     effects: [effect('trophy.first_spell', 'mana', 'mana.max', 'add', { constant: 100 })],
   }),
   trophy({
+    id: 'trophy.alignment.commitment', name: '本周期承诺', description: '首次确认职业周期立场；本轮退休前不可更改。', icon: 'id-card',
+  }),
+  trophy({
     id: 'trophy.fairy_member', name: '产品部协作', description: '首次加入产品部。',
     reaction: { event: 'faction.joined', when: { op: 'eventDataEquals', path: 'factionId', value: 'fairy' }, priority: 50 },
   }),

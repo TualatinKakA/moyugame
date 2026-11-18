@@ -193,7 +193,11 @@ function upgradesPanel(category = null) {
   return `<div class="panel-head"><div><h2>${title}</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
 function choiceCard(item) {
-  return `<article class="card" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
+  const status = view(item.id).status;
+  const selected = status === 'SELECTED';
+  const locked = selected || status === 'LOCKED_REQUIREMENT';
+  const label = selected ? (item.kind === 'alignment' ? '当前立场' : '当前部门') : locked ? '本轮不可改选' : '选择';
+  return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
 }
 function factionsPanel() {
   const factionUpgrades = sortedUpgrades(visible('upgrade').filter(item => item.ui.category === 'faction'));
@@ -241,7 +245,10 @@ function updatePanel() {
     const model = view(button.dataset.id);
     button.disabled = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
     if (model.status === 'OWNED') button.textContent = '已生效';
-    else if (model.status === 'SELECTED') button.textContent = '当前已选择';
+    else if (model.status === 'SELECTED') {
+      const kind = definition(button.dataset.id).kind;
+      button.textContent = kind === 'alignment' ? '当前立场' : kind === 'faction' ? '当前部门' : '当前已选择';
+    }
     else if (model.status === 'NEED_RESOURCE') button.textContent = '资源不足';
     const card = button.closest('[data-upgrade-card]');
     if (card) card.querySelector('[data-field="cost"]').textContent = model.costs.map(cost => `${formatNumber(cost.value)} ${cost.resource === 'coins' ? '工资' : cost.resource}`).join(' + ');

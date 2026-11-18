@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="本周期不可撤销的立场承诺书">
+  <rect width="960" height="540" fill="#111923"/>
+  <rect x="110" y="70" width="520" height="400" rx="18" fill="#e7e1d4"/>
+  <path d="M175 150h310M175 205h350M175 260h300M175 315h230" stroke="#a49d90" stroke-width="14" stroke-linecap="round"/>
+  <path d="M175 390h180" stroke="#6f7d86" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="505" cy="365" r="68" fill="none" stroke="#a95d5d" stroke-width="12"/>
+  <path d="M460 365h90M505 320v90" stroke="#a95d5d" stroke-width="12" stroke-linecap="round"/>
+  <rect x="675" y="145" width="175" height="210" rx="16" fill="#d7e1e3" transform="rotate(6 762 250)"/>
+  <rect x="705" y="180" width="58" height="76" rx="8" fill="#91a5af" transform="rotate(6 734 218)"/>
+  <path d="M780 195l45 5M780 230l45 5M780 265l35 4" stroke="#82959e" stroke-width="11" stroke-linecap="round"/>
+  <path d="M680 405h150" stroke="#72b095" stroke-width="14" stroke-linecap="round"/>
+</svg>

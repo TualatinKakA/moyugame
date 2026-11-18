@@ -30,6 +30,13 @@ export const STORY_DEFINITIONS = [
     grants: [{ type: 'awardTrophy', id: 'trophy.intro.first_department' }],
   }),
   story({
+    id: 'alignment.commitment', title: '立场承诺已归档', buttonLabel: '接受本轮承诺', image: 'alignment-commitment.svg',
+    imageAlt: '职业周期承诺书盖着本周期不可撤销的印章，旁边放着员工工牌',
+    paragraphs: ['人事将你的立场选择打印成一页《职业周期承诺书》。', '“请再次确认：从这一刻起，直到本轮退休结算完成，你都不能更改当前立场。部门协作可以留下记录，但立场不是每天可以轮换的工作服。”', '你签下名字。系统随后将这页承诺标记为“本周期不可撤销”。', '这不是永别。退休之后，你可以带着新的历史贡献重新选择；但在本轮结束之前，公司只承认你现在签下的这一条路线。'],
+    reaction: { event: 'alignment.selected', priority: 250 },
+    grants: [{ type: 'awardTrophy', id: 'trophy.alignment.commitment' }],
+  }),
+  story({
     id: 'intro.retirement_denied', title: '退休申请未受理', buttonLabel: '返回工作岗位', image: 'intro-retirement-denied.svg',
     imageAlt: '退休申请被退回，人事窗口后的工牌仍然保持激活状态',
     paragraphs: ['你把退休申请递进人事窗口。系统没有盖章，只退回一张《职业周期考核未完成通知》。', '人事看了一眼你的工资单：“账面工资是本周期的劳动单位，只有本轮账面产值达到 100M，公司才会受理退休。”', '退回的申请末尾只有一行提示：请先将本轮账面产值提升至 100M，再提交退休申请。'],
