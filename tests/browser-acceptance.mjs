@@ -95,6 +95,9 @@ try {
   await gamePage.locator('[data-upgrade-card="gemPower"]').waitFor();
   await gamePage.locator('[data-upgrade-card="gemPower"] [data-action="purchase"]').click();
   assert.equal(await gamePage.locator('#production').textContent(), '¥ 66', 'Gem Power applies 2% production per gem');
+  const orderedIds = await gamePage.locator('#mainPanel [data-upgrade-card]').evaluateAll(nodes => nodes.map(node => node.dataset.upgradeCard));
+  assert.notEqual(orderedIds[0], 'gemPower', 'owned upgrades do not lead the all-upgrades list');
+  assert.equal(orderedIds.at(-1), 'gemPower', 'owned upgrades sort last in the all-upgrades list');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 3, 'mobile quick bar caps at three');
@@ -157,6 +160,10 @@ try {
   await gamePage.waitForTimeout(600);
   await gamePage.locator('#upgradeRail [data-id="fairy-1"]').click();
   assert.equal(await gamePage.locator('#upgradeRail [data-id="fairy-1"]').count(), 0, 'quick upgrade disappears after purchase');
+  await gamePage.locator('.app-nav [data-tab="factions"]').click();
+  const factionOrder = await gamePage.locator('#mainPanel [data-upgrade-card]').evaluateAll(nodes => nodes.map(node => node.dataset.upgradeCard));
+  assert.equal(factionOrder.at(-1), 'fairy-1', 'purchased faction upgrade sorts last');
+  await gamePage.locator('[data-action="close-panel"]').click();
   await gamePage.locator('#moreTabButton').click();
   await gamePage.locator('#manaPassword').fill('0000');
   await gamePage.locator('#manaPasswordForm button[type="submit"]').click();

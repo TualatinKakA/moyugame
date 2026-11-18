@@ -179,10 +179,16 @@ function buildingPanel() {
   return `<div class="panel-head"><div><h2>设施采购</h2><p>点击设施卡，按当前数量直接采购。</p></div>${buyControls()}</div><div class="card-grid building-grid">${visible('building').map(buildingCard).join('')}</div>`;
 }
 function upgradeCard(item) {
-  return `<article class="card" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
+  const status = view(item.id).status;
+  const statusClass = status === 'OWNED' ? 'owned' : status === 'NEED_RESOURCE' ? 'insufficient' : '';
+  return `<article class="card ${statusClass}" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
+}
+function sortedUpgrades(items) {
+  const order = { PURCHASABLE: 0, NEED_RESOURCE: 1, AVAILABLE_UNAFFORDABLE: 1, LOCKED_REQUIREMENT: 2, OWNED: 3, SELECTED: 3 };
+  return [...items].sort((left, right) => (order[view(left.id).status] ?? 4) - (order[view(right.id).status] ?? 4));
 }
 function upgradesPanel(category = null) {
-  const items = visible('upgrade').filter(item => !category || item.ui.category === category);
+  const items = sortedUpgrades(visible('upgrade').filter(item => !category || item.ui.category === category));
   const title = category === 'building' ? '设施升级' : category === 'general' ? '通用升级' : '升级';
   return `<div class="panel-head"><div><h2>${title}</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
@@ -190,7 +196,7 @@ function choiceCard(item) {
   return `<article class="card" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
 }
 function factionsPanel() {
-  const factionUpgrades = visible('upgrade').filter(item => item.ui.category === 'faction');
+  const factionUpgrades = sortedUpgrades(visible('upgrade').filter(item => item.ui.category === 'faction'));
   return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3><div class="card-grid">${factionUpgrades.map(upgradeCard).join('') || '<p class="notice">签署部门条约后显示对应升级。</p>'}</div></section>`;
 }
 function skillsPanel() {

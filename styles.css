@@ -137,6 +137,7 @@ button.danger { color: var(--red); }
 .card .meta, .upgrade-detail .meta { color: var(--yellow); font-family: Consolas, monospace; font-size: 11px; }
 .card > button:not(.building-card) { width: 100%; min-height: 42px; margin-top: 8px; }
 .card.owned { border-color: #526448; }
+.card.insufficient { opacity: .72; }
 .source-name { margin: 4px 0; color: #939e8e; font-size: 9px; overflow-wrap: anywhere; }
 .badge { display: inline-block; padding: 2px 6px; margin-right: 5px; border: 1px solid var(--line); color: var(--green); font-size: 9px; }
 .building-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
