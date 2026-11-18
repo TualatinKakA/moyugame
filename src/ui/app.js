@@ -6,6 +6,22 @@ import { createStoryModal } from './story/story-modal.js';
 import { formatDescription } from '../systems/content-registry.js';
 
 const $ = id => document.getElementById(id);
+const editableSelector = 'input, textarea, [contenteditable="true"]';
+function editableElement(target) {
+  const element = target instanceof Element ? target : target?.parentElement;
+  return element?.closest(editableSelector) || null;
+}
+function clearUnexpectedSelection() {
+  const selection = window.getSelection();
+  if (!selection?.rangeCount || selection.isCollapsed || editableElement(selection.anchorNode)) return;
+  selection.removeAllRanges();
+}
+for (const eventName of ['selectstart', 'contextmenu', 'dragstart']) {
+  document.addEventListener(eventName, event => {
+    if (!editableElement(event.target)) event.preventDefault();
+  }, true);
+}
+document.addEventListener('selectionchange', clearUnexpectedSelection);
 const money = value => `¥ ${formatNumber(value)}`;
 const saveAdapter = createSaveAdapter();
 let game;
@@ -429,7 +445,7 @@ let touchUpgradeTooltip = null;
 let dismissedUpgradeTooltip = null;
 let upgradeLongPress = null;
 let suppressedUpgradeClick = null;
-const upgradeLongPressDelay = 500;
+const upgradeLongPressDelay = 200;
 const upgradeLongPressMoveLimit = 12;
 function positionUpgradeTooltip(entry) {
   const rect = entry.getBoundingClientRect();
@@ -440,20 +456,34 @@ function positionUpgradeTooltip(entry) {
   tooltip.style.top = `${above ? rect.top - 8 : rect.bottom + 8}px`;
   tooltip.style.transform = above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)';
 }
+function positionUpgradeTooltipAt(entry, x, y) {
+  const tooltip = entry.querySelector('.upgrade-tooltip');
+  const width = tooltip.offsetWidth;
+  const height = tooltip.offsetHeight;
+  const left = Math.max(8, Math.min(innerWidth - width - 8, x - width / 2));
+  const preferredTop = y - height - 24;
+  const top = preferredTop >= 8 ? preferredTop : y + 24;
+  tooltip.style.transform = `translate(${Math.round(left)}px, ${Math.round(Math.max(8, Math.min(innerHeight - height - 8, top)))}px)`;
+}
 function closeUpgradeTooltip() {
   if (!activeUpgradeTooltip) return;
-  activeUpgradeTooltip.classList.remove('tooltip-open');
+  activeUpgradeTooltip.classList.remove('tooltip-open', 'tooltip-following');
   activeUpgradeTooltip.querySelector('.upgrade-tooltip').setAttribute('aria-hidden', 'true');
   activeUpgradeTooltip = null;
   touchUpgradeTooltip = null;
 }
 function openUpgradeTooltip(entry, touch = false) {
+  clearUnexpectedSelection();
   if (activeUpgradeTooltip && activeUpgradeTooltip !== entry) closeUpgradeTooltip();
   activeUpgradeTooltip = entry;
   touchUpgradeTooltip = touch ? entry : null;
+  const tooltip = entry.querySelector('.upgrade-tooltip');
+  tooltip.style.transition = touch ? 'none' : '';
   entry.classList.add('tooltip-open');
-  entry.querySelector('.upgrade-tooltip').setAttribute('aria-hidden', 'false');
-  positionUpgradeTooltip(entry);
+  entry.classList.toggle('tooltip-following', touch);
+  tooltip.setAttribute('aria-hidden', 'false');
+  if (touch && upgradeLongPress) positionUpgradeTooltipAt(entry, upgradeLongPress.x, upgradeLongPress.y);
+  else positionUpgradeTooltip(entry);
 }
 function cancelUpgradeLongPress() {
   if (!upgradeLongPress) return;
@@ -493,7 +523,8 @@ document.addEventListener('pointerdown', event => {
   const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
   if (!button) return;
   const record = {
-    button, pointerId: event.pointerId, x: event.clientX, y: event.clientY, triggered: false, timer: null,
+    button, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
+    x: event.clientX, y: event.clientY, triggered: false, timer: null,
   };
   record.timer = setTimeout(() => {
     if (upgradeLongPress !== record) return;
@@ -505,14 +536,28 @@ document.addEventListener('pointerdown', event => {
 document.addEventListener('pointermove', event => {
   const press = upgradeLongPress;
   if (!press || press.pointerId !== event.pointerId) return;
-  if (Math.hypot(event.clientX - press.x, event.clientY - press.y) <= upgradeLongPressMoveLimit) return;
-  if (press.triggered) closeUpgradeTooltip();
-  cancelUpgradeLongPress();
+  press.x = event.clientX;
+  press.y = event.clientY;
+  if (!press.triggered) {
+    if (Math.hypot(press.x - press.startX, press.y - press.startY) <= upgradeLongPressMoveLimit) return;
+    cancelUpgradeLongPress();
+    return;
+  }
+  event.preventDefault();
+  const entry = document.elementFromPoint(press.x, press.y)?.closest('[data-upgrade-card]');
+  if (entry && entry !== activeUpgradeTooltip) openUpgradeTooltip(entry, true);
+  else if (touchUpgradeTooltip) positionUpgradeTooltipAt(touchUpgradeTooltip, press.x, press.y);
 });
+document.addEventListener('touchmove', event => {
+  if (upgradeLongPress?.triggered && event.cancelable) event.preventDefault();
+}, { passive: false });
 document.addEventListener('pointerup', event => {
   const press = upgradeLongPress;
   if (!press || press.pointerId !== event.pointerId) return;
-  if (press.triggered) suppressedUpgradeClick = { button: press.button, until: performance.now() + 700 };
+  if (press.triggered) {
+    suppressedUpgradeClick = { until: performance.now() + 700 };
+    closeUpgradeTooltip();
+  }
   cancelUpgradeLongPress();
 });
 document.addEventListener('pointercancel', event => {
@@ -553,7 +598,7 @@ function setFactionCoinPanel(open) {
 document.addEventListener('click', event => {
   if (!event.target.closest('#factionCoinDock') && !event.target.closest('#factionCoinToggle')) setFactionCoinPanel(false);
   const upgradeButton = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
-  if (upgradeButton && suppressedUpgradeClick?.button === upgradeButton && performance.now() < suppressedUpgradeClick.until) {
+  if (upgradeButton && suppressedUpgradeClick && performance.now() < suppressedUpgradeClick.until) {
     event.preventDefault();
     suppressedUpgradeClick = null;
     return;
