@@ -4,7 +4,7 @@
 >
 > 本表只负责展示名称，不改变原版 ID、解锁、成本、公式、互斥和重置关系。同一原名在不同派系或节点下出现时保留各自上下文，不强行去重。
 >
-> 当前叙事口径：账面工资、期权和部门影响力均为集团内部账本；立场采用上进／狼性／均衡；业务域仅由指定 Reincarnation 奖杯解锁；Ascension 只解释数值与制度重述；不设置最终通关结局。
+> 当前叙事口径：账面工资、期权和部门影响力均为集团内部账本；立场采用理想／务实／均衡；业务域仅由指定 Reincarnation 奖杯解锁；Ascension 只解释数值与制度重述；不设置最终通关结局。
 
 ## 1. 命名总则
 
@@ -1323,16 +1323,16 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 类别 | 对照键 | 上下文 | 原名称 | 职场名称 |
 |---|---|---|---|---|
 | 通用升级 | misc:Grinding Dedication | — | Grinding Dedication | 均衡奉献 |
-| 通用升级 | misc:Proof of Good Deed | — | Proof of Good Deed | 上进员工协议 |
-| 通用升级 | misc:Heroic Certificate | — | Heroic Certificate | 上进员工认证 |
-| 通用升级 | misc:Heroic Validation | — | Heroic Validation | 上进员工复核 |
-| 通用升级 | misc:Heroic Affirmation | — | Heroic Affirmation | 上进员工表彰 |
-| 通用升级 | misc:Heroic Proclamations | — | Heroic Proclamations | 上进员工公告 |
-| 通用升级 | misc:Proof of Evil Deed | — | Proof of Evil Deed | 狼性管理协议 |
-| 通用升级 | misc:Villainous Certificate | — | Villainous Certificate | 狼性团队认证 |
-| 通用升级 | misc:Villainous Validation | — | Villainous Validation | 狼性团队复核 |
-| 通用升级 | misc:Villainous Affirmation | — | Villainous Affirmation | 狼性团队表彰 |
-| 通用升级 | misc:Villainous Proclamations | — | Villainous Proclamations | 狼性团队公告 |
+| 通用升级 | misc:Proof of Good Deed | — | Proof of Good Deed | 理想员工协议 |
+| 通用升级 | misc:Heroic Certificate | — | Heroic Certificate | 理想员工认证 |
+| 通用升级 | misc:Heroic Validation | — | Heroic Validation | 理想员工复核 |
+| 通用升级 | misc:Heroic Affirmation | — | Heroic Affirmation | 理想员工表彰 |
+| 通用升级 | misc:Heroic Proclamations | — | Heroic Proclamations | 理想员工公告 |
+| 通用升级 | misc:Proof of Evil Deed | — | Proof of Evil Deed | 务实管理协议 |
+| 通用升级 | misc:Villainous Certificate | — | Villainous Certificate | 务实团队认证 |
+| 通用升级 | misc:Villainous Validation | — | Villainous Validation | 务实团队复核 |
+| 通用升级 | misc:Villainous Affirmation | — | Villainous Affirmation | 务实团队表彰 |
+| 通用升级 | misc:Villainous Proclamations | — | Villainous Proclamations | 务实团队公告 |
 | 通用升级 | misc:Proof of Neutrality | — | Proof of Neutrality | 均衡协作协议 |
 | 通用升级 | misc:True Neutrality | — | True Neutrality | 真正均衡 |
 | 通用升级 | misc:Neutral Certificate | — | Neutral Certificate | 均衡认证 |
@@ -2002,7 +2002,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 常驻法术 | spell:Call to Arms | — | Call to Arms | 全员冲刺 |
 | 常驻法术 | spell:Spiritual Surge | — | Spiritual Surge | 前世经验灌注 |
 | 常驻法术 | spell:Holy Light | — | Holy Light | 奋斗动员 |
-| 常驻法术 | spell:Blood Frenzy | — | Blood Frenzy | 狼性冲刺 |
+| 常驻法术 | spell:Blood Frenzy | — | Blood Frenzy | 务实冲刺 |
 | 常驻法术 | spell:Gem Grinder | — | Gem Grinder | 期权精算 |
 | 常驻法术 | spell:Fairy Chanting | — | Fairy Chanting | 头脑风暴 |
 | 常驻法术 | spell:Moon Blessing | — | Moon Blessing | 月光迭代 |
@@ -2093,8 +2093,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Grand Diplomat | — | Grand Diplomat | 首席部门外交官 |
 | 奖杯 | trophy:Exchange Master | — | Exchange Master | 置换主管 |
 | 奖杯 | trophy:Lucky Neutral | — | Lucky Neutral | 幸运均衡 |
-| 奖杯 | trophy:Perfectly Good | — | Perfectly Good | 完美上进 |
-| 奖杯 | trophy:Diabolical Evil | — | Diabolical Evil | 极端狼性 |
+| 奖杯 | trophy:Perfectly Good | — | Perfectly Good | 理想主义者 |
+| 奖杯 | trophy:Diabolical Evil | — | Diabolical Evil | 绝对务实 |
 | 奖杯 | trophy:Assistant Squasher | — | Assistant Squasher | 数字员工纠错员 |
 | 奖杯 | trophy:Rewind | — | Rewind | 职业倒带 |
 | 奖杯 | trophy:Faction Grinder | — | Faction Grinder | 全司劳动模范 |
@@ -2143,7 +2143,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Autoclicker | — | Autoclicker | 自动点击 |
 | 奖杯 | trophy:Exchange High Lord | — | Exchange High Lord | 置换总裁 |
 | 奖杯 | trophy:Genealogist | — | Genealogist | 谱系研究员 |
-| 奖杯 | trophy:Holy Frenzy | — | Holy Frenzy | 双轨激励 |
+| 奖杯 | trophy:Holy Frenzy | — | Holy Frenzy | 双轨工作法 |
 | 奖杯 | trophy:Uniformity | — | Uniformity | 均衡轮岗 |
 | 奖杯 | trophy:Art of the Crow Trophy | — | Art of the Crow Trophy | 集藏专家 |
 | 奖杯 | trophy:Faction Ruler | — | Faction Ruler | 部门负责人 |
