@@ -272,7 +272,7 @@ function morePanel() {
   const reincarnation = game.select('reincarnation');
   return `<div class="panel-head"><div><h2>职业与存档</h2><p>管理本地档案，并查看已解锁的奖杯与剧情。</p></div></div>
     ${reincarnation.visible ? `<article class="card"><h3>投胎进入 R${reincarnation.nextR}</h3><p>消耗当前全部期权，保留奖杯与历史记录，开启更深层的组织周期。</p><button data-action="reincarnate">投胎</button></article>` : ''}
-    <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
+    <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入文件</button><button data-action="import-text">从文本导入</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="导出后在此显示 JSON；也可直接粘贴存档文本，然后点击“从文本导入”。"></textarea></section>
     <section class="subsection"><h3>精力恢复</h3><form id="manaPasswordForm" class="action-row" autocomplete="off"><label for="manaPassword">密码</label><input id="manaPassword" type="password" inputmode="numeric" autocomplete="off" placeholder="输入密码" required><button type="submit">确认</button></form><p id="manaPasswordFeedback" role="status"></p><div id="manaRegenEditor" hidden><div class="action-row"><label for="manaRegenInput">每秒恢复</label><input id="manaRegenInput" type="number" min="0" step="0.1" required><button data-action="apply-mana-regen">应用</button></div></div></section>
     <section class="subsection"><h3>奖杯</h3><div class="card-grid">${trophies.map(trophy => {
       const unlocked = Boolean(state().permanentUnlocks[trophy.id]); const story = storyForTrophy(trophy.id);
@@ -656,6 +656,13 @@ document.addEventListener('click', event => {
   if (action === 'save') { game.save().then(result => notify(result.ok ? '存档已写入本地' : '保存失败，将自动重试', !result.ok)); return; }
   if (action === 'export') { game.save().then(() => { $('exportText').value = saveAdapter.listSlots().main || ''; $('exportText').select(); notify('存档已导出，请复制保存'); }); return; }
   if (action === 'import') { $('importFile').click(); return; }
+  if (action === 'import-text') {
+    const text = $('exportText').value;
+    if (!text.trim()) { notify('请先粘贴存档文本', true); return; }
+    try { saveAdapter.import(text); location.reload(); }
+    catch { notify('导入失败：文本不是有效的游戏存档', true); }
+    return;
+  }
   if (action === 'hard-reset') {
     if (resetting || !confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
     resetting = true;
