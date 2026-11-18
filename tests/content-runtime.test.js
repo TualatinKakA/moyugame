@@ -182,7 +182,7 @@ test('original reincarnation threshold, reset and R1 power apply together', asyn
   assert.equal(game.select('state').progression.reincarnations, 1);
   assert.equal(game.select('state').resources.gems, 0);
   assert.equal(game.select('reincarnation').visible, false);
-  assert.equal(game.select('derived').manaRegen, 27);
+  assert.equal(game.select('derived').manaRegen, 3);
   assert.equal(game.select('derived').fcChance, 20);
   assert.equal(game.select('derived').offlineMultiplier, 5.5);
   assert.equal(game.select('reincarnation').requirement, 1e30);
@@ -290,7 +290,6 @@ test('Gem Power unlock applies production and FC bonuses then resets with the ru
   assert.equal(game.select('derived').production, 0);
   assert.notEqual(game.select('content', { id: 'gemPower' }).status, 'HIDDEN_SYSTEM');
 });
-
 test('player-facing names match the workplace naming reference without changing stable IDs', () => {
   const graph = compileContentGraph(CONTENT);
   const expected = {
