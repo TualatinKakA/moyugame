@@ -76,7 +76,7 @@ try {
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
   const alignmentImage = gamePage.locator('.story-overlay[data-story-id="alignment.idealism"] .story-image');
   await alignmentImage.waitFor();
-  assert.match(await alignmentImage.getAttribute('src'), /alignment-commitment\.svg/);
+  assert.match(await alignmentImage.getAttribute('src'), /理想-立场确认书\.png/);
   await gamePage.waitForFunction(() => {
     const image = document.querySelector('.story-overlay[data-story-id="alignment.idealism"] .story-image');
     return image.complete && image.naturalWidth > 0;
