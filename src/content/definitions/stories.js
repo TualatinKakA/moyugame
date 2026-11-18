@@ -25,7 +25,7 @@ export const STORY_DEFINITIONS = [
   story({
     id: 'intro.first_department', title: '组织的一员', buttonLabel: '查看部门记录', image: 'intro-first-department.svg', required: false,
     imageAlt: '多份部门文件通过同一条协作记录连接在一起',
-    paragraphs: ['你的轮岗申请已经通过。', '工作日志会持续折算为不同部门的影响力；签署条约后，你可以把对应背书用于该部门的协作资源与核心制度。', '人事特别提醒：', '“退出部门只代表当前协作结束，不代表历史工作关系被删除。”'],
+    paragraphs: ['你的轮岗申请已经通过。', '从今天起，相关部门会将你的工作日志折算为部门影响力。积累背书可以调用更多协作资源，也可以学习该部门的核心制度。', '人事特别提醒：', '“退出部门只代表当前协作结束，不代表历史工作关系被删除。”'],
     reaction: { event: 'faction.joined', priority: 300 },
     grants: [{ type: 'awardTrophy', id: 'trophy.intro.first_department' }],
   }),

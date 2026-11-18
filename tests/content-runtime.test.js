@@ -673,3 +673,31 @@ test('offline assistants use the same batched FC source and do not apply the gol
   assert.equal(state.stats.run.clicks, 0);
   assert.equal(state.stats.run.clickCoins, 0);
 });
+
+
+test('faction coin selector exposes balances, scoped found, pool and assistant rates without leaking mutable state', async () => {
+  const seeded = initial();
+  seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+  seeded.resources.factionCoins.fairy = 3;
+  for (const scope of ['run', 'r', 'ascension', 'total']) seeded.stats[scope].factionCoins = 5;
+  const { game } = fixture(seeded);
+  await game.start();
+  const model = game.select('factionCoins');
+  assert.equal(model.chance, 10);
+  assert.deepEqual(model.pool, [{ factionId: 'fairy', weight: 1 }, { factionId: 'goblin', weight: 1 }]);
+  assert.deepEqual(model.balances, { fairy: 3, goblin: 0 });
+  assert.deepEqual(model.found, { run: 5, r: 5, ascension: 5, total: 5 });
+  assertClose(model.assistant.totalPerSecond, 0.04);
+  assertClose(model.assistant.perFaction.fairy, 0.02);
+  assertClose(model.assistant.perFaction.goblin, 0.02);
+  model.balances.fairy = 999;
+  assert.equal(game.select('state').resources.factionCoins.fairy, 3);
+  game.tick(50);
+  const after = game.select('factionCoins');
+  assertClose(after.balances.fairy, 4);
+  assertClose(after.balances.goblin, 1);
+  assertClose(after.found.run, 7);
+  assertClose(after.found.r, 7);
+  assertClose(after.found.ascension, 7);
+  assertClose(after.found.total, 7);
+});

@@ -423,6 +423,24 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (!state) return null;
     if (selector === 'content') return selectors.get(state, graph, cache.get(), args.id, args);
     if (selector === 'derived') return cache.get();
+    if (selector === 'factionCoins') {
+      const derived = cache.get();
+      const pool = eligibleFactionCoins(state).map(definition => ({ factionId: definition.id, weight: definition.factionCoin.baseWeight }));
+      const assistantPerSecond = pool.length ? derived.assistants * 0.2 * (derived.fcChance / 100) : 0;
+      const assistantShare = pool.length ? assistantPerSecond / pool.length : 0;
+      return {
+        chance: derived.fcChance,
+        balances: Object.fromEntries((graph.arraysByKind.get('faction') || [])
+          .filter(definition => definition.factionCoin?.enabled === true)
+          .map(definition => [definition.id, state.resources.factionCoins[definition.id] || 0])),
+        found: Object.fromEntries(['run', 'r', 'ascension', 'total'].map(scope => [scope, state.stats[scope].factionCoins || 0])),
+        pool,
+        assistant: {
+          totalPerSecond: assistantPerSecond,
+          perFaction: Object.fromEntries(pool.map(entry => [entry.factionId, assistantShare])),
+        },
+      };
+    }
     if (selector === 'state') return state;
     if (selector === 'graph') return graph;
     if (selector === 'storyQueue') return state.story.pending.map(item => graph.definitionsById.get(item.id));

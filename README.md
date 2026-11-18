@@ -61,7 +61,7 @@ Content Definitions → ContentGraph → GameRuntime → Selector / ViewModel �
 - `SaveAdapter`：主槽、上一良好备份、损坏原档保留、schema 迁移与内容别名迁移。
 - `Selector`：Command 与 UI 共用同一编译条件，输出通用状态和 ViewModel。
 
-详细目标与约束见 `docs/增量内容驱动游戏引擎架构设计.md`；当前函数调用链和执行过程见 `docs/运行时引擎运作流程.md`。被取代的方案、进度和历史对照表统一归入 `docs/legacy/`，只用于追溯，不作为当前实现依据。
+详细目标与约束见 `docs/增量内容驱动游戏引擎架构设计.md`；当前函数调用链和执行过程见 `docs/运行时引擎运作流程.md`；已实装的 FC 状态、只读选择器、Action、成本与事件契约见 `docs/派系币经济链引擎改造方案.md` 的“当前已实装数据接口”。被取代的方案、进度和历史对照表统一归入 `docs/legacy/`，只用于追溯，不作为当前实现依据。
 
 ## 常规内容更新
 

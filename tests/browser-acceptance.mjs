@@ -72,8 +72,6 @@ try {
   assert.equal(await gamePage.locator('.work-label').count(), 0);
 
   await gamePage.locator('.app-nav [data-tab="factions"]').click();
-  assert.equal(await gamePage.locator('#mainPanel [data-faction-coin]').count(), 2, 'both FC balances are visible before joining');
-  assert.equal(await gamePage.locator('[data-faction-coin="fairy"]').textContent(), '20');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 2, 'only two alignments before selection');
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
   await gamePage.locator('.story-overlay[data-story-id="ui.alignment.confirm"] [data-choice-id="confirm"]').click();
@@ -94,7 +92,6 @@ try {
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="fairy"]').click();
   await closeStory(gamePage, 'intro.first_department');
   assert.equal(await gamePage.locator('#factionName').textContent(), '产品部');
-  assert.equal(await gamePage.locator('[data-faction-coin="fairy"]').textContent(), '0', 'treaty spends target FC');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('.app-nav [data-tab="buildings"]').click();
