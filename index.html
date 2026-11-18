@@ -51,6 +51,13 @@
         <div class="rail-section-head"><small>快捷升级</small><button data-tab="upgrades">全部</button></div>
         <div class="upgrade-icon-grid rail-upgrade-grid" id="upgradeRail"></div>
       </section>
+      <section class="faction-coin-dock" id="factionCoinDock" aria-label="部门影响力">
+        <div class="faction-coin-head"><small>部门影响力</small></div>
+        <div class="faction-coin-list">
+          <span data-faction="fairy" title="产品部影响力"><img src="assets/images/laptop.png" alt="">产品部 <b id="fairyFactionCoins">0</b></span>
+          <span data-faction="goblin" title="财务部影响力"><img src="assets/images/cash.png" alt="">财务部 <b id="goblinFactionCoins">0</b></span>
+        </div>
+      </section>
     </aside>
 
     <main class="work-area" id="workArea">
@@ -65,6 +72,7 @@
       <section class="event-strip" aria-label="实时记录">
         <button data-action="toggle-log" id="logToggle" aria-expanded="false" aria-controls="eventLog">实时记录</button>
         <span id="latestLog">打卡成功。系统提示：请勿寻找公司的出口。</span>
+        <button type="button" class="faction-coin-toggle" data-action="toggle-faction-coins" id="factionCoinToggle" aria-expanded="false" aria-controls="factionCoinDock">影响力</button>
         <section class="event-log" id="eventLog" aria-label="实时记录列表" hidden>
           <div class="event-log-head">
             <strong>实时记录</strong>

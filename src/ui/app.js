@@ -353,6 +353,9 @@ function renderTop() {
   $('manaFill').style.width = `${Math.max(0, Math.min(100, state().resources.mana / d.manaMax * 100))}%`;
   $('manaProgress').setAttribute('aria-valuemax', String(d.manaMax)); $('manaProgress').setAttribute('aria-valuenow', String(state().resources.mana));
   $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
+  for (const factionId of ['fairy', 'goblin']) {
+    $(`${factionId}FactionCoins`).textContent = formatNumber(state().resources.factionCoins[factionId] || 0);
+  }
   $('rankText').textContent = `R${state().progression.reincarnations} · 地方分公司`;
   const faction = state().selections.faction ? definition(state().selections.faction) : null;
   $('factionName').textContent = faction ? faction.name : '尚未选择部门';
@@ -543,7 +546,12 @@ $('assistantSummary').addEventListener('keydown', event => {
     setAssistantTooltip($('assistantSummary').getAttribute('aria-expanded') !== 'true');
   } else if (event.key === 'Escape') setAssistantTooltip(false);
 });
+function setFactionCoinPanel(open) {
+  $('factionCoinDock').classList.toggle('faction-coin-open', open);
+  $('factionCoinToggle').setAttribute('aria-expanded', String(open));
+}
 document.addEventListener('click', event => {
+  if (!event.target.closest('#factionCoinDock') && !event.target.closest('#factionCoinToggle')) setFactionCoinPanel(false);
   const upgradeButton = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
   if (upgradeButton && suppressedUpgradeClick?.button === upgradeButton && performance.now() < suppressedUpgradeClick.until) {
     event.preventDefault();
@@ -584,6 +592,7 @@ document.addEventListener('click', event => {
   if (action === 'buy-amount') { game.dispatch({ type: 'setting', key: 'buyAmount', value: button.dataset.value === 'max' ? 'max' : Number(button.dataset.value) }); return; }
   if (action === 'toggle-quick-skill') { updateQuickSkill(id, quickSkillIds(6).includes(id) ? 'remove' : 'pin'); return; }
   if (action === 'prioritize-skill') { updateQuickSkill(id, 'pin'); return; }
+  if (action === 'toggle-faction-coins') { setFactionCoinPanel($('factionCoinToggle').getAttribute('aria-expanded') !== 'true'); return; }
   if (action === 'toggle-log') { setEventLogOpen($('eventLog').hidden); return; }
   if (action === 'close-log') { setEventLogOpen(false, true); return; }
   if (action === 'close-panel') { closeAuxPanel(); return; }
@@ -630,6 +639,7 @@ $('importFile').addEventListener('change', async event => {
   event.target.value = '';
 });
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') setFactionCoinPanel(false);
   if (event.key === 'Escape' && !$('eventLog').hidden) { setEventLogOpen(false, true); return; }
   if (event.key === 'Escape' && activeUpgradeTooltip) {
     dismissedUpgradeTooltip = activeUpgradeTooltip;
