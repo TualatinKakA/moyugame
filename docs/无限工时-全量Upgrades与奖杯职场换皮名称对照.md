@@ -4,7 +4,7 @@
 >
 > 本表只负责展示名称，不改变原版 ID、解锁、成本、公式、互斥和重置关系。同一原名在不同派系或节点下出现时保留各自上下文，不强行去重。
 >
-> 当前叙事口径：账面工资、期权和部门影响力均为集团内部账本；立场采用自驱／强压／均衡；业务域仅由指定 Reincarnation 奖杯解锁；Ascension 只解释数值与制度重述；不设置最终通关结局。
+> 当前叙事口径：账面工资、期权和部门影响力均为集团内部账本；立场采用上进／狼性／均衡；业务域仅由指定 Reincarnation 奖杯解锁；Ascension 只解释数值与制度重述；不设置最终通关结局。
 
 ## 1. 命名总则
 
@@ -1323,16 +1323,16 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 类别 | 对照键 | 上下文 | 原名称 | 职场名称 |
 |---|---|---|---|---|
 | 通用升级 | misc:Grinding Dedication | — | Grinding Dedication | 均衡奉献 |
-| 通用升级 | misc:Proof of Good Deed | — | Proof of Good Deed | 自驱工作协议 |
-| 通用升级 | misc:Heroic Certificate | — | Heroic Certificate | 自驱认证 |
-| 通用升级 | misc:Heroic Validation | — | Heroic Validation | 自驱验证 |
-| 通用升级 | misc:Heroic Affirmation | — | Heroic Affirmation | 自驱确认 |
-| 通用升级 | misc:Heroic Proclamations | — | Heroic Proclamations | 自驱公告 |
-| 通用升级 | misc:Proof of Evil Deed | — | Proof of Evil Deed | 强压管理协议 |
-| 通用升级 | misc:Villainous Certificate | — | Villainous Certificate | 强压认证 |
-| 通用升级 | misc:Villainous Validation | — | Villainous Validation | 强压验证 |
-| 通用升级 | misc:Villainous Affirmation | — | Villainous Affirmation | 强压确认 |
-| 通用升级 | misc:Villainous Proclamations | — | Villainous Proclamations | 强压公告 |
+| 通用升级 | misc:Proof of Good Deed | — | Proof of Good Deed | 上进员工协议 |
+| 通用升级 | misc:Heroic Certificate | — | Heroic Certificate | 上进员工认证 |
+| 通用升级 | misc:Heroic Validation | — | Heroic Validation | 上进员工复核 |
+| 通用升级 | misc:Heroic Affirmation | — | Heroic Affirmation | 上进员工表彰 |
+| 通用升级 | misc:Heroic Proclamations | — | Heroic Proclamations | 上进员工公告 |
+| 通用升级 | misc:Proof of Evil Deed | — | Proof of Evil Deed | 狼性管理协议 |
+| 通用升级 | misc:Villainous Certificate | — | Villainous Certificate | 狼性团队认证 |
+| 通用升级 | misc:Villainous Validation | — | Villainous Validation | 狼性团队复核 |
+| 通用升级 | misc:Villainous Affirmation | — | Villainous Affirmation | 狼性团队表彰 |
+| 通用升级 | misc:Villainous Proclamations | — | Villainous Proclamations | 狼性团队公告 |
 | 通用升级 | misc:Proof of Neutrality | — | Proof of Neutrality | 均衡协作协议 |
 | 通用升级 | misc:True Neutrality | — | True Neutrality | 真正均衡 |
 | 通用升级 | misc:Neutral Certificate | — | Neutral Certificate | 均衡认证 |
@@ -1779,7 +1779,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 设施升级 | building:Slave Pen:13:Rights Abolition | Slave Pen | Rights Abolition | 权利废止 |
 | 设施升级 | building:Slave Pen:14:Over-Overtimes | Slave Pen | Over-Overtimes | 超量加班 |
 | 设施升级 | building:Slave Pen:15:Social Dregs | Slave Pen | Social Dregs | 社会边缘劳动力 |
-| 设施升级 | building:Slave Pen:16:Periodic Tortures | Slave Pen | Periodic Tortures | 周期性强压 |
+| 设施升级 | building:Slave Pen:16:Periodic Tortures | Slave Pen | Periodic Tortures | 周期性高压 |
 | 设施升级 | building:Slave Pen:17:Rotten Rations | Slave Pen | Rotten Rations | 低质配给 |
 | 设施升级 | building:Slave Pen:18:Rat Companions | Slave Pen | Rat Companions | 老鼠同事 |
 | 设施升级 | building:Slave Pen:19:Soiled Floors | Slave Pen | Soiled Floors | 污渍地板 |
@@ -1898,7 +1898,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 设施升级 | building:Evil Fortress:17:Acid Pits | Evil Fortress | Acid Pits | 酸液淘汰池 |
 | 设施升级 | building:Evil Fortress:18:Blood Fortress | Evil Fortress | Blood Fortress | 血汗堡垒 |
 | 设施升级 | building:Evil Fortress:19:Dark Throne | Evil Fortress | Dark Throne | 黑暗王座 |
-| 设施升级 | building:Evil Fortress:20:Evilspawns | Evil Fortress | Evilspawns | 强压衍生流程 |
+| 设施升级 | building:Evil Fortress:20:Evilspawns | Evil Fortress | Evilspawns | 高压衍生流程 |
 | 设施升级 | building:Evil Fortress:21:Heinous Colonnade | Evil Fortress | Heinous Colonnade | 恶性制度柱廊 |
 | 设施升级 | building:Evil Fortress:22:Horrific Battlements | Evil Fortress | Horrific Battlements | 恐怖绩效墙 |
 | 设施升级 | building:Evil Fortress:23:Black Curtains | Evil Fortress | Black Curtains | 黑箱幕布 |
@@ -2001,8 +2001,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 常驻法术 | spell:Tax Collection | — | Tax Collection | 工资结算 |
 | 常驻法术 | spell:Call to Arms | — | Call to Arms | 全员冲刺 |
 | 常驻法术 | spell:Spiritual Surge | — | Spiritual Surge | 前世经验灌注 |
-| 常驻法术 | spell:Holy Light | — | Holy Light | 自驱动员 |
-| 常驻法术 | spell:Blood Frenzy | — | Blood Frenzy | 强压冲刺 |
+| 常驻法术 | spell:Holy Light | — | Holy Light | 奋斗动员 |
+| 常驻法术 | spell:Blood Frenzy | — | Blood Frenzy | 狼性冲刺 |
 | 常驻法术 | spell:Gem Grinder | — | Gem Grinder | 期权精算 |
 | 常驻法术 | spell:Fairy Chanting | — | Fairy Chanting | 头脑风暴 |
 | 常驻法术 | spell:Moon Blessing | — | Moon Blessing | 月光迭代 |
@@ -2093,8 +2093,8 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Grand Diplomat | — | Grand Diplomat | 首席部门外交官 |
 | 奖杯 | trophy:Exchange Master | — | Exchange Master | 置换主管 |
 | 奖杯 | trophy:Lucky Neutral | — | Lucky Neutral | 幸运均衡 |
-| 奖杯 | trophy:Perfectly Good | — | Perfectly Good | 完美自驱 |
-| 奖杯 | trophy:Diabolical Evil | — | Diabolical Evil | 极端强压 |
+| 奖杯 | trophy:Perfectly Good | — | Perfectly Good | 完美上进 |
+| 奖杯 | trophy:Diabolical Evil | — | Diabolical Evil | 极端狼性 |
 | 奖杯 | trophy:Assistant Squasher | — | Assistant Squasher | 数字员工纠错员 |
 | 奖杯 | trophy:Rewind | — | Rewind | 职业倒带 |
 | 奖杯 | trophy:Faction Grinder | — | Faction Grinder | 全司劳动模范 |
@@ -2143,7 +2143,7 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Autoclicker | — | Autoclicker | 自动点击 |
 | 奖杯 | trophy:Exchange High Lord | — | Exchange High Lord | 置换总裁 |
 | 奖杯 | trophy:Genealogist | — | Genealogist | 谱系研究员 |
-| 奖杯 | trophy:Holy Frenzy | — | Holy Frenzy | 自驱强压共振 |
+| 奖杯 | trophy:Holy Frenzy | — | Holy Frenzy | 双轨激励 |
 | 奖杯 | trophy:Uniformity | — | Uniformity | 均衡轮岗 |
 | 奖杯 | trophy:Art of the Crow Trophy | — | Art of the Crow Trophy | 集藏专家 |
 | 奖杯 | trophy:Faction Ruler | — | Faction Ruler | 部门负责人 |
@@ -2509,28 +2509,28 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:7500 Blacksmith | — | 7500 Blacksmith | 设备维修间·7500单元 |
 | 奖杯 | trophy:12000 Blacksmith | — | 12000 Blacksmith | 设备维修间·12000单元 |
 | 奖杯 | trophy:20000 Blacksmith | — | 20000 Blacksmith | 设备维修间·20000单元 |
-| 奖杯 | trophy:1 Warrior Barrack | — | 1 Warrior Barrack | 自驱培训室·首次设立 |
-| 奖杯 | trophy:50 Warrior Barracks | — | 50 Warrior Barracks | 自驱培训室·50单元 |
-| 奖杯 | trophy:100 Warrior Barracks | — | 100 Warrior Barracks | 自驱培训室·100单元 |
-| 奖杯 | trophy:150 Warrior Barracks | — | 150 Warrior Barracks | 自驱培训室·150单元 |
-| 奖杯 | trophy:200 Warrior Barracks | — | 200 Warrior Barracks | 自驱培训室·200单元 |
-| 奖杯 | trophy:300 Warrior Barracks | — | 300 Warrior Barracks | 自驱培训室·300单元 |
-| 奖杯 | trophy:400 Warrior Barracks | — | 400 Warrior Barracks | 自驱培训室·400单元 |
-| 奖杯 | trophy:500 Warrior Barracks | — | 500 Warrior Barracks | 自驱培训室·500单元 |
-| 奖杯 | trophy:600 Warrior Barracks | — | 600 Warrior Barracks | 自驱培训室·600单元 |
-| 奖杯 | trophy:700 Warrior Barracks | — | 700 Warrior Barracks | 自驱培训室·700单元 |
-| 奖杯 | trophy:800 Warrior Barracks | — | 800 Warrior Barracks | 自驱培训室·800单元 |
-| 奖杯 | trophy:900 Warrior Barracks | — | 900 Warrior Barracks | 自驱培训室·900单元 |
-| 奖杯 | trophy:1000 Warrior Barracks | — | 1000 Warrior Barracks | 自驱培训室·1000单元 |
-| 奖杯 | trophy:1500 Warrior Barracks | — | 1500 Warrior Barracks | 自驱培训室·1500单元 |
-| 奖杯 | trophy:2000 Warrior Barracks | — | 2000 Warrior Barracks | 自驱培训室·2000单元 |
-| 奖杯 | trophy:2500 Warrior Barracks | — | 2500 Warrior Barracks | 自驱培训室·2500单元 |
-| 奖杯 | trophy:3000 Warrior Barracks | — | 3000 Warrior Barracks | 自驱培训室·3000单元 |
-| 奖杯 | trophy:3500 Warrior Barracks | — | 3500 Warrior Barracks | 自驱培训室·3500单元 |
-| 奖杯 | trophy:5000 Warrior Barracks | — | 5000 Warrior Barracks | 自驱培训室·5000单元 |
-| 奖杯 | trophy:7500 Warrior Barracks | — | 7500 Warrior Barracks | 自驱培训室·7500单元 |
-| 奖杯 | trophy:12000 Warrior Barracks | — | 12000 Warrior Barracks | 自驱培训室·12000单元 |
-| 奖杯 | trophy:20000 Warrior Barracks | — | 20000 Warrior Barracks | 自驱培训室·20000单元 |
+| 奖杯 | trophy:1 Warrior Barrack | — | 1 Warrior Barrack | 奋斗培训室·首次设立 |
+| 奖杯 | trophy:50 Warrior Barracks | — | 50 Warrior Barracks | 奋斗培训室·50单元 |
+| 奖杯 | trophy:100 Warrior Barracks | — | 100 Warrior Barracks | 奋斗培训室·100单元 |
+| 奖杯 | trophy:150 Warrior Barracks | — | 150 Warrior Barracks | 奋斗培训室·150单元 |
+| 奖杯 | trophy:200 Warrior Barracks | — | 200 Warrior Barracks | 奋斗培训室·200单元 |
+| 奖杯 | trophy:300 Warrior Barracks | — | 300 Warrior Barracks | 奋斗培训室·300单元 |
+| 奖杯 | trophy:400 Warrior Barracks | — | 400 Warrior Barracks | 奋斗培训室·400单元 |
+| 奖杯 | trophy:500 Warrior Barracks | — | 500 Warrior Barracks | 奋斗培训室·500单元 |
+| 奖杯 | trophy:600 Warrior Barracks | — | 600 Warrior Barracks | 奋斗培训室·600单元 |
+| 奖杯 | trophy:700 Warrior Barracks | — | 700 Warrior Barracks | 奋斗培训室·700单元 |
+| 奖杯 | trophy:800 Warrior Barracks | — | 800 Warrior Barracks | 奋斗培训室·800单元 |
+| 奖杯 | trophy:900 Warrior Barracks | — | 900 Warrior Barracks | 奋斗培训室·900单元 |
+| 奖杯 | trophy:1000 Warrior Barracks | — | 1000 Warrior Barracks | 奋斗培训室·1000单元 |
+| 奖杯 | trophy:1500 Warrior Barracks | — | 1500 Warrior Barracks | 奋斗培训室·1500单元 |
+| 奖杯 | trophy:2000 Warrior Barracks | — | 2000 Warrior Barracks | 奋斗培训室·2000单元 |
+| 奖杯 | trophy:2500 Warrior Barracks | — | 2500 Warrior Barracks | 奋斗培训室·2500单元 |
+| 奖杯 | trophy:3000 Warrior Barracks | — | 3000 Warrior Barracks | 奋斗培训室·3000单元 |
+| 奖杯 | trophy:3500 Warrior Barracks | — | 3500 Warrior Barracks | 奋斗培训室·3500单元 |
+| 奖杯 | trophy:5000 Warrior Barracks | — | 5000 Warrior Barracks | 奋斗培训室·5000单元 |
+| 奖杯 | trophy:7500 Warrior Barracks | — | 7500 Warrior Barracks | 奋斗培训室·7500单元 |
+| 奖杯 | trophy:12000 Warrior Barracks | — | 12000 Warrior Barracks | 奋斗培训室·12000单元 |
+| 奖杯 | trophy:20000 Warrior Barracks | — | 20000 Warrior Barracks | 奋斗培训室·20000单元 |
 | 奖杯 | trophy:1 Slave Pen | — | 1 Slave Pen | 外包压缩舱·首次设立 |
 | 奖杯 | trophy:50 Slave Pens | — | 50 Slave Pens | 外包压缩舱·50单元 |
 | 奖杯 | trophy:100 Slave Pens | — | 100 Slave Pens | 外包压缩舱·100单元 |
