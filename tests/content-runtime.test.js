@@ -302,3 +302,14 @@ test('player-facing names match the workplace naming reference without changing 
   };
   for (const [id, name] of Object.entries(expected)) assert.equal(graph.definitionsById.get(id).name, name, id);
 });
+
+test('mana regeneration override applies immediately and persists through the setting command', async () => {
+  const { game } = fixture();
+  await game.start();
+  assert.equal(game.dispatch({ type: 'setting', key: 'manaRegenOverride', value: -1 }).ok, false);
+  assert.equal(game.dispatch({ type: 'setting', key: 'manaRegenOverride', value: 7 }).ok, true);
+  assert.equal(game.select('derived').manaRegen, 7);
+  game.tick(0.5);
+  assert.equal(game.select('state').resources.mana, 3.5);
+  assert.equal(game.select('state').settings.manaRegenOverride, 7);
+});

@@ -17,6 +17,7 @@ let quickStructure = '';
 let facilityStructure = '';
 let lastUpgradeRailRender = 0;
 let upgradeRailStructure = '';
+let manaEditorUnlocked = false;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
 let lastCoinSound = 0;
@@ -215,11 +216,18 @@ function morePanel() {
   return `<div class="panel-head"><div><h2>职业与存档</h2><p>管理本地档案，并查看已解锁的奖杯与剧情。</p></div></div>
     ${reincarnation.visible ? `<article class="card"><h3>投胎进入 R${reincarnation.nextR}</h3><p>消耗当前全部期权，保留奖杯与历史记录，开启更深层的组织周期。</p><button data-action="reincarnate">投胎</button></article>` : ''}
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入存档</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="点击导出存档后，此处显示 JSON 存档。"></textarea></section>
+    <section class="subsection"><h3>精力恢复</h3><form id="manaPasswordForm" class="action-row" autocomplete="off"><label for="manaPassword">密码</label><input id="manaPassword" type="password" inputmode="numeric" autocomplete="off" placeholder="输入密码" required><button type="submit">确认</button></form><p id="manaPasswordFeedback" role="status"></p><div id="manaRegenEditor" hidden><div class="action-row"><label for="manaRegenInput">每秒恢复</label><input id="manaRegenInput" type="number" min="0" step="0.1" required><button data-action="apply-mana-regen">应用</button></div></div></section>
     <section class="subsection"><h3>奖杯</h3><div class="card-grid">${trophies.map(trophy => {
       const unlocked = Boolean(state().permanentUnlocks[trophy.id]); const story = storyForTrophy(trophy.id);
       return `<article class="card ${unlocked ? 'owned' : ''}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? trophy.description : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
     }).join('')}</div></section>
     <section class="subsection"><h3>剧情回看</h3><div class="action-row">${completed.map(story => `<button data-action="replay-story" data-id="${story.id}">${story.title}</button>`).join('') || '<p class="notice">暂无可回看的剧情。</p>'}</div></section>`;
+}
+function syncManaEditor() {
+  const editor = $('manaRegenEditor');
+  if (!editor) return;
+  editor.hidden = !manaEditorUnlocked;
+  if (manaEditorUnlocked && document.activeElement !== $('manaRegenInput')) $('manaRegenInput').value = derived().manaRegen;
 }
 function updatePanel() {
   updateBuildingCards(); updateCastButtons();
@@ -248,7 +256,7 @@ function renderPanel() {
           : activeTab === 'factions' ? factionsPanel() : activeTab === 'skills' ? skillsPanel()
       : activeTab === 'stats' ? statsPanel() : morePanel();
   $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${body}`;
-  $('mainPanel').hidden = false; updatePanel();
+  $('mainPanel').hidden = false; updatePanel(); syncManaEditor();
 }
 function updateTabStates() {
   document.querySelectorAll('[data-tab]').forEach(button => {
@@ -367,6 +375,12 @@ document.addEventListener('click', event => {
   }
   if (action === 'reincarnate') { if (confirm('确定投胎吗？当前期权将被清空。')) commandResult(game.dispatch({ type: 'reincarnate' })); return; }
   if (action === 'replay-story') { replayStory(id); return; }
+  if (action === 'apply-mana-regen') {
+    const value = Number($('manaRegenInput').value);
+    if (!Number.isFinite(value) || value < 0) { notify('请输入有效的恢复速度', true); return; }
+    if (commandResult(game.dispatch({ type: 'setting', key: 'manaRegenOverride', value }))) notify('精力恢复速度已更新');
+    return;
+  }
   if (action === 'save') { game.save().then(result => notify(result.ok ? '存档已写入本地' : '保存失败，将自动重试', !result.ok)); return; }
   if (action === 'export') { game.save().then(() => { $('exportText').value = saveAdapter.listSlots().main || ''; $('exportText').select(); notify('存档已导出，请复制保存'); }); return; }
   if (action === 'import') { $('importFile').click(); return; }
@@ -376,6 +390,19 @@ document.addEventListener('click', event => {
     game.stop();
     saveAdapter.remove();
     location.reload();
+  }
+});
+document.addEventListener('submit', event => {
+  if (event.target.id !== 'manaPasswordForm') return;
+  event.preventDefault();
+  if ($('manaPassword').value === '2887') {
+    manaEditorUnlocked = true;
+    $('manaPasswordFeedback').textContent = '';
+    $('manaPassword').value = '';
+    syncManaEditor();
+  } else {
+    $('manaPasswordFeedback').textContent = '密码不正确';
+    $('manaPasswordFeedback').className = 'error';
   }
 });
 $('importFile').addEventListener('change', async event => {

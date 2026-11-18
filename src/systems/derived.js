@@ -108,7 +108,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
   return Object.freeze({
     outputs, production, buildingProduction, assistants,
     clickReward: Math.max(1, (1 + mods.clickAdd / 100) * mods.clickMult),
-    manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: Math.max(0, 1 + mods.manaRegenAdd),
+    manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, 1 + mods.manaRegenAdd),
     fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
     offlineMultiplier: power.offlineMultiplier,
     buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
@@ -124,7 +124,7 @@ export class RuntimeCache {
     let dirty = false;
     const groups = new Set();
     for (const path of changedPaths) {
-      if (/^(buildings|owned|permanentUnlocks|timers\.spells|selections|resources\.(factionCoins|gems)|progression)/.test(path)) dirty = true;
+      if (/^(buildings|owned|permanentUnlocks|timers\.spells|selections|resources\.(factionCoins|gems)|progression|settings\.manaRegenOverride)/.test(path)) dirty = true;
       for (const dependency of [path, 'buildings', 'owned', 'permanentUnlocks', 'timers.spells', 'resources.factionCoins']) {
         if (dependency !== path && !path.startsWith(`${dependency}.`)) continue;
         for (const group of this.graph.effectDependencies.get(dependency) || []) groups.add(group);

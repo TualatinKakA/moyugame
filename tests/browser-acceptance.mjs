@@ -157,6 +157,19 @@ try {
   await gamePage.waitForTimeout(600);
   await gamePage.locator('#upgradeRail [data-id="fairy-1"]').click();
   assert.equal(await gamePage.locator('#upgradeRail [data-id="fairy-1"]').count(), 0, 'quick upgrade disappears after purchase');
+  await gamePage.locator('#moreTabButton').click();
+  await gamePage.locator('#manaPassword').fill('0000');
+  await gamePage.locator('#manaPasswordForm button[type="submit"]').click();
+  assert.equal(await gamePage.locator('#manaRegenEditor').isHidden(), true);
+  await gamePage.locator('#manaPassword').fill('2887');
+  await gamePage.locator('#manaPasswordForm button[type="submit"]').click();
+  assert.equal(await visible(gamePage, '#manaRegenEditor'), true);
+  await gamePage.locator('#manaRegenInput').fill('7');
+  await gamePage.locator('[data-action="apply-mana-regen"]').click();
+  assert.equal(await gamePage.locator('#manaRate').textContent(), '+7 / 秒');
+  await gamePage.locator('#mainPanel [data-action="save"]').click();
+  await gamePage.waitForTimeout(50);
+  assert.equal(await gamePage.evaluate(key => JSON.parse(localStorage.getItem(key)).settings.manaRegenOverride, SAVE_KEY), 7);
   await gameContext.close();
 
   const retireState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
