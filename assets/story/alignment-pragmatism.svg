@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="冷色绩效表与执行工具场景">
+  <rect width="960" height="540" fill="#23313e"/>
+  <rect x="55" y="65" width="220" height="170" rx="12" fill="#354a5b" stroke="#5d7485" stroke-width="5"/>
+  <path d="M85 105h160M85 145h160M85 185h160" stroke="#5d7485" stroke-width="8"/>
+  <path d="M0 420h960v120H0z" fill="#34404a"/>
+  <rect x="300" y="85" width="360" height="280" rx="12" fill="#e0e5e5" transform="rotate(-3 480 225)"/>
+  <path d="M350 145h230M350 190h230M350 235h230M350 280h180" stroke="#a2afb4" stroke-width="12" stroke-linecap="round"/>
+  <path d="M390 320l45-60 45 25 60-85 65 40" fill="none" stroke="#5d8f85" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="390" cy="320" r="8" fill="#5d8f85"/>
+  <circle cx="435" cy="260" r="8" fill="#5d8f85"/>
+  <circle cx="480" cy="285" r="8" fill="#5d8f85"/>
+  <circle cx="540" cy="200" r="8" fill="#5d8f85"/>
+  <circle cx="605" cy="240" r="8" fill="#5d8f85"/>
+  <rect x="85" y="285" width="145" height="155" rx="18" fill="#18232d" stroke="#5d7485" stroke-width="5"/>
+  <rect x="110" y="305" width="95" height="30" rx="5" fill="#7b958d"/>
+  <g fill="#5d7485">
+    <circle cx="120" cy="360" r="10"/><circle cx="155" cy="360" r="10"/><circle cx="190" cy="360" r="10"/>
+    <circle cx="120" cy="395" r="10"/><circle cx="155" cy="395" r="10"/><circle cx="190" cy="395" r="10"/>
+    <circle cx="120" cy="430" r="10"/><circle cx="155" cy="430" r="10"/><circle cx="190" cy="430" r="10"/>
+  </g>
+  <rect x="720" y="105" width="150" height="35" rx="6" fill="#526b7c"/>
+  <rect x="700" y="145" width="170" height="35" rx="6" fill="#607b8d"/>
+  <rect x="680" y="185" width="190" height="35" rx="6" fill="#78909c"/>
+  <path d="M690 350l135-105 20 22-135 105-35 25z" fill="#a7b3b8"/>
+  <path d="M825 245l20 22-15 12-20-22z" fill="#d4dadd"/>
+  <path d="M690 350l-35 25 8-32z" fill="#d4dadd"/>
+</svg>

@@ -30,14 +30,14 @@ export const STORY_DEFINITIONS = [
     grants: [{ type: 'awardTrophy', id: 'trophy.intro.first_department' }],
   }),
   story({
-    id: 'alignment.idealism', title: '理想', buttonLabel: '继续', image: 'assets/images/理想-立场确认书.png',
+    id: 'alignment.idealism', title: '理想', buttonLabel: '继续', image: 'alignment-idealism.svg',
     imageAlt: '阳光书桌上的理想立场确认书、咖啡与绿植',
     paragraphs: ['你选择「理想」。', '公司鼓励主动投入，重视价值认同、员工使命与团队协作。', '请与团队共同完成当前工作。'],
     reaction: { event: 'alignment.selected', when: { op: 'eventDataEquals', path: 'alignmentId', value: 'good' }, priority: 250 },
     grants: [{ type: 'awardTrophy', id: 'trophy.alignment.idealism' }],
   }),
   story({
-    id: 'alignment.pragmatism', title: '务实', buttonLabel: '继续', image: 'assets/images/务实-立场确认书.png',
+    id: 'alignment.pragmatism', title: '务实', buttonLabel: '继续', image: 'alignment-pragmatism.svg',
     imageAlt: '绩效表格、计算器、文件与钢笔组成的务实工作桌面',
     paragraphs: ['你选择「务实」。', '公司重视绩效责任、结果交付、资源预算与执行纪律。', '请按既定目标完成当前工作。'],
     reaction: { event: 'alignment.selected', when: { op: 'eventDataEquals', path: 'alignmentId', value: 'evil' }, priority: 250 },
