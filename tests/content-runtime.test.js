@@ -22,6 +22,10 @@ const initial = () => {
   state.resources.coins = 1e12; state.resources.mana = 10000;
   return state;
 };
+const assertClose = (actual, expected, message = '') => {
+  const tolerance = 1e-9 * Math.max(1, Math.abs(expected));
+  assert.ok(Math.abs(actual - expected) <= tolerance, `${message} expected ${expected}, got ${actual}`);
+};
 
 test('content graph contains only Fairy and Goblin factions with declarative prologue content', async () => {
   const { game } = fixture();
@@ -312,4 +316,118 @@ test('mana regeneration override applies immediately and persists through the se
   game.tick(0.5);
   assert.equal(game.select('state').resources.mana, 3.5);
   assert.equal(game.select('state').settings.manaRegenOverride, 7);
+});
+
+test('the first two upgrade tiers of every ordinary building grant exactly one assistant', () => {
+  const graph = compileContentGraph(CONTENT);
+  for (const building of graph.arraysByKind.get('building')) {
+    for (const tier of [1, 2, 3]) {
+      const upgrade = graph.definitionsById.get(`${building.id}-tier${tier}`);
+      const granted = upgrade.effects
+        .filter(effect => effect.stat === 'assistants.count')
+        .reduce((sum, effect) => sum + effect.value.constant, 0);
+      assert.equal(granted, tier <= 2 ? 1 : 0, `${upgrade.id} assistant grant`);
+    }
+  }
+});
+
+test('assistants produce five percent of click reward each without producing real clicks', async () => {
+  const seeded = initial(); seeded.buildings.farm = 10;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.dispatch({ type: 'purchase', id: 'farm-tier1' }).ok, true);
+  assert.equal(game.select('derived').assistants, 1);
+  assert.equal(game.dispatch({ type: 'purchase', id: 'farm-tier2' }).ok, true);
+  const derived = game.select('derived');
+  assert.equal(derived.assistants, 2);
+  assert.equal(derived.clickReward, 1);
+  assert.equal(derived.buildingProduction, 60);
+  assertClose(derived.assistantProduction, 0.1, 'two assistants at base click reward');
+  assertClose(derived.production, 60.1, 'building plus assistant production');
+  const before = game.select('state');
+  const producedCoins = before.stats.run.coins;
+  const clicks = before.stats.total.clicks;
+  const clickCoins = before.stats.total.clickCoins;
+  game.tick(2);
+  assertClose(game.select('state').stats.run.coins - producedCoins, derived.production * 2, 'continuous assistant income');
+  assert.equal(game.select('state').stats.total.clicks, clicks, 'assistants do not increment clicks');
+  assert.equal(game.select('state').stats.total.clickCoins, clickCoins, 'assistants do not increment click income');
+});
+
+test('click skills, global skills, Gem Power and spell expiry propagate to assistant production', async () => {
+  const seeded = initial(); seeded.buildings.farm = 1; seeded.resources.gems = 100;
+  const { game } = fixture(seeded);
+  await game.start();
+  game.dispatch({ type: 'purchase', id: 'good' });
+  game.dispatch({ type: 'purchase', id: 'farm-tier1' });
+  game.dispatch({ type: 'purchase', id: 'gemPower' });
+  let derived = game.select('derived');
+  assert.equal(derived.assistants, 1);
+  assert.equal(derived.buildingProduction, 9);
+  assertClose(derived.assistantProduction, 0.15, 'Gem Power multiplies assistant production');
+
+  game.dispatch({ type: 'cast', id: 'callToArms' });
+  const globalActive = game.select('derived');
+  const globalRatio = globalActive.buildingProduction / derived.buildingProduction;
+  assert.ok(globalRatio > 1);
+  assertClose(globalActive.assistantProduction, derived.assistantProduction * globalRatio, 'global spell multiplier');
+  assert.equal(globalActive.clickReward, 1, 'global production does not inflate manual clicks');
+
+  game.dispatch({ type: 'cast', id: 'holyLight' });
+  derived = game.select('derived');
+  assert.equal(derived.clickReward, 18.5);
+  assertClose(derived.assistantProduction, globalActive.assistantProduction * 18.5, 'click skill multiplier');
+
+  game.tick(20);
+  derived = game.select('derived');
+  assert.equal(derived.clickReward, 1);
+  assertClose(derived.assistantProduction, 0.15, 'spell expiry restores base assistant output');
+  game.dispatch({ type: 'work' });
+  derived = game.select('derived');
+  assert.equal(derived.clickReward, 1.05);
+  assertClose(derived.assistantProduction, 0.1575, 'permanent click reward upgrade propagates');
+});
+
+test('Goblin assistant count recalculates when faction coins change', async () => {
+  const seeded = initial(); seeded.resources.factionCoins.goblin = 16;
+  const { game } = fixture(seeded);
+  await game.start();
+  game.dispatch({ type: 'purchase', id: 'evil' });
+  game.dispatch({ type: 'purchase', id: 'goblin' });
+  game.dispatch({ type: 'purchase', id: 'goblin-1' });
+  const expected = count => Math.floor(0.5 * Math.log(1 + count) ** 2);
+  assert.equal(game.select('derived').assistants, expected(16));
+  game.dispatch({ type: 'cast', id: 'goblinsGreed' });
+  assert.equal(game.select('state').resources.factionCoins.goblin, 36);
+  assert.equal(game.select('derived').assistants, expected(36));
+});
+
+test('legacy building upgrades restore assistants through migration and abdication clears them', async () => {
+  const legacy = {
+    schemaVersion: 3, coins: 1e12, gems: 0, mana: 0,
+    buildings: { farm: 10 }, upgrades: ['farm-tier1', 'farm-tier2'],
+    stats: { run: { coins: 1e12 }, total: { clicks: 1 } },
+    story: { pending: [], read: [], history: [], intro: {} },
+  };
+  const { game } = fixture(legacy);
+  await game.start();
+  assert.equal(game.select('derived').assistants, 2);
+  assertClose(game.select('derived').assistantProduction, 0.1);
+  assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
+  assert.equal(game.select('state').owned.run['farm-tier1'], undefined);
+  assert.equal(game.select('state').owned.run['farm-tier2'], undefined);
+  assert.equal(game.select('derived').assistants, 0);
+  assert.equal(game.select('derived').assistantProduction, 0);
+});
+
+test('reincarnation clears run-scoped assistant upgrades and their production', async () => {
+  const seeded = initial(); seeded.resources.gems = 1e27; seeded.buildings.farm = 10;
+  seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.select('derived').assistants, 2);
+  assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
+  assert.equal(game.select('derived').assistants, 0);
+  assert.equal(game.select('derived').assistantProduction, 0);
+  assert.equal(game.select('derived').production, 0);
 });

@@ -100,14 +100,16 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     outputs[definition.id] = output;
     buildingProduction += output;
   }
-  const assistants = Math.floor(mods.assistantsAdd);
-  const production = buildingProduction + assistants;
+  const assistants = Math.max(0, Math.floor(mods.assistantsAdd));
+  const clickReward = Math.max(1, (1 + mods.clickAdd / 100) * mods.clickMult);
+  // Realm Grinder Assistants continuously produce 5% of click reward each, without emitting clicks.
+  const assistantProduction = assistants * clickReward * 0.05 * globalMult;
+  const production = buildingProduction + assistantProduction;
   const gemFactionCoinChance = mods.gemPowerAdd > 0
     ? Math.floor(1.25 * Math.log(1 + state.resources.gems) ** 0.9 / Math.log(10))
     : 0;
   return Object.freeze({
-    outputs, production, buildingProduction, assistants,
-    clickReward: Math.max(1, (1 + mods.clickAdd / 100) * mods.clickMult),
+    outputs, production, buildingProduction, assistantProduction, assistants, clickReward,
     manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, 1 + mods.manaRegenAdd),
     fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
     offlineMultiplier: power.offlineMultiplier,

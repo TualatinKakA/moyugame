@@ -179,6 +179,25 @@ try {
   assert.equal(await gamePage.evaluate(key => JSON.parse(localStorage.getItem(key)).settings.manaRegenOverride, SAVE_KEY), 7);
   await gameContext.close();
 
+  const assistantState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  assistantState.resources.coins = 1e12; assistantState.buildings.farm = 10; assistantState.stats.total.clicks = 1;
+  const assistantContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await assistantContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(assistantState) });
+  const assistantPage = await assistantContext.newPage(); watch(assistantPage);
+  await assistantPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await closeStory(assistantPage, 'intro.retirement_eligible');
+  assert.equal(await assistantPage.locator('#assistants').textContent(), '0');
+  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 20');
+  await assistantPage.locator('.app-nav [data-tab="upgrades"]').click();
+  assert.match(await assistantPage.locator('[data-upgrade-card="farm-tier1"]').textContent(), /数字员工 \+1/);
+  await assistantPage.locator('[data-upgrade-card="farm-tier1"] [data-action="purchase"]').click();
+  assert.equal(await assistantPage.locator('#assistants').textContent(), '1');
+  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 30.05');
+  await assistantPage.locator('[data-upgrade-card="farm-tier2"] [data-action="purchase"]').click();
+  assert.equal(await assistantPage.locator('#assistants').textContent(), '2');
+  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 60.10');
+  await assistantContext.close();
+
   const retireState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
   retireState.stats.total.clicks = 1; retireState.stats.run.coins = 1e8; retireState.resources.coins = 1e8;
   const retireContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
