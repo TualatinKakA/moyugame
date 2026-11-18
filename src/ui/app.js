@@ -7,6 +7,16 @@ import { formatDescription } from '../systems/content-registry.js';
 
 const $ = id => document.getElementById(id);
 const money = value => `¥ ${formatNumber(value)}`;
+const costText = (cost, targetId = null) => {
+  if (cost.resource === 'coins') return `${money(cost.value)} 工资`;
+  if (cost.resource === 'mana') return `${formatNumber(cost.value)} 精力`;
+  if (cost.resource?.startsWith('factionCoin.')) {
+    const selector = cost.resource.slice(12);
+    const factionId = selector === 'target' ? targetId : selector === 'current' ? state().selections.faction : selector;
+    return `${formatNumber(cost.value)} ${definition(factionId)?.name || '部门'}影响力`;
+  }
+  return `${formatNumber(cost.value)} ${cost.resource}`;
+};
 const saveAdapter = createSaveAdapter();
 let game;
 let graph;
@@ -205,16 +215,20 @@ function upgradesPanel(category = null) {
   return `<div class="panel-head"><div><h2>${title}</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
 function choiceCard(item) {
-  const status = view(item.id).status;
+  const model = view(item.id);
+  const status = model.status;
   const selected = status === 'SELECTED';
   const locked = selected || status === 'LOCKED_REQUIREMENT';
   const label = selected ? (item.kind === 'alignment' ? '当前立场' : '当前部门') : '选择';
-  const price = item.kind === 'alignment' ? `<small class="choice-price">${money(item.purchase.costs[0].amount.constant)}</small>` : '';
+  const price = model.costs.length
+    ? `<small class="choice-price">${model.costs.map(cost => costText(cost, item.id)).join(' + ')}</small>`
+    : item.kind === 'faction' ? '<small class="choice-price">首次签约免费</small>' : '';
   return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3 class="choice-heading"><span>${item.name}</span>${price}</h3><p>${description(item)}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
 }
 function factionsPanel() {
   const factionUpgrades = sortedUpgrades(visible('upgrade').filter(item => item.ui.category === 'faction'));
-  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3><div class="card-grid">${factionUpgrades.map(upgradeCard).join('') || '<p class="notice">签署部门条约后显示对应升级。</p>'}</div></section>`;
+  const balances = content('faction').filter(item => item.factionCoin).map(item => `<tr><td>${item.name}</td><td data-faction-coin="${item.id}">0</td></tr>`).join('');
+  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>部门影响力</h3><p>工作可能留下任意已开放部门的协作记录，与当前所在部门无关。</p><table class="stat-table">${balances}</table></section><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3><div class="card-grid">${factionUpgrades.map(upgradeCard).join('') || '<p class="notice">签署部门条约后显示对应升级。</p>'}</div></section>`;
 }
 function skillsPanel() {
   const available = visible('spell');
@@ -264,7 +278,10 @@ function updatePanel() {
     }
     else if (model.status === 'NEED_RESOURCE') button.textContent = '资源不足';
     const card = button.closest('[data-upgrade-card]');
-    if (card) card.querySelector('[data-field="cost"]').textContent = model.costs.map(cost => `${formatNumber(cost.value)} ${cost.resource === 'coins' ? '工资' : cost.resource}`).join(' + ');
+    if (card) card.querySelector('[data-field="cost"]').textContent = model.costs.map(cost => costText(cost, button.dataset.id)).join(' + ');
+  });
+  document.querySelectorAll('[data-faction-coin]').forEach(cell => {
+    cell.textContent = formatNumber(state().resources.factionCoins[cell.dataset.factionCoin] || 0);
   });
   document.querySelectorAll('[data-stat]').forEach(cell => {
     const value = cell.dataset.stat.split('.').reduce((object, key) => object?.[key], state()) || 0;
@@ -333,6 +350,7 @@ function factFeedback(facts) {
     if (fact.type === 'building.purchased') notify(`设施采购完成：${definition(fact.payload.buildingId).name} +${fact.payload.quantity}`);
     else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
     else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
+    else if (fact.type === 'factionCoins.found' && fact.payload.source !== 'assistant') notify(`发现${definition(fact.payload.factionId).name}影响力 +${formatNumber(fact.payload.amount)}`);
     else if (fact.type === 'spell.cast') notify(`已释放：${definition(fact.payload.spellId).name}`);
     else if (fact.type === 'trophy.unlocked') {
       playTrophySound();

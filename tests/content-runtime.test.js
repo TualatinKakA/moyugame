@@ -8,14 +8,14 @@ import { createSaveAdapter, createMemoryStorage, SAVE_KEY } from '../src/systems
 import { createSaveState, migrateAndNormalizeState, stateHash } from '../src/systems/state.js';
 import { gemsForRunCoins, reincarnationRequirement } from '../src/systems/progression.js';
 
-function fixture(initial = null, { failSave = false, nowStart = 1000, content = CONTENT } = {}) {
+function fixture(initial = null, { failSave = false, nowStart = 1000, content = CONTENT, seed = 0x6d2b79f5 } = {}) {
   let now = nowStart;
   const storage = createMemoryStorage();
   if (failSave) storage.setItem = () => { throw new Error('quota'); };
   const adapter = createSaveAdapter({ storage });
   if (initial) adapter.save(initial);
   const clock = { wallNow: () => now, monotonicNow: () => now };
-  const game = createGameRuntime({ content, saveAdapter: adapter, clock });
+  const game = createGameRuntime({ content, saveAdapter: adapter, clock, seed });
   return { game, storage, adapter, clock, advance: value => { now += value; } };
 }
 const initial = () => {
@@ -435,8 +435,8 @@ test('click skills, global skills, Gem Power and spell expiry propagate to assis
   assertClose(derived.assistantProduction, 0.1575, 'permanent click reward upgrade propagates');
 });
 
-test('Goblin assistant count recalculates when faction coins change', async () => {
-  const seeded = initial(); seeded.resources.factionCoins.goblin = 16;
+test('Goblin assistant count uses run found rather than spendable balance and recalculates after spell grants', async () => {
+  const seeded = initial(); seeded.stats.run.factionCoins = 16;
   const { game } = fixture(seeded);
   await game.start();
   game.dispatch({ type: 'purchase', id: 'evil' });
@@ -445,7 +445,9 @@ test('Goblin assistant count recalculates when faction coins change', async () =
   const expected = count => Math.floor(0.5 * Math.log(1 + count) ** 2);
   assert.equal(game.select('derived').assistants, expected(16));
   game.dispatch({ type: 'cast', id: 'goblinsGreed' });
-  assert.equal(game.select('state').resources.factionCoins.goblin, 36);
+  const state = game.select('state');
+  assert.equal(Object.values(state.resources.factionCoins).reduce((sum, value) => sum + value, 0), 20);
+  assert.equal(state.stats.run.factionCoins, 36);
   assert.equal(game.select('derived').assistants, expected(36));
 });
 
@@ -571,4 +573,103 @@ test('conditional effects and pre-cast derived conditions support the Fairy Choi
     game.tick(10);
     assert.equal(game.select('derived').assistants, baseAssistants, 'spell expiry removes the conditional multiplier');
   }
+});
+
+
+test('manual clicks use the two-faction pool before alignment and after joining Fairy', async () => {
+  const { game } = fixture(null, { seed: 2718 });
+  await game.start();
+  for (let index = 0; index < 400; index++) game.dispatch({ type: 'work' });
+  let state = game.select('state');
+  assert.ok(state.resources.factionCoins.fairy > 0, 'Fairy can drop before alignment');
+  assert.ok(state.resources.factionCoins.goblin > 0, 'Goblin can drop before alignment');
+  assert.equal(state.stats.run.factionCoins, state.resources.factionCoins.fairy + state.resources.factionCoins.goblin);
+  state.resources.coins = 1e12;
+  game.dispatch({ type: 'purchase', id: 'good' });
+  game.dispatch({ type: 'purchase', id: 'fairy' });
+  const before = { ...state.resources.factionCoins };
+  for (let index = 0; index < 400; index++) game.dispatch({ type: 'work' });
+  state = game.select('state');
+  assert.ok(state.resources.factionCoins.fairy > before.fairy, 'current faction still drops');
+  assert.ok(state.resources.factionCoins.goblin > before.goblin, 'joining Fairy does not remove Goblin from the pool');
+});
+
+test('a declarative third faction enters the same drop pool without runtime changes', async () => {
+  const fairy = CONTENT.definitions.find(item => item.id === 'fairy');
+  const third = { ...fairy, id: 'elven', name: '技术部', factionCoin: { ...fairy.factionCoin } };
+  const content = { packs: CONTENT.packs, definitions: [...CONTENT.definitions, third] };
+  const { game } = fixture(null, { content, seed: 4242 });
+  await game.start();
+  for (let index = 0; index < 600; index++) game.dispatch({ type: 'work' });
+  assert.ok(game.select('state').resources.factionCoins.elven > 0);
+});
+
+test('Fairy treaty is free only at R0 with zero gems and later spends twenty target FC without reducing found', async () => {
+  const free = initial();
+  const { game: freeGame } = fixture(free);
+  await freeGame.start();
+  freeGame.dispatch({ type: 'purchase', id: 'good' });
+  assert.deepEqual(freeGame.select('content', { id: 'fairy' }).costs, []);
+  assert.equal(freeGame.dispatch({ type: 'purchase', id: 'fairy' }).ok, true);
+
+  const seeded = initial(); seeded.resources.gems = 1; seeded.resources.factionCoins.fairy = 19;
+  const { game } = fixture(seeded);
+  await game.start();
+  game.dispatch({ type: 'purchase', id: 'good' });
+  assert.equal(game.select('content', { id: 'fairy' }).status, 'NEED_RESOURCE');
+  assert.equal(game.dispatch({ type: 'purchase', id: 'fairy' }).reason, 'NEED_RESOURCE');
+  assert.equal(game.select('state').selections.faction, null);
+  game.select('state').resources.factionCoins.fairy = 20;
+  game.select('state').stats.run.factionCoins = 20;
+  const model = game.select('content', { id: 'fairy' });
+  assert.equal(model.costs[0].resource, 'factionCoin.target');
+  assert.equal(model.costs[0].value, 20);
+  assert.equal(game.dispatch({ type: 'purchase', id: 'fairy' }).ok, true);
+  assert.equal(game.select('state').resources.factionCoins.fairy, 0);
+  assert.equal(game.select('state').stats.run.factionCoins, 20);
+});
+
+test('abdication clears FC balances and run found while preserving longer scopes', async () => {
+  const seeded = initial();
+  seeded.stats.run.coins = 1e12;
+  seeded.resources.factionCoins = { fairy: 5, goblin: 7 };
+  for (const scope of ['run', 'r', 'ascension', 'total']) seeded.stats[scope].factionCoins = 12;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
+  const state = game.select('state');
+  assert.deepEqual(state.resources.factionCoins, {});
+  assert.equal(state.stats.run.factionCoins, 0);
+  assert.equal(state.stats.r.factionCoins, 12);
+  assert.equal(state.stats.ascension.factionCoins, 12);
+  assert.equal(state.stats.total.factionCoins, 12);
+});
+
+test('assistants batch continuous FC across both factions without clicks or click income', async () => {
+  const seeded = initial();
+  seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.select('derived').assistants, 2);
+  game.tick(50);
+  const state = game.select('state');
+  assertClose(state.resources.factionCoins.fairy, 1);
+  assertClose(state.resources.factionCoins.goblin, 1);
+  assertClose(state.stats.run.factionCoins, 2);
+  assert.equal(state.stats.run.clicks, 0);
+  assert.equal(state.stats.run.clickCoins, 0);
+});
+
+test('offline assistants use the same batched FC source and do not apply the gold offline multiplier', async () => {
+  const seeded = initial();
+  seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+  seeded.lastWallClock = 0;
+  const { game } = fixture(seeded, { nowStart: 50000 });
+  await game.start();
+  const state = game.select('state');
+  assertClose(state.resources.factionCoins.fairy, 1);
+  assertClose(state.resources.factionCoins.goblin, 1);
+  assertClose(state.stats.run.factionCoins, 2);
+  assert.equal(state.stats.run.clicks, 0);
+  assert.equal(state.stats.run.clickCoins, 0);
 });
