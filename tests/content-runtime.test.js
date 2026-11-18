@@ -1002,3 +1002,62 @@ test('Fairy and Goblin contracts and upgrades use 24 self-contained SVG icons wi
   }
   assert.equal(paths.size, 24);
 });
+
+
+test('assistant faction coins apply click multipliers online and across offline spell expiry', async () => {
+  const makeAssistantSave = () => {
+    const seeded = initial();
+    seeded.selections.alignment = 'good';
+    seeded.buildings.farm = 10;
+    seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+    return seeded;
+  };
+  const { game } = fixture(makeAssistantSave());
+  await game.start();
+  assertClose(game.select('derived').clickReward, 1);
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
+  assert.equal(game.dispatch({ type: 'cast', id: 'holyLight' }).ok, true);
+  assertClose(game.select('derived').clickReward, 18.5);
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.74);
+  game.tick(1);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.37);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.37);
+  game.tick(9);
+  assertClose(game.select('state').resources.factionCoins.fairy, 3.7);
+  assertClose(game.select('state').resources.factionCoins.goblin, 3.7);
+  assertClose(game.select('derived').clickReward, 1);
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
+  game.tick(1);
+  assertClose(game.select('state').resources.factionCoins.fairy, 3.72);
+  assertClose(game.select('state').resources.factionCoins.goblin, 3.72);
+
+  const offline = makeAssistantSave();
+  offline.lastWallClock = 0;
+  offline.timers.spells.holyLight = { remaining: 10 };
+  const offlineFixture = fixture(offline, { nowStart: 20000 });
+  const started = await offlineFixture.game.start();
+  assertClose(started.offlineReport.factionCoinsFound.fairy, 3.9);
+  assertClose(started.offlineReport.factionCoinsFound.goblin, 3.9);
+  assertClose(offlineFixture.game.select('derived').clickReward, 1);
+});
+
+
+test('assistant FC includes base click production while Tax Collection stays wage-only without Coin Pillage', async () => {
+  const seeded = initial();
+  seeded.selections.alignment = 'good'; seeded.selections.faction = 'fairy';
+  seeded.buildings = { farm: 10, inn: 10, blacksmith: 10 };
+  seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
+  seeded.owned.run['fairy-5'] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  const derived = game.select('derived');
+  assert.ok(derived.clickReward > 1, 'Golden Pots raises base click production');
+  const expectedPerFaction = derived.assistants * 0.2 * (derived.fcChance / 100) * derived.clickReward / 2;
+  game.tick(1);
+  assertClose(game.select('state').resources.factionCoins.fairy, expectedPerFaction);
+  assertClose(game.select('state').resources.factionCoins.goblin, expectedPerFaction);
+  assertClose(game.select('factionCoins').assistant.perFaction.fairy, expectedPerFaction);
+  const beforeTax = game.select('state').resources.factionCoins;
+  assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
+  assert.deepEqual(game.select('state').resources.factionCoins, beforeTax);
+});

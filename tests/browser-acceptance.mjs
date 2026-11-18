@@ -53,6 +53,7 @@ try {
   await context.close();
 
   const seeded = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  seeded.owned.run['goblin-3'] = true;
   seeded.resources.coins = 1e12; seeded.resources.mana = 10000; seeded.resources.gems = 100; seeded.resources.factionCoins.fairy = 20; seeded.stats.total.clicks = 1;
   const gameContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await gameContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(seeded) });
@@ -109,6 +110,7 @@ try {
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="output"]').textContent(), '本次 +¥ 20 / 秒');
   await gamePage.locator('#mainPanel [data-id="farm"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="count"]').textContent(), '× 11');
+  assert.match(await gamePage.locator('#workContent [data-id="taxCollection"]').textContent(), /33\.32 秒/, 'Tax Collection shows live dynamic seconds');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('.app-nav [data-tab="upgrades"]').click();

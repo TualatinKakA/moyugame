@@ -56,7 +56,10 @@ function playTrophySound() {
 const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
-const description = item => formatDescription(item, graph);
+const description = item => {
+  const text = formatDescription(item, graph);
+  return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
+};
 const formatCost = cost => {
   if (cost.resource === 'coins') return money(cost.value);
   if (cost.resource === 'mana') return `${formatNumber(cost.value)} 精力`;
@@ -239,7 +242,7 @@ function skillButton(item) {
 function renderQuickSkills() {
   const available = visible('spell');
   const quick = quickSkillIds().map(definition);
-  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}`;
+  const signature = `${quickLimit()}|${formatNumber(derived().taxSeconds)}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}`;
   if (signature === quickStructure) return;
   quickStructure = signature;
   $('skillMount').innerHTML = available.length ? `<section class="skill-shortcuts" aria-label="快捷技能"><div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButton).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}</section>` : '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';

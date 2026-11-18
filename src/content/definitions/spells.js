@@ -10,7 +10,7 @@ const effect = (group, phase, stat, target, operation, value) => ({ group, phase
 
 export const SPELL_DEFINITIONS = [
   spell({
-    id: 'taxCollection', name: '工资结算', description: '立即获得当前结算秒数的设施与数字员工产出。', cost: 200,
+    id: 'taxCollection', name: '工资结算', description: '立即获得 {taxSeconds} 秒设施与数字员工产出。', cost: 200,
     visible: { op: 'always' },
     castActions: [{ type: 'grantResource', resource: 'coins', amount: { formula: 'production * seconds', variables: { production: 'derived.production', seconds: 'derived.taxSeconds' } } }],
   }),

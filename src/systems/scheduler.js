@@ -13,7 +13,7 @@ export function createScheduler() {
       for (const task of due) tasks.delete(task.id);
       return due;
     },
-    nextDueAt() { return ordered()[0]?.dueAt ?? Infinity; },
+    nextDueAt(after = -Infinity) { return ordered().find(task => task.dueAt > after)?.dueAt ?? Infinity; },
     clear() { tasks.clear(); },
     get size() { return tasks.size; },
   });
