@@ -20,12 +20,12 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('callToArms', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '(25 + 0.3 * x) ^ 0.975', variables: { x: 'buildings.total' } })],
   }),
   spell({
-    id: 'holyLight', name: '自驱动员', description: '10 秒内点击收入提高 1750%。', cost: 900, duration: 10,
+    id: 'holyLight', name: '奋斗动员', description: '10 秒内点击收入提高 1750%。', cost: 900, duration: 10,
     visible: { op: 'selected', key: 'alignment', value: 'good' },
     effects: [effect('holyLight', 'click', 'click.reward', { type: 'global' }, 'multiplyPercent', { constant: 1750 })],
   }),
   spell({
-    id: 'bloodFrenzy', name: '强压冲刺', description: '20 秒内强压设施产出提高 1250%。', cost: 600, duration: 20,
+    id: 'bloodFrenzy', name: '狼性冲刺', description: '20 秒内狼性设施产出提高 1250%。', cost: 600, duration: 20,
     visible: { op: 'selected', key: 'alignment', value: 'evil' },
     effects: [effect('bloodFrenzy', 'buildingLocal', 'building.production', { type: 'alignment', id: 'evil' }, 'addPercent', { constant: 1250 })],
   }),
