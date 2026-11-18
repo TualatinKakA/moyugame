@@ -158,6 +158,33 @@ try {
   assert.equal(await retirePage.locator('[data-action="reincarnate"]').count(), 0, 'reincarnation is hidden below the original gem requirement');
   await retireContext.close();
 
+  const resetState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  resetState.resources.coins = 500; resetState.stats.total.clicks = 1;
+  const resetContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await resetContext.addInitScript(({ key, json }) => {
+    if (!sessionStorage.getItem('acceptance-seeded')) {
+      localStorage.setItem(key, json);
+      sessionStorage.setItem('acceptance-seeded', '1');
+    }
+  }, { key: SAVE_KEY, json: JSON.stringify(resetState) });
+  const resetPage = await resetContext.newPage(); watch(resetPage);
+  await resetPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await resetPage.locator('#moreTabButton').click();
+  resetPage.once('dialog', dialog => dialog.accept());
+  await Promise.all([
+    resetPage.waitForLoadState('load'),
+    resetPage.locator('[data-action="hard-reset"]').click(),
+  ]);
+  const cleared = await resetPage.evaluate(key => ({
+    main: localStorage.getItem(key),
+    previous: localStorage.getItem(`${key}:previous`),
+    corrupt: localStorage.getItem(`${key}:corrupt`),
+  }), SAVE_KEY);
+  assert.deepEqual(cleared, { main: null, previous: null, corrupt: null }, 'hard reset does not resurrect state during unload');
+  assert.equal(await resetPage.locator('#intro').isVisible(), true, 'hard reset returns to the onboarding screen');
+  assert.equal(await resetPage.locator('#coins').textContent(), '¥ 0');
+  await resetContext.close();
+
   assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);
   console.log('Browser acceptance passed: prologue, transactions, Fairy/Goblin scope, trophies/replay, skill management, workstation and responsive layouts.');

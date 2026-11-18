@@ -9,6 +9,7 @@ const money = value => `¥ ${formatNumber(value)}`;
 const saveAdapter = createSaveAdapter();
 let game;
 let graph;
+let resetting = false;
 let activeTab = 'work';
 let panelReturnFocus = null;
 let panelHistory = false;
@@ -352,8 +353,11 @@ document.addEventListener('click', event => {
   if (action === 'export') { game.save().then(() => { $('exportText').value = saveAdapter.listSlots().main || ''; $('exportText').select(); notify('存档已导出，请复制保存'); }); return; }
   if (action === 'import') { $('importFile').click(); return; }
   if (action === 'hard-reset') {
-    if (!confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
-    saveAdapter.remove(); location.reload();
+    if (resetting || !confirm('确定删除全部本地进度吗？此操作不能撤销。')) return;
+    resetting = true;
+    game.stop();
+    saveAdapter.remove();
+    location.reload();
   }
 });
 $('importFile').addEventListener('change', async event => {
@@ -371,8 +375,8 @@ document.addEventListener('keydown', event => {
 });
 window.addEventListener('popstate', () => { if (activeTab !== 'work') closeAuxPanel(true); panelHistory = false; });
 window.addEventListener('resize', () => { if (game) { quickStructure = ''; renderQuickSkills(); updateCastButtons(); } });
-window.addEventListener('beforeunload', () => { game?.save(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) game?.save(); });
+window.addEventListener('beforeunload', () => { if (!resetting) game?.save(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && !resetting) game?.save(); });
 
 async function bootstrap() {
   game = createGameRuntime({ content: CONTENT, saveAdapter, mode: 'production' });
@@ -386,7 +390,7 @@ async function bootstrap() {
     const now = performance.now(); const delta = (now - lastTick) / 1000; lastTick = now;
     if (!document.hidden) game.tick(delta);
   }, 200);
-  setInterval(() => { if (game.select('saveStatus').dirty) game.save(); }, 15000);
+  setInterval(() => { if (!resetting && game.select('saveStatus').dirty) game.save(); }, 15000);
 }
 bootstrap().catch(error => {
   console.error(error);
