@@ -269,7 +269,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const eligible = eligibleFactionCoins(tx.state);
       if (eligible.length && random(tx, 'drops:manualClick') < cache.get().fcChance / 100) {
         const factionId = chooseFactionCoin(tx, eligible, 'drops:manualClick');
-        grantFactionCoins(tx, { factionId, amount: 1, source: 'manualClick' });
+        grantFactionCoins(tx, { factionId, amount: cache.get().clickReward, source: 'manualClick' });
       }
       tx.emit('work.clicked', { reward });
     });

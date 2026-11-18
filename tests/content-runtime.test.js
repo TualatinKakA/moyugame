@@ -583,7 +583,7 @@ test('manual clicks use the two-faction pool before alignment and after joining 
   let state = game.select('state');
   assert.ok(state.resources.factionCoins.fairy > 0, 'Fairy can drop before alignment');
   assert.ok(state.resources.factionCoins.goblin > 0, 'Goblin can drop before alignment');
-  assert.equal(state.stats.run.factionCoins, state.resources.factionCoins.fairy + state.resources.factionCoins.goblin);
+  assertClose(state.stats.run.factionCoins, state.resources.factionCoins.fairy + state.resources.factionCoins.goblin);
   state.resources.coins = 1e12;
   game.dispatch({ type: 'purchase', id: 'good' });
   game.dispatch({ type: 'purchase', id: 'fairy' });
@@ -1060,4 +1060,19 @@ test('assistant FC includes base click production while Tax Collection stays wag
   const beforeTax = game.select('state').resources.factionCoins;
   assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
   assert.deepEqual(game.select('state').resources.factionCoins, beforeTax);
+});
+
+
+test('manual click FC uses the same click production buffs as assistant FC', async () => {
+  const seeded = initial();
+  seeded.selections.alignment = 'good';
+  seeded.progression.reincarnations = 9;
+  const { game } = fixture(seeded);
+  await game.start();
+  const manualFact = result => result.facts.find(fact => fact.type === 'factionCoins.found' && fact.payload.source === 'manualClick');
+  assertClose(manualFact(game.dispatch({ type: 'work' })).payload.amount, 1);
+  assert.equal(game.dispatch({ type: 'cast', id: 'holyLight' }).ok, true);
+  const buffed = manualFact(game.dispatch({ type: 'work' }));
+  assertClose(buffed.payload.amount, 19.425);
+  assertClose(game.select('state').stats.run.factionCoins, 20.425);
 });
