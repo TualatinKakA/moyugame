@@ -269,8 +269,72 @@ try {
   assert.equal(await resetPage.locator('#coins').textContent(), '¥ 0');
   await resetContext.close();
 
-  assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);
+  const completeState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  completeState.progression.reincarnations = 100;
+  completeState.progression.ascension = 2;
+  completeState.resources.coins = 1e200;
+  completeState.buildings.farm = 18000;
+  completeState.stats.total.clicks = 1;
+  const completeContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await completeContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(completeState) });
+  const completePage = await completeContext.newPage(); watch(completePage);
+  await completePage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await closeStory(completePage, 'intro.retirement_eligible');
+  await completePage.locator('.app-nav [data-tab="building-upgrades"]').click();
+  assert.equal(await completePage.locator('#mainPanel [data-upgrade-card]').count(), 23, 'all Farm upgrades appear independently at R100');
+  await completePage.waitForFunction(() => {
+    const images = [...document.querySelectorAll('#mainPanel [data-upgrade-card] img')];
+    return images.length === 23 && images.every(image => image.complete && image.naturalWidth === 64);
+  });
+  assert.equal(await completePage.locator('[data-upgrade-card="farm-tier23"] img').getAttribute('src'), 'assets/images/content-icons/upgrades/farm-tier23.svg');
+  for (let tier = 1; tier <= 23; tier++) {
+    await completePage.locator(`[data-upgrade-card="farm-tier${tier}"] [data-action="purchase"]`).click();
+  }
+  assert.equal(await completePage.locator('#mainPanel [data-upgrade-card].owned').count(), 23, 'every upgrade can actually be purchased');
+  assert.equal(await completePage.locator('#assistants').textContent(), '2', 'only the first two tiers grant assistants');
+  await completeContext.close();
+
+  const artContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const artPage = await artContext.newPage(); watch(artPage);
+  await artPage.goto(`${origin}/assets/images/content-icons/preview.html`, { waitUntil: 'domcontentloaded' });
+  assert.equal(await artPage.locator('main img').count(), 816, 'preview renders a large and 32px copy of all 408 SVGs');
+  await artPage.waitForFunction(() => {
+    const images = [...document.querySelectorAll('main img')];
+    return images.length === 816 && images.every(image => image.complete && image.naturalWidth === 64);
+  });
+  await noOverflow(artPage, 'facility artwork preview');
+  await artContext.close();
+
+  const audioState = createSaveState({ now: Date.now(), contentVersions: ['base-v1'] });
+  audioState.resources.coins = 1e12;
+  audioState.buildings.farm = 5;
+  audioState.stats.total.clicks = 1;
+  const audioContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await audioContext.addInitScript(({ key, json }) => {
+    localStorage.setItem(key, json);
+    window.__purchaseSounds = [];
+    HTMLMediaElement.prototype.play = function () {
+      const file = this.src.split('/').pop();
+      if (file.startsWith('register-')) window.__purchaseSounds.push(file);
+      return Promise.resolve();
+    };
+  }, { key: SAVE_KEY, json: JSON.stringify(audioState) });
+  const audioPage = await audioContext.newPage(); watch(audioPage);
+  await audioPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await audioPage.locator('.app-nav [data-tab="buildings"]:visible').click();
+  await audioPage.locator('#mainPanel [data-building-card][data-id="farm"]').click();
+  await audioPage.waitForFunction(() => window.__purchaseSounds.length === 1);
+  await audioPage.locator('.app-nav [data-tab="upgrades"]:visible').click();
+  await audioPage.locator('[data-upgrade-card="farm-tier1"] [data-action="purchase"]').click();
+  await audioPage.waitForFunction(() => window.__purchaseSounds.length === 2);
+  assert.deepEqual(await audioPage.evaluate(() => window.__purchaseSounds), ['register-buy.wav', 'register-upgrade.wav']);
+  await audioPage.locator('[data-upgrade-card="farm-tier1"] [data-action="purchase"]').evaluate(button => button.click());
+  await audioPage.waitForTimeout(50);
+  assert.equal(await audioPage.evaluate(() => window.__purchaseSounds.length), 2, 'owned upgrades do not replay purchase audio');
+  await audioContext.close();
+
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);
+  assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);
   console.log('Browser acceptance passed: prologue, transactions, Fairy/Goblin scope, trophies/replay, skill management, workstation and responsive layouts.');
 } finally {
   if (browser) await browser.close();

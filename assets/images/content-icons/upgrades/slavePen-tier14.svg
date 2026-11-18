@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">超量加班 · 第14段</title>
+  <desc id="desc">与外包压缩舱完全相同的设施主体，右上角数字14表示第14段升级。</desc>
+  <g id="slave-pen-body">
+    <path d="m14 12 36-2 5 42-40 4Z" fill="#333B3A"/>
+    <path d="m12 11 35-1 4 40-38 3Z" fill="#697473"/>
+    <path d="m47 10 6 4 4 37-6 1Z" fill="#46504F"/>
+    <path d="m16 15 27-1 2 10-29 2ZM17 28l29-2 2 10-30 2ZM18 41l30-2 2 9-31 2Z" fill="#AAB8B8"/>
+    <path d="m19 17 20-1 1 6-21 1ZM20 30l21-1 1 6-21 1ZM21 43l22-1 1 5-22 1Z" fill="#3E4746"/>
+    <path d="m40 16 3 0 1 6-3 0ZM42 29l3 0 1 6-3 0ZM44 42l3 0 1 5-3 0Z" fill="#C4764D"/>
+    <path d="m9 20 5 4-5 4ZM57 18l-5 4 6 3ZM10 35l5 4-5 4ZM58 33l-6 4 6 3Z" fill="#C4764D"/>
+    <path d="m12 53 39-3 5 4-39 5-5-3Z" fill="#333B3A"/>
+  </g>
+  <g id="upgrade-tier-14">
+    <path d="M38 3h19l5 5v12l-5 5H38l-5-5V8Z" fill="#252A27" opacity=".35" transform="translate(1 1)"/>
+    <path d="M38 3h19l5 5v12l-5 5H38l-5-5V8Z" fill="#C49BAB"/>
+    <path d="M38 3h19l5 5v3l-5-5H38l-5 5V8Z" fill="#E2CCCF"/>
+    <path d="M38 25h19l5-5v-3l-3 5H36Z" fill="#8F6F7A"/>
+    <path d="M5 0V5 M5 5V10" fill="none" stroke="#252A27" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter" transform="translate(40 7)"/><path d="M1 0V5 M1 5H5 M5 0V5 M5 5V10" fill="none" stroke="#252A27" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter" transform="translate(49 7)"/>
+  </g>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">游戏化王座 · 第5段</title>
+  <desc id="desc">与全球总部完全相同的设施主体，右上角数字5表示第5段升级。</desc>
+  <g id="royal-castle-body">
+    <path d="m25 13 14-1 4 41-20 2Z" fill="#D9E2E2"/>
+    <path d="m25 13 14-1 1 5-16 2Z" fill="#EEF3F2"/>
+    <path d="m39 12 5 4 4 37-5-1Z" fill="#697473"/>
+    <path d="m7 35 17-4 2 23-20 3Z" fill="#AAB8B8"/>
+    <path d="m40 30 16 3 2 21-18-2Z" fill="#AAB8B8"/>
+    <path d="m56 33 4 5-1 17-4-2Z" fill="#46504F"/>
+    <path d="m6 54 51-3 3 6-50 4-5-3Z" fill="#333B3A"/>
+    <path d="m28 23 4 0 1 5-4 0ZM35 22l4 0 1 5-4 0ZM28 33l4 0 1 5-4 0ZM36 32l4 0 1 5-4 0ZM29 43l4 0 1 6-4 0ZM37 42l4 0 1 6-4 0Z" fill="#697473"/>
+    <path d="m11 40 5-1 1 5-5 1ZM45 39l5 1 1 5-5-1Z" fill="#46504F"/>
+    <path d="m23 12 10-7 11 6-5 6-14 1Z" fill="#C4764D"/>
+    <path d="m23 12 10-7 2 5-9 6Z" fill="#DF9A6C"/>
+    <path d="m29 1 7-1 6 5-2 7-8 1-6-5Z" fill="#91B77A"/>
+    <path d="m29 1 7-1 6 5-13 1Z" fill="#B4CDA3"/>
+    <path d="m26 6 16-1-2 3-13 1ZM32 0l2 0 1 12-3 1Z" fill="#697473"/>
+  </g>
+  <g id="upgrade-tier-5">
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#252A27" opacity=".35" transform="translate(1 1)"/>
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#E1C27E"/>
+    <path d="M46 3h11l5 5v3l-5-5H46l-5 5V8Z" fill="#F2E0AF"/>
+    <path d="M46 25h11l5-5v-3l-3 5H44Z" fill="#AA8E59"/>
+    <path d="M1 0H5 M1 0V5 M1 5H5 M5 5V10 M1 10H5" fill="none" stroke="#252A27" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter" transform="translate(48 7)"/>
+  </g>
+</svg>

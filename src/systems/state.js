@@ -1,5 +1,6 @@
 import { createRngState } from '../core/rng.js';
 import { numeric } from './numeric.js';
+import { ascensionForReincarnation } from './progression.js';
 
 export const SCHEMA_VERSION = 5;
 const SCOPES = ['run', 'r', 'ascension', 'total'];
@@ -108,7 +109,11 @@ function normalizeCurrent(saved, state, graph) {
   state.lastWallClock = finite(saved.lastWallClock, state.lastSave);
   state.revision = Math.max(0, Math.floor(finite(saved.revision)));
   state.progression.reincarnations = Math.max(0, Math.floor(finite(saved.progression?.reincarnations)));
-  state.progression.ascension = Math.max(0, Math.floor(finite(saved.progression?.ascension)));
+  state.progression.ascension = Math.max(
+    ascensionForReincarnation(state.progression.reincarnations),
+    Math.max(0, Math.floor(finite(saved.progression?.ascension))),
+  );
+  state.progression.ascensionStartR = [0, 1, 100, 160, 220][state.progression.ascension] ?? 220;
   for (const resource of ['coins', 'gems', 'mana']) state.resources[resource] = Math.max(0, finite(saved.resources?.[resource]));
   state.resources.factionCoins = cleanNumberRecord(saved.resources?.factionCoins, graph, 'faction', state.quarantined);
   state.buildings = cleanNumberRecord(saved.buildings, graph, 'building', state.quarantined);

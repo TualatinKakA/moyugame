@@ -20,3 +20,12 @@ export function reincarnationPower(reincarnations) {
     manaRegenAdd: 2 * r,
   });
 }
+
+export function ascensionForReincarnation(reincarnations) {
+  const r = Math.max(0, Math.floor(Number(reincarnations) || 0));
+  if (r >= 220) return 4;
+  if (r >= 160) return 3;
+  if (r >= 100) return 2;
+  if (r >= 1) return 1;
+  return 0;
+}

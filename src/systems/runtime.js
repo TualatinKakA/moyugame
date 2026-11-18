@@ -10,7 +10,7 @@ import { systemClock } from '../core/clock.js';
 import { drawRandom } from '../core/rng.js';
 import { evaluateFormula } from './formula.js';
 import { planOfflineSegments } from './offline.js';
-import { gemsForRunCoins, reincarnationRequirement } from './progression.js';
+import { gemsForRunCoins, reincarnationRequirement, ascensionForReincarnation } from './progression.js';
 
 const increment = (tx, path, amount) => tx.write(path, (pathValue(tx.state, path) || 0) + amount);
 const spellActive = (state, id) => {
@@ -368,7 +368,9 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       resetRun(tx, { includeR: true, preserveAllChallenges: true });
       tx.write('progression', {
         reincarnations: nextReincarnation,
-        ascension: 0, ascensionStartR: 0, ascensionHistory: [],
+        ascension: ascensionForReincarnation(nextReincarnation),
+        ascensionStartR: [0, 1, 100, 160, 220][ascensionForReincarnation(nextReincarnation)],
+        ascensionHistory: [],
       });
       // progression is runtime metadata, kept sparse outside the content-owned maps.
       tx.critical = true;

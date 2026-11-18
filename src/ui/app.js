@@ -53,6 +53,19 @@ function playTrophySound() {
   trophySound.currentTime = 0;
   trophySound.play().catch(() => {});
 }
+const purchaseSounds = {
+  building: new Audio('assets/audio/register-buy.wav'),
+  upgrade: new Audio('assets/audio/register-upgrade.wav'),
+};
+for (const audio of Object.values(purchaseSounds)) {
+  audio.preload = 'auto';
+  audio.volume = 0.2;
+}
+function playPurchaseSound(kind) {
+  const audio = purchaseSounds[kind];
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+}
 const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
@@ -446,7 +459,11 @@ function renderTop() {
 function factFeedback(facts) {
   for (const fact of facts) {
     if (fact.type === 'factionCoins.found' && fact.payload.source === 'assistant' && fact.payload.mode === 'online') queueAssistantFactionCoin(fact.payload);
-    if (fact.type === 'building.purchased') notify(`设施采购完成：${definition(fact.payload.buildingId).name} +${fact.payload.quantity}`);
+    if (fact.type === 'building.purchased') {
+      playPurchaseSound('building');
+      notify(`设施采购完成：${definition(fact.payload.buildingId).name} +${fact.payload.quantity}`);
+    }
+    else if (fact.type === 'upgrade.purchased') playPurchaseSound('upgrade');
     else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
     else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
     else if (fact.type === 'spell.cast') notify(`已释放：${definition(fact.payload.spellId).name}`);

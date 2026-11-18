@@ -8,6 +8,13 @@ function amountValue(state, derived, amount) {
   return evaluateFormula(amount.formula, variables);
 }
 
+function eraAvailable(state, era = {}) {
+  const reincarnations = state.progression?.reincarnations || 0;
+  const ascension = state.progression?.ascension || 0;
+  return reincarnations >= (era.minR ?? 0) && reincarnations <= (era.maxR ?? Infinity)
+    && ascension >= (era.minA ?? 0) && ascension <= (era.maxA ?? Infinity);
+}
+
 export function buildingQuote(state, graph, derived, id, amount = 1) {
   const definition = graph.definitionsById.get(id);
   const count = state.buildings[id] || 0;
@@ -42,7 +49,7 @@ function contentDependencies(definition) {
     if (cost.resource === 'factionCoin.current') paths.add('selections.faction');
     collect(cost.when);
   }
-  paths.add('timers.spells'); paths.add('permanentUnlocks');
+  paths.add('timers.spells'); paths.add('permanentUnlocks'); paths.add('progression');
   if (definition.kind === 'spell') paths.add('stats.run.time');
   if (definition.kind === 'building') paths.add('resources.gems');
   paths.delete('revision');
@@ -52,6 +59,7 @@ function contentDependencies(definition) {
 export function selectContent(state, graph, derived, id, args = {}) {
   const definition = graph.definitionsById.get(id);
   if (!definition) return { id, status: 'HIDDEN_SYSTEM', reasons: [{ code: 'UNKNOWN_CONTENT' }] };
+  if (!eraAvailable(state, definition.era)) return { id, status: 'HIDDEN_SYSTEM', reasons: [{ code: 'ERA_UNAVAILABLE' }], viewModel: null };
   const context = { state, derived };
   if (!evaluateCondition(graph, definition.visible, context)) return { id, status: 'HIDDEN_SYSTEM', reasons: [{ code: 'NOT_VISIBLE' }], viewModel: null };
   const selected = definition.kind === 'alignment' || definition.kind === 'faction' ? state.selections[definition.kind] === id : false;
@@ -116,7 +124,7 @@ export class SelectorCache {
   invalidate(changedPaths) {
     for (const path of changedPaths) {
       const keys = new Set(this.keysByDependency.get(path) || []);
-      for (const dependency of ['owned', 'permanentUnlocks', 'timers.spells', 'spellSources', 'selections', 'buildings', 'resources.factionCoins']) {
+      for (const dependency of ['owned', 'permanentUnlocks', 'timers.spells', 'spellSources', 'selections', 'buildings', 'resources.factionCoins', 'progression']) {
         if (path.startsWith(`${dependency}.`)) for (const key of this.keysByDependency.get(dependency) || []) keys.add(key);
       }
       for (const key of keys) this.entries.delete(key);

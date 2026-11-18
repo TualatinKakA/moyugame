@@ -37,25 +37,42 @@ test('content graph contains only Fairy and Goblin factions with declarative pro
   await game.start();
 });
 
-test('facility artwork resolves to 17 bodies and 51 upgrades with identical bodies and explicit tier badges', async () => {
+test('facility artwork resolves to 17 bodies and 391 numbered upgrades with identical bodies and gold-to-purple tiers', async () => {
   const buildings = CONTENT.definitions.filter(item => item.kind === 'building');
   const upgrades = CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.ui.category === 'building');
   assert.equal(buildings.length, 17);
-  assert.equal(upgrades.length, 51);
+  assert.equal(upgrades.length, 391);
   const bodyOf = svg => svg.match(/  <g id="[^"]+-body">[\s\S]*?  <\/g>/)?.[0];
+  const mix = (left, right, t) => {
+    const a = left.match(/\w\w/g).map(value => parseInt(value, 16));
+    const b = right.match(/\w\w/g).map(value => parseInt(value, 16));
+    return `#${a.map((value, index) => Math.round(value + (b[index] - value) * t).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+  };
   for (const building of buildings) {
     assert.equal(building.ui.icon, `assets/images/content-icons/buildings/${building.id}.svg`);
     const base = await readFile(new URL(`../${building.ui.icon}`, import.meta.url), 'utf8');
     const body = bodyOf(base);
     assert.ok(body, `${building.id} has an identifiable facility body`);
-    for (let tier = 1; tier <= 3; tier++) {
+    for (let tier = 1; tier <= 23; tier++) {
       const id = `${building.id}-tier${tier}`;
       const upgrade = upgrades.find(item => item.id === id);
+      assert.ok(upgrade, `${id} is defined`);
       assert.equal(upgrade.ui.icon, `assets/images/content-icons/upgrades/${id}.svg`);
       const svg = await readFile(new URL(`../${upgrade.ui.icon}`, import.meta.url), 'utf8');
       assert.equal(bodyOf(svg), body, `${id} preserves the exact facility body`);
+      assert.equal(svg.match(/id="upgrade-tier-\d+"/g)?.length, 1, `${id} has one badge`);
       assert.ok(svg.includes(`id="upgrade-tier-${tier}"`), `${id} has the correct tier badge`);
-      assert.doesNotMatch(svg, /<script|<image|<animate|filter=/);
+      assert.ok(svg.includes(`<title id="title">${upgrade.name} · 第${tier}段</title>`));
+      assert.ok(svg.includes(`<desc id="desc">`), `${id} has a description`);
+      assert.doesNotMatch(svg, /<script|<image|<animate|filter=|<linearGradient|<radialGradient|font-family/);
+      if (tier >= 4) {
+        const badge = svg.match(/  <g id="upgrade-tier-\d+">[\s\S]*?  <\/g>/)[0];
+        const colors = [...badge.matchAll(/fill="(#[0-9A-F]{6})"/g)].map(match => match[1]);
+        const t = (tier - 3) / 20;
+        assert.deepEqual(colors.slice(1, 4), [
+          mix('E7CA74', 'A875D8', t), mix('F5E4A8', 'D3B9EF', t), mix('B09552', '74509A', t),
+        ], `${id} uses the exact interpolated palette`);
+      }
     }
   }
 });
@@ -208,6 +225,7 @@ test('original reincarnation threshold, reset and R1 power apply together', asyn
   assert.equal(game.select('reincarnation').visible, true);
   assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
   assert.equal(game.select('state').progression.reincarnations, 1);
+  assert.equal(game.select('state').progression.ascension, 1);
   assert.equal(game.select('state').resources.gems, 0);
   assert.equal(game.select('reincarnation').visible, false);
   assert.equal(game.select('derived').manaRegen, 3);
@@ -1112,35 +1130,128 @@ test('Fairy Chanting triples assistant FC online and through offline expiry', as
 });
 
 
-test('implemented building upgrades match original unlocks effects and per-building costs', async () => {
+test('all 391 building upgrades match documented names unlocks costs and Pre-A/Post-A effects', async () => {
   const facilityNames = {
-    farm: 'Farms', inn: 'Inns', blacksmith: 'Blacksmiths', warriorBarracks: 'Warrior Barracks',
-    slavePen: 'Slave Pens', knightsJoust: 'Knights Jousts', orcishArena: 'Orcish Arenas',
-    wizardTower: 'Wizard Towers', witchConclave: 'Witch Conclaves', cathedral: 'Cathedrals',
-    darkTemple: 'Dark Temples', citadel: 'Citadels', necropolis: 'Necropolises',
-    royalCastle: 'Royal Castles', evilFortress: 'Evil Fortresses', heavensGate: "Heaven's Gates", hellPortal: 'Hell Portals',
+    farm: ['Farms', 'Farm'], inn: ['Inns', 'Inn'], blacksmith: ['Blacksmiths', 'Blacksmith'],
+    warriorBarracks: ['Warrior Barracks', 'Warrior Barrack'], slavePen: ['Slave Pens', 'Slave Pen'],
+    knightsJoust: ['Knights Jousts', 'Knights Joust'], orcishArena: ['Orcish Arenas', 'Orcish Arena'],
+    wizardTower: ['Wizard Towers', 'Wizard Tower'], witchConclave: ['Witch Conclaves', 'Witch Conclave'],
+    cathedral: ['Cathedrals', 'Cathedral'], darkTemple: ['Dark Temples', 'Dark Temple'],
+    citadel: ['Citadels', 'Citadel'], necropolis: ['Necropolises', 'Necropolis'],
+    royalCastle: ['Royal Castles', 'Royal Castle'], evilFortress: ['Evil Fortresses', 'Evil Fortress'],
+    heavensGate: ["Heaven's Gates", "Heaven's Gate"], hellPortal: ['Hell Portals', 'Hell Portal'],
   };
   const source = await readFile(new URL('../docs/原版设施建筑升级独特建筑与奖杯全量清单.md', import.meta.url), 'utf8');
+  const nameSource = await readFile(new URL('../docs/无限工时-全量Upgrades与奖杯职场换皮名称对照.md', import.meta.url), 'utf8');
   const original = new Map();
   for (const line of source.split('\n')) {
     const parts = line.split('|').slice(1, -1).map(part => part.trim());
-    if (parts.length >= 5 && ['1', '2', '3'].includes(parts[1])) original.set(`${parts[0]}:${parts[1]}`, parts);
+    if (parts.length < 9 || !/^\d+$/.test(parts[1])) continue;
+    const entry = Object.entries(facilityNames).find(([, aliases]) => aliases.includes(parts[0]));
+    if (entry) original.set(`${entry[0]}:${Number(parts[1])}`, parts);
   }
+  const translatedNames = new Map();
+  for (const line of nameSource.split('\n')) {
+    const parts = line.split('|').slice(1, -1).map(part => part.trim());
+    if (parts.length !== 5 || parts[0] !== '设施升级') continue;
+    const match = parts[1].match(/^building:(.+):(\d+):(.+)$/);
+    if (match) translatedNames.set(`${parts[2]}:${Number(match[2])}`, parts[4]);
+  }
+  assert.equal(original.size, 391);
+  const number = text => {
+    const scientific = text.match(/\(([\d.]+e\d+)\)/);
+    return scientific ? Number(scientific[1]) : Number(text.replaceAll(',', ''));
+  };
+  const percent = text => Number(text.match(/by ([\d.]+)%/)?.[1]);
   const graph = compileContentGraph(CONTENT);
-  for (const [id, facility] of Object.entries(facilityNames)) {
-    for (const tier of [1, 2, 3]) {
+  for (const [id, [plural, singular]] of Object.entries(facilityNames)) {
+    for (const tier of Array.from({ length: 23 }, (_, index) => index + 1)) {
       const upgrade = graph.definitionsById.get(`${id}-tier${tier}`);
-      const requirement = [5, 25, 75][tier - 1];
-      assert.deepEqual(upgrade.visible.all[1], { op: 'buildingOwned', id, value: requirement });
-      const originalRow = original.get(`${facility}:${tier}`);
-      const expectedPercent = Number(originalRow[6].match(/production by ([\d.]+)%/)[1]);
-      assert.equal(upgrade.effects[0].value.constant, expectedPercent);
-      assert.equal(originalRow[3], `${requirement} ${facility}`);
-      assert.match(originalRow[6], new RegExp(`production by ${expectedPercent}%`));
-      const costText = originalRow[4];
-      const scientific = costText.match(/\(([\d.]+e\d+)\)/);
-      const expectedCost = scientific ? Number(scientific[1]) : Number(costText.replaceAll(',', ''));
-      assert.equal(upgrade.purchase.costs[0].amount.constant, expectedCost, `${upgrade.id} original cost`);
+      const originalRow = original.get(`${id}:${tier}`);
+      assert.ok(upgrade, `${id} tier ${tier} exists`);
+      assert.ok(originalRow, `${id} tier ${tier} has a source row`);
+      assert.equal(upgrade.name, translatedNames.get(`${singular}:${tier}`));
+      assert.equal(upgrade.sourceName, originalRow[2]);
+      assert.equal(upgrade.tier, tier);
+      assert.equal(upgrade.era.minR, tier === 23 ? 100 : tier >= 20 ? 40 : 0);
+      assert.equal(upgrade.era.maxA, 2);
+      const expectedRequirement = Number(originalRow[3].match(/(\d+) [^\d]+$/)[1]);
+      assert.deepEqual(upgrade.visible.all[1], { op: 'buildingOwned', id, value: expectedRequirement });
+      assert.ok(originalRow[3].endsWith(`${expectedRequirement} ${originalRow[0]}`));
+      assert.deepEqual(upgrade.purchase.requires, [{ op: 'notOwned', id: upgrade.id }]);
+      const expectedCost = number(originalRow[4]);
+      if (tier <= 19) {
+        assert.equal(originalRow[5], 'Free');
+        assert.equal(upgrade.purchase.costs.length, 2);
+        assert.equal(upgrade.purchase.costs[0].amount.constant, expectedCost, `${upgrade.id} Pre-A cost`);
+        assert.deepEqual(upgrade.purchase.costs[0].when, { op: 'statEquals', path: 'progression.ascension', value: 0 });
+        assert.equal(upgrade.purchase.costs[1].amount.constant, 0, `${upgrade.id} Post-A is free`);
+        assert.deepEqual(upgrade.purchase.costs[1].when, { op: 'statAtLeast', path: 'progression.ascension', value: 1 });
+      } else {
+        assert.equal(originalRow[5], '—');
+        assert.equal(upgrade.purchase.costs.length, 1);
+        assert.equal(upgrade.purchase.costs[0].amount.constant, expectedCost, `${upgrade.id} cost`);
+        assert.equal(upgrade.purchase.costs[0].when, undefined);
+      }
+      const preParts = originalRow[6].split('<br>');
+      const productionEffects = upgrade.effects.filter(effect => effect.stat === 'building.production');
+      assert.equal(productionEffects[0].value.constant, percent(preParts[0]), `${upgrade.id} Pre-A effect`);
+      assert.equal(productionEffects[0].target.ids[0], id);
+      if (tier <= 19) {
+        assert.equal(productionEffects.length, 2);
+        assert.equal(productionEffects[1].value.constant, percent(preParts[1] || originalRow[7]), `${upgrade.id} Post-A effect`);
+        assert.deepEqual(productionEffects[0].when, { op: 'statEquals', path: 'progression.ascension', value: 0 });
+        assert.deepEqual(productionEffects[1].when, { op: 'statAtLeast', path: 'progression.ascension', value: 1 });
+      } else {
+        assert.equal(productionEffects.length, 1);
+        assert.equal(productionEffects[0].when, undefined);
+      }
+      const assistantEffects = upgrade.effects.filter(effect => effect.stat === 'assistants.count');
+      assert.equal(assistantEffects.length, tier <= 2 ? 1 : 0);
+      if (tier <= 2) {
+        assert.equal(originalRow[8], 'Adds 1 Assistant');
+        assert.equal(assistantEffects[0].value.constant, 1);
+      }
     }
   }
+});
+
+test('building upgrade era gates and dynamic Pre-A/Post-A purchase values work at runtime', async () => {
+  const make = (reincarnations, ascension, farms = 5) => {
+    const seeded = initial();
+    seeded.progression.reincarnations = reincarnations;
+    seeded.progression.ascension = ascension;
+    seeded.buildings.farm = farms;
+    return seeded;
+  };
+  const pre = fixture(make(0, 0));
+  await pre.game.start();
+  assert.equal(pre.game.select('content', { id: 'farm-tier1' }).costs[0].value, 200);
+  assert.equal(pre.game.dispatch({ type: 'purchase', id: 'farm-tier1' }).ok, true);
+  assertClose(pre.game.select('derived').outputs.farm, 20);
+  assert.equal(pre.game.select('derived').assistants, 1);
+
+  const post = fixture(make(1, 1));
+  await post.game.start();
+  assert.equal(post.game.select('content', { id: 'farm-tier1' }).costs[0].value, 0);
+  assert.equal(post.game.dispatch({ type: 'purchase', id: 'farm-tier1' }).ok, true);
+  assertClose(post.game.select('derived').outputs.farm, 5 * 2 * 1.0718 * 1.5);
+  assert.equal(post.game.select('derived').assistants, 1);
+
+  const r39 = fixture(make(39, 1, 3500));
+  await r39.game.start();
+  assert.equal(r39.game.select('content', { id: 'farm-tier20' }).status, 'HIDDEN_SYSTEM');
+  const r40 = fixture(make(40, 1, 3500));
+  await r40.game.start();
+  assert.notEqual(r40.game.select('content', { id: 'farm-tier20' }).status, 'HIDDEN_SYSTEM');
+  assert.equal(r40.game.select('content', { id: 'farm-tier20' }).costs[0].value, 1.703e48);
+
+  const r100 = fixture(make(100, 2, 18000));
+  await r100.game.start();
+  assert.notEqual(r100.game.select('content', { id: 'farm-tier23' }).status, 'HIDDEN_SYSTEM');
+  assert.equal(r100.game.select('content', { id: 'farm-tier23' }).costs[0].value, 5.63e119);
+  const a3 = fixture(make(160, 3, 18000));
+  await a3.game.start();
+  assert.equal(a3.game.select('content', { id: 'farm-tier1' }).status, 'HIDDEN_SYSTEM');
+  assert.equal(a3.game.select('content', { id: 'farm-tier23' }).status, 'HIDDEN_SYSTEM');
 });
