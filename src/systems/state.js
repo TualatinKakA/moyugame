@@ -1,10 +1,10 @@
 import { createRngState } from '../core/rng.js';
 import { numeric } from './numeric.js';
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 const SCOPES = ['run', 'r', 'ascension', 'total'];
 const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'upgradesBought', 'abdications', 'reincarnations', 'offlineTime'];
-const emptyStats = () => Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0]));
+const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {} });
 const record = () => ({});
 
 export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = ['base-v1'] } = {}) {
@@ -49,9 +49,10 @@ function cleanBooleanRecord(input, graph, kinds, quarantine) {
   }
   return output;
 }
-function cleanStats(input = {}) {
+function cleanStats(input = {}, graph, quarantine) {
   const output = emptyStats();
   for (const field of NUMBER_FIELDS) output[field] = Math.max(0, finite(input[field]));
+  output.factionCoinsByFaction = cleanNumberRecord(input.factionCoinsByFaction, graph, 'faction', quarantine);
   return output;
 }
 function aliasId(id, graph) { return graph.migrationAlias[id] || id; }
@@ -67,7 +68,7 @@ function migrateLegacy(old, state, graph) {
   state.resources.mana = Math.max(0, finite(old.mana));
   state.resources.factionCoins = cleanNumberRecord(old.factionCoins, graph, 'faction', state.quarantined);
   state.buildings = cleanNumberRecord(old.buildings, graph, 'building', state.quarantined);
-  for (const scope of SCOPES) state.stats[scope] = cleanStats(old.stats?.[scope]);
+  for (const scope of SCOPES) state.stats[scope] = cleanStats(old.stats?.[scope], graph, state.quarantined);
   for (const id of old.challenges || []) {
     if (graph.definitionsById.get(id)?.kind === 'challenge') state.challenges[id] = { completed: true, scope: graph.definitionsById.get(id).scope };
     else state.quarantined.unknownIds[id] = true;
@@ -99,7 +100,7 @@ function migrateLegacy(old, state, graph) {
   if (Number.isFinite(old.rngState)) state.rng = createRngState(old.rngState);
 }
 
-function normalizeV4(saved, state, graph) {
+function normalizeCurrent(saved, state, graph) {
   state.createdAt = finite(saved.createdAt, state.createdAt);
   state.lastSave = finite(saved.lastSave, state.lastSave);
   state.lastWallClock = finite(saved.lastWallClock, state.lastSave);
@@ -109,7 +110,7 @@ function normalizeV4(saved, state, graph) {
   for (const resource of ['coins', 'gems', 'mana']) state.resources[resource] = Math.max(0, finite(saved.resources?.[resource]));
   state.resources.factionCoins = cleanNumberRecord(saved.resources?.factionCoins, graph, 'faction', state.quarantined);
   state.buildings = cleanNumberRecord(saved.buildings, graph, 'building', state.quarantined);
-  for (const scope of SCOPES) state.stats[scope] = cleanStats(saved.stats?.[scope]);
+  for (const scope of SCOPES) state.stats[scope] = cleanStats(saved.stats?.[scope], graph, state.quarantined);
   for (const scope of ['run', 'r', 'ascension']) state.owned[scope] = cleanBooleanRecord(saved.owned?.[scope], graph, ['upgrade', 'challenge', 'research'], state.quarantined);
   state.permanentUnlocks = cleanBooleanRecord(saved.permanentUnlocks, graph, ['trophy'], state.quarantined);
   for (const [id, value] of Object.entries(saved.challenges || {})) {
@@ -152,8 +153,8 @@ export function migrateAndNormalizeState(input, graph, { now = 0, seed = 0x6d2b7
   const state = createSaveState({ seed, now, contentVersions: graph.contentVersions });
   if (!saved || typeof saved !== 'object') return { state, report: { from: 'empty', to: SCHEMA_VERSION, migrated: false } };
   const from = Math.floor(finite(saved.schemaVersion, 1));
-  if (from < SCHEMA_VERSION) migrateLegacy(saved, state, graph);
-  else normalizeV4(saved, state, graph);
+  if (from < 4) migrateLegacy(saved, state, graph);
+  else normalizeCurrent(saved, state, graph);
   state.contentVersions = [...graph.contentVersions];
   return { state, report: { from, to: SCHEMA_VERSION, migrated: from !== SCHEMA_VERSION } };
 }
@@ -164,6 +165,13 @@ export function assertStateInvariants(state, graph) {
   }
   for (const [id, count] of Object.entries(state.buildings)) {
     if (graph.definitionsById.get(id)?.kind !== 'building' || !Number.isSafeInteger(count) || count < 0) throw new Error(`Invariant: invalid building ${id}`);
+  }
+  const validFactionCoin = id => graph.definitionsById.get(id)?.factionCoin?.enabled === true;
+  for (const [id, value] of Object.entries(state.resources.factionCoins)) {
+    if (!validFactionCoin(id) || !numeric.isNonNegative(value)) throw new Error(`Invariant: invalid faction coin balance ${id}`);
+  }
+  for (const scope of SCOPES) for (const [id, value] of Object.entries(state.stats[scope].factionCoinsByFaction)) {
+    if (!validFactionCoin(id) || !numeric.isNonNegative(value)) throw new Error(`Invariant: invalid faction coin found ${scope}/${id}`);
   }
   const faction = state.selections.faction && graph.definitionsById.get(state.selections.faction);
   if (faction && faction.alignment !== state.selections.alignment) throw new Error('Invariant: faction alignment mismatch');

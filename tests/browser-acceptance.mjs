@@ -53,7 +53,7 @@ try {
   await context.close();
 
   const seeded = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
-  seeded.resources.coins = 1e12; seeded.resources.mana = 10000; seeded.resources.gems = 100; seeded.stats.total.clicks = 1;
+  seeded.resources.coins = 1e12; seeded.resources.mana = 10000; seeded.resources.gems = 100; seeded.resources.factionCoins.fairy = 20; seeded.stats.total.clicks = 1;
   const gameContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await gameContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(seeded) });
   const gamePage = await gameContext.newPage(); watch(gamePage);
@@ -74,6 +74,7 @@ try {
   await gamePage.locator('.app-nav [data-tab="factions"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 2, 'only two alignments before selection');
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
+  await gamePage.locator('.story-overlay[data-story-id="ui.alignment.confirm"] [data-choice-id="confirm"]').click();
   const alignmentImage = gamePage.locator('.story-overlay[data-story-id="alignment.idealism"] .story-image');
   await alignmentImage.waitFor();
   assert.match(await alignmentImage.getAttribute('src'), /alignment-idealism\.svg/);

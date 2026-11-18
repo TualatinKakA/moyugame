@@ -1,4 +1,13 @@
 const selectionCost = [{ resource: 'coins', amount: { constant: 25000 } }];
+const treatyCost = [{
+  resource: 'factionCoin.target', amount: { constant: 20 },
+  when: {
+    any: [
+      { op: 'statAtLeast', path: 'resources.gems', value: 1 },
+      { op: 'statAtLeast', path: 'progression.reincarnations', value: 1 },
+    ],
+  },
+}];
 export const ALIGNMENT_DEFINITIONS = [
   { id: 'good', name: '理想', description: '主动点击、技能与快速扩张。' },
   { id: 'evil', name: '务实', description: '稳定产出、离线收益与高阶设施。' },
@@ -24,7 +33,8 @@ export const FACTION_DEFINITIONS = [
 ].map(faction => ({
   ...faction, era: { minR: 0 },
   visible: { op: 'selected', key: 'alignment', value: faction.alignment }, unlock: { op: 'always' },
-  purchase: { costs: [], requires: [{ op: 'notSelected', key: 'faction' }] },
+  factionCoin: { enabled: true, dropUnlock: { op: 'always' }, baseWeight: 1 },
+  purchase: { costs: treatyCost, requires: [{ op: 'notSelected', key: 'faction' }] },
   effects: [], grants: [{ type: 'grantSpellSource', id: faction.spellId, source: faction.id }],
   reactions: [], scope: 'run', ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/${faction.icon}.png` },
 }));
@@ -56,7 +66,7 @@ export const FACTION_UPGRADE_DEFINITIONS = [
     effect('fairy-3', 'mana', 'mana.max', { type: 'global' }, 'add', { formula: '1.3 * x ^ 0.7', variables: { x: 'buildings.alignment.good' } }),
   ] }),
   upgrade({ id: 'goblin-1', name: '强势现金流', description: '按历史部门影响力增加数字员工。', faction: 'goblin', cost: 5e7, effects: [
-    effect('goblin-1', 'assistants', 'assistants.count', { type: 'global' }, 'add', { formula: '0.5 * ln(1 + x) ^ 2', variables: { x: 'factionCoins.total' } }),
+    effect('goblin-1', 'assistants', 'assistants.count', { type: 'global' }, 'add', { formula: '0.5 * ln(1 + x) ^ 2', variables: { x: 'stats.run.factionCoins' } }),
   ] }),
   upgrade({ id: 'goblin-2', name: '外包交易', description: '按务实设施数量提高全部设施产出。', faction: 'goblin', cost: 5e8, effects: [
     effect('goblin-2', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '2 * x ^ 0.7', variables: { x: 'buildings.alignment.evil' } }),

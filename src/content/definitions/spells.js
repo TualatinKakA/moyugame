@@ -37,7 +37,7 @@ export const SPELL_DEFINITIONS = [
   spell({
     id: 'goblinsGreed', name: '预算腾挪', description: '立即按期权获得部门影响力，并按历史影响力提高产出。', cost: 800, duration: 5,
     visible: { op: 'spellSource', id: 'goblinsGreed' },
-    castActions: [{ type: 'grantResource', resource: 'factionCoin.current', amount: { formula: '20 + ln(1 + gems) ^ 3', variables: { gems: 'resources.gems' } } }],
-    effects: [effect('goblinsGreed', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '0.75 * ln(1 + x) ^ 3.15', variables: { x: 'factionCoins.total' } })],
+    castActions: [{ type: 'grantResource', resource: 'factionCoin.randomEligible', amount: { formula: '20 + ln(1 + gems) ^ 3', variables: { gems: 'resources.gems' } } }],
+    effects: [effect('goblinsGreed', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '0.75 * ln(1 + x) ^ 3.15', variables: { x: 'stats.run.factionCoins' } })],
   }),
 ];

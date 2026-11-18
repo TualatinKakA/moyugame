@@ -1,4 +1,4 @@
-import { evaluateCondition, formatDescription, pathValue } from './content-registry.js';
+import { evaluateCondition, formatDescription, pathValue, resourcePath } from './content-registry.js';
 import { evaluateFormula } from './formula.js';
 import { computeDerived } from './derived.js';
 
@@ -36,7 +36,12 @@ function contentDependencies(definition) {
   };
   collect(definition.visible); collect(definition.unlock);
   (definition.purchase?.requires || definition.cast?.requires || []).forEach(collect);
-  for (const cost of definition.purchase?.costs || definition.cast?.costs || []) paths.add(`resources.${cost.resource}`);
+  for (const cost of definition.purchase?.costs || definition.cast?.costs || []) {
+    const path = resourcePath({ selections: {} }, cost.resource, definition.id);
+    paths.add(path || 'resources.factionCoins');
+    if (cost.resource === 'factionCoin.current') paths.add('selections.faction');
+    collect(cost.when);
+  }
   paths.add('timers.spells'); paths.add('permanentUnlocks');
   if (definition.kind === 'spell') paths.add('stats.run.time');
   if (definition.kind === 'building') paths.add('resources.gems');
@@ -53,7 +58,9 @@ export function selectContent(state, graph, derived, id, args = {}) {
   const isOwned = Boolean(state.permanentUnlocks[id] || state.challenges[id]?.completed || Object.values(state.owned).some(scope => scope[id]));
   const requirements = definition.purchase?.requires || definition.cast?.requires || [];
   const unlocked = requirements.every(condition => evaluateCondition(graph, condition, context));
-  let costs = (definition.purchase?.costs || definition.cast?.costs || []).map(cost => ({ ...cost, value: amountValue(state, derived, cost.amount) }));
+  let costs = (definition.purchase?.costs || definition.cast?.costs || [])
+    .filter(cost => evaluateCondition(graph, cost.when, context))
+    .map(cost => ({ ...cost, value: amountValue(state, derived, cost.amount) }));
   let quantity = null;
   let purchaseProduction = 0;
   if (definition.kind === 'building') {
@@ -66,8 +73,8 @@ export function selectContent(state, graph, derived, id, args = {}) {
     }
   }
   const affordable = costs.every(cost => {
-    const available = cost.resource.startsWith('factionCoin.') ? state.resources.factionCoins[cost.resource.slice(12)] : state.resources[cost.resource];
-    return (available || 0) >= cost.value;
+    const path = resourcePath(state, cost.resource, definition.id);
+    return (path ? pathValue(state, path) || 0 : 0) >= cost.value;
   });
   let status = 'AVAILABLE_UNAFFORDABLE';
   if (selected) status = 'SELECTED';

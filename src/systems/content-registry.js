@@ -53,6 +53,15 @@ export function locatePath(state, path) {
   return { parent, key: segments.join('.') };
 }
 
+export function resourcePath(state, resource, targetId = null) {
+  if (!resource.startsWith('factionCoin.')) return `resources.${resource}`;
+  const selector = resource.slice(12);
+  const factionId = selector === 'current' ? state.selections.faction
+    : selector === 'target' ? targetId
+      : ['randomEligible', 'randomUnlocked'].includes(selector) ? null : selector;
+  return factionId ? `resources.factionCoins.${factionId}` : null;
+}
+
 export function pathValue(state, path) {
   let value = state;
   let segments = String(path).split('.');
@@ -181,7 +190,17 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
     for (const condition of definition.purchase?.requires || []) {
       for (const path of compile(condition, definition.id).dependencies) indexDependency(purchaseDependents, path, definition.id);
     }
-    for (const cost of definition.purchase?.costs || definition.cast?.costs || []) validateValue(cost.amount, definition.id, errors);
+    for (const cost of definition.purchase?.costs || definition.cast?.costs || []) {
+      validateValue(cost.amount, definition.id, errors);
+      if (['factionCoin.randomEligible', 'factionCoin.randomUnlocked'].includes(cost.resource)) errors.push(`${definition.id}: random FC is not a payable resource`);
+      if (cost.when) for (const path of compile(cost.when, `${definition.id}/cost`).dependencies) indexDependency(purchaseDependents, path, definition.id);
+    }
+    if (definition.factionCoin) {
+      if (definition.kind !== 'faction') errors.push(`${definition.id}: factionCoin config requires a faction`);
+      if (definition.factionCoin.enabled !== true) errors.push(`${definition.id}: factionCoin.enabled must be true for FC factions`);
+      compile(definition.factionCoin.dropUnlock, `${definition.id}/factionCoin.dropUnlock`);
+      if (!Number.isFinite(definition.factionCoin.baseWeight) || definition.factionCoin.baseWeight <= 0) errors.push(`${definition.id}: factionCoin.baseWeight must be positive`);
+    }
     for (const effect of definition.effects || []) {
       if (!effect.group || !PHASES.has(effect.phase) || !effect.stat || !effect.target || !EFFECT_OPERATIONS.has(effect.operation) || !effect.stacking) {
         errors.push(`${definition.id}: invalid effect schema`); continue;
