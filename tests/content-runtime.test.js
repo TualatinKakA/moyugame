@@ -272,3 +272,21 @@ test('building selector returns accurate per-second gain for the current bulk pu
   assert.equal(one.viewModel.purchaseProduction, 2);
   assert.equal(game.select('state').resources.coins, 1e12 - ten.costs[0].value, 'preview itself does not spend resources');
 });
+
+test('Gem Power unlock applies production and FC bonuses then resets with the run', async () => {
+  const seeded = initial();
+  seeded.resources.gems = 100;
+  seeded.buildings.farm = 10;
+  seeded.stats.run.coins = 1e12;
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.select('derived').production, 20);
+  assert.equal(game.select('content', { id: 'gemPower' }).status, 'PURCHASABLE');
+  assert.equal(game.dispatch({ type: 'purchase', id: 'gemPower' }).ok, true);
+  assert.equal(game.select('derived').production, 60);
+  assert.equal(game.select('derived').fcChance, 12);
+  assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
+  assert.equal(game.select('state').owned.run.gemPower, undefined);
+  assert.equal(game.select('derived').production, 0);
+  assert.notEqual(game.select('content', { id: 'gemPower' }).status, 'HIDDEN_SYSTEM');
+});

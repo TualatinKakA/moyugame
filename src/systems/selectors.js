@@ -39,6 +39,7 @@ function contentDependencies(definition) {
   for (const cost of definition.purchase?.costs || definition.cast?.costs || []) paths.add(`resources.${cost.resource}`);
   paths.add('timers.spells'); paths.add('permanentUnlocks');
   if (definition.kind === 'spell') paths.add('stats.run.time');
+  if (definition.kind === 'building') paths.add('resources.gems');
   paths.delete('revision');
   return [...paths];
 }
