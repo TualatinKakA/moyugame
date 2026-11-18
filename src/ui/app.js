@@ -3,6 +3,7 @@ import { createGameRuntime } from '../systems/runtime.js';
 import { createSaveAdapter } from '../systems/persistence.js';
 import { formatNumber, formatTime } from '../core/number.js';
 import { createStoryModal } from './story/story-modal.js';
+import { formatDescription } from '../systems/content-registry.js';
 
 const $ = id => document.getElementById(id);
 const money = value => `¥ ${formatNumber(value)}`;
@@ -31,6 +32,7 @@ const coinSoundPools = Array.from({ length: 8 }, (_, index) => {
 const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
+const description = item => formatDescription(item, graph);
 const content = kind => graph.arraysByKind.get(kind) || [];
 const view = id => game.select('content', { id });
 const visible = kind => content(kind).filter(item => view(item.id).status !== 'HIDDEN_SYSTEM');
@@ -126,7 +128,7 @@ function renderUpgradeRail() {
   const signature = candidates.map(item => `${item.id}:${view(item.id).costs[0]?.value || 0}`).join('|');
   if (signature === upgradeRailStructure) return;
   upgradeRailStructure = signature;
-  $('upgradeRail').innerHTML = candidates.length ? candidates.map(item => `<button class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" title="${item.name}：${item.description}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(view(item.id).costs[0]?.value || 0)}</small></button>`).join('') : '<span class="rail-empty">暂无可购买升级</span>';
+  $('upgradeRail').innerHTML = candidates.length ? candidates.map(item => `<button class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" title="${item.name}：${description(item)}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(view(item.id).costs[0]?.value || 0)}</small></button>`).join('') : '<span class="rail-empty">暂无可购买升级</span>';
 }
 function workView() {
   return `<div id="skillMount"></div><section class="work-zone">
@@ -143,7 +145,7 @@ function quickSkillIds(limit = quickLimit()) {
   return configured.filter(id => ids.has(id)).slice(0, limit);
 }
 function skillButton(item) {
-  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</b><small>${item.description}</small><em></em></button>`;
+  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</b><small>${description(item)}</small><em></em></button>`;
 }
 function renderQuickSkills() {
   const available = visible('spell');
@@ -181,7 +183,7 @@ function buildingPanel() {
 function upgradeCard(item) {
   const status = view(item.id).status;
   const statusClass = status === 'OWNED' ? 'owned' : status === 'NEED_RESOURCE' ? 'insufficient' : '';
-  return `<article class="card ${statusClass}" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${item.description}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
+  return `<article class="card ${statusClass}" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${description(item)}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
 }
 function sortedUpgrades(items) {
   const order = { PURCHASABLE: 0, NEED_RESOURCE: 1, AVAILABLE_UNAFFORDABLE: 1, LOCKED_REQUIREMENT: 2, OWNED: 3, SELECTED: 3 };
@@ -193,7 +195,7 @@ function upgradesPanel(category = null) {
   return `<div class="panel-head"><div><h2>${title}</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
 }
 function choiceCard(item) {
-  return `<article class="card" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${item.description}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
+  return `<article class="card" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3>${item.name}</h3><p>${description(item)}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}">选择</button></article>`;
 }
 function factionsPanel() {
   const factionUpgrades = sortedUpgrades(visible('upgrade').filter(item => item.ui.category === 'faction'));
@@ -204,7 +206,7 @@ function skillsPanel() {
   const quick = quickSkillIds(6);
   return `<div class="panel-head"><div><h2>全部技能</h2><p>设置常用技能，或在这里直接释放。</p></div></div><div class="skill-library">${available.map(item => {
     const index = quick.indexOf(item.id); const isQuick = index >= 0;
-    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</h3><p>${item.description}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
+    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</h3><p>${description(item)}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
   }).join('')}</div>`;
 }
 const statRow = (label, path, format = 'number') => `<tr><td>${label}</td><td data-stat="${path}" data-format="${format}">0</td></tr>`;
@@ -225,7 +227,7 @@ function morePanel() {
     <section class="subsection"><h3>精力恢复</h3><form id="manaPasswordForm" class="action-row" autocomplete="off"><label for="manaPassword">密码</label><input id="manaPassword" type="password" inputmode="numeric" autocomplete="off" placeholder="输入密码" required><button type="submit">确认</button></form><p id="manaPasswordFeedback" role="status"></p><div id="manaRegenEditor" hidden><div class="action-row"><label for="manaRegenInput">每秒恢复</label><input id="manaRegenInput" type="number" min="0" step="0.1" required><button data-action="apply-mana-regen">应用</button></div></div></section>
     <section class="subsection"><h3>奖杯</h3><div class="card-grid">${trophies.map(trophy => {
       const unlocked = Boolean(state().permanentUnlocks[trophy.id]); const story = storyForTrophy(trophy.id);
-      return `<article class="card ${unlocked ? 'owned' : ''}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? trophy.description : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
+      return `<article class="card ${unlocked ? 'owned' : ''}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? description(trophy) : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
     }).join('')}</div></section>
     <section class="subsection"><h3>剧情回看</h3><div class="action-row">${completed.map(story => `<button data-action="replay-story" data-id="${story.id}">${story.title}</button>`).join('') || '<p class="notice">暂无可回看的剧情。</p>'}</div></section>`;
 }

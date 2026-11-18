@@ -1,20 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONTENT } from '../src/content/index.js';
-import { compileContentGraph, ContentValidationError } from '../src/systems/content-registry.js';
+import { compileContentGraph, ContentValidationError, formatDescription } from '../src/systems/content-registry.js';
 import { createGameRuntime } from '../src/systems/runtime.js';
 import { createSaveAdapter, createMemoryStorage, SAVE_KEY } from '../src/systems/persistence.js';
 import { createSaveState, migrateAndNormalizeState, stateHash } from '../src/systems/state.js';
 import { gemsForRunCoins, reincarnationRequirement } from '../src/systems/progression.js';
 
-function fixture(initial = null, { failSave = false, nowStart = 1000 } = {}) {
+function fixture(initial = null, { failSave = false, nowStart = 1000, content = CONTENT } = {}) {
   let now = nowStart;
   const storage = createMemoryStorage();
   if (failSave) storage.setItem = () => { throw new Error('quota'); };
   const adapter = createSaveAdapter({ storage });
   if (initial) adapter.save(initial);
   const clock = { wallNow: () => now, monotonicNow: () => now };
-  const game = createGameRuntime({ content: CONTENT, saveAdapter: adapter, clock });
+  const game = createGameRuntime({ content, saveAdapter: adapter, clock });
   return { game, storage, adapter, clock, advance: value => { now += value; } };
 }
 const initial = () => {
@@ -430,4 +430,98 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
   assert.equal(game.select('derived').assistants, 0);
   assert.equal(game.select('derived').assistantProduction, 0);
   assert.equal(game.select('derived').production, 0);
+});
+
+test('spell descriptions resolve effect targets through current building names', () => {
+  const spell = CONTENT.definitions.find(item => item.id === 'fairyChanting');
+  const graph = compileContentGraph(CONTENT);
+  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%。');
+  const renamed = {
+    packs: CONTENT.packs,
+    definitions: CONTENT.definitions.map(item => item.id === 'farm' ? { ...item, name: '附魔工位' } : item),
+  };
+  const renamedGraph = compileContentGraph(renamed);
+  const renamedSpell = renamedGraph.definitionsById.get('fairyChanting');
+  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出提高 50000%。');
+});
+
+test('assistant count and production modifiers compose through generic additive and multiplicative channels', async () => {
+  const group = (name, phase, stat, operation, constant) => ({ group: `test.${name}`, phase, stat, target: { type: 'global' }, operation, value: { constant }, stacking: operation === 'add' || operation === 'addPercent' ? 'add' : 'multiply' });
+  const extension = {
+    ...CONTENT.definitions.find(item => item.id === 'gemPower'), id: 'test.assistantModifiers',
+    effects: [
+      group('countAdd', 'assistants', 'assistants.count', 'add', 2),
+      group('countMult', 'assistants', 'assistants.count', 'multiplyPercent', 200),
+      group('productionAdd', 'global', 'assistants.production', 'addPercent', 100),
+      group('productionMult', 'global', 'assistants.production', 'multiplyPercent', 50),
+    ],
+  };
+  const content = { packs: CONTENT.packs, definitions: [...CONTENT.definitions, extension] };
+  const seeded = initial(); seeded.buildings.farm = 1;
+  seeded.owned.run['farm-tier1'] = true; seeded.owned.run[extension.id] = true;
+  const { game } = fixture(seeded, { content });
+  await game.start();
+  const derived = game.select('derived');
+  assert.equal(derived.assistants, 9, '(1 building assistant + 2) × 3');
+  assertClose(derived.assistantProduction, 1.35, '9 × 1 × 5% × 2 × 1.5');
+  assertClose(derived.production, 4.35);
+});
+
+test('derived dependency fingerprints refresh assistant scaling without clearing unrelated formulas', async () => {
+  const countFromFarms = {
+    ...CONTENT.definitions.find(item => item.id === 'gemPower'), id: 'test.countFromFarms',
+    effects: [{ group: 'test.countFromFarms', phase: 'assistants', stat: 'assistants.count', target: { type: 'global' }, operation: 'add', value: { formula: 'x', variables: { x: 'buildings.farm' } }, stacking: 'add' }],
+  };
+  const scaling = {
+    ...CONTENT.definitions.find(item => item.id === 'gemPower'), id: 'test.assistantScaling',
+    effects: [{ group: 'test.assistantScaling', phase: 'global', stat: 'global.production', target: { type: 'global' }, operation: 'addPercent', value: { formula: '10 * x', variables: { x: 'derived.assistants' } }, stacking: 'add' }],
+  };
+  const content = { packs: CONTENT.packs, definitions: [...CONTENT.definitions, countFromFarms, scaling] };
+  const seeded = initial(); seeded.buildings.farm = 1;
+  seeded.owned.run[countFromFarms.id] = true; seeded.owned.run[scaling.id] = true;
+  const { game } = fixture(seeded, { content });
+  await game.start();
+  let derived = game.select('derived');
+  assert.equal(derived.assistants, 1);
+  assertClose(derived.buildingProduction, 2.2);
+  assertClose(derived.assistantProduction, 0.055);
+  game.dispatch({ type: 'purchase', id: 'farm' });
+  derived = game.select('derived');
+  assert.equal(derived.assistants, 2);
+  assertClose(derived.buildingProduction, 4.8, 'derived.assistants dependency must refresh from 1 to 2');
+  assertClose(derived.assistantProduction, 0.12);
+});
+
+test('conditional effects and pre-cast derived conditions support the Fairy Choir boundary', async () => {
+  for (const baseAssistants of [44, 45]) {
+    const choirId = `trophy.fairy_choir_test_${baseAssistants}`;
+    const base = {
+      ...CONTENT.definitions.find(item => item.id === 'gemPower'), id: `test.baseAssistants${baseAssistants}`,
+      effects: [{ group: `test.baseAssistants${baseAssistants}`, phase: 'assistants', stat: 'assistants.count', target: { type: 'global' }, operation: 'add', value: { constant: baseAssistants }, stacking: 'add' }],
+    };
+    const choir = {
+      ...CONTENT.definitions.find(item => item.id === 'trophy.first_click'), id: choirId, rewardId: choirId, effects: [],
+      reactions: [{ event: 'spell.cast', priority: 50, when: { all: [
+        { op: 'eventDataEquals', path: 'spellId', value: 'fairyChanting' },
+        { op: 'statAtLeast', path: 'derived.assistants', value: 45 },
+      ] } }],
+    };
+    const spellEffect = {
+      group: `test.fairyChoir${baseAssistants}`, phase: 'assistants', stat: 'assistants.count', target: { type: 'global' },
+      operation: 'multiplyPercent', value: { constant: 200 }, stacking: 'multiply', when: { op: 'owned', id: choirId },
+    };
+    const content = {
+      packs: CONTENT.packs,
+      definitions: [...CONTENT.definitions.map(item => item.id === 'fairyChanting' ? { ...item, effects: [...item.effects, spellEffect] } : item), base, choir],
+    };
+    const seeded = initial(); seeded.spellSources.fairyChanting = { fairy: true }; seeded.owned.run[base.id] = true;
+    const { game } = fixture(seeded, { content });
+    await game.start();
+    assert.equal(game.select('derived').assistants, baseAssistants);
+    assert.equal(game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
+    assert.equal(Boolean(game.select('state').permanentUnlocks[choirId]), baseAssistants === 45);
+    assert.equal(game.select('derived').assistants, baseAssistants === 45 ? 135 : 44);
+    game.tick(10);
+    assert.equal(game.select('derived').assistants, baseAssistants, 'spell expiry removes the conditional multiplier');
+  }
 });

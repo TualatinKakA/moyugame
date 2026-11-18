@@ -103,6 +103,7 @@ try {
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 3, 'mobile quick bar caps at three');
   await gamePage.locator('#workContent [data-tab="skills"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-skill-row]').count(), 4);
+  assert.equal(await gamePage.locator('[data-skill-row="fairyChanting"] p').textContent(), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%。');
   await noOverflow(gamePage, 'skill library');
   await gamePage.locator('[data-skill-row="fairyChanting"] [data-action="prioritize-skill"]').click();
   assert.equal(await gamePage.locator('#workContent .skill-btn').first().getAttribute('data-id'), 'fairyChanting');

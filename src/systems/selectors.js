@@ -1,4 +1,4 @@
-import { evaluateCondition, pathValue } from './content-registry.js';
+import { evaluateCondition, formatDescription, pathValue } from './content-registry.js';
 import { evaluateFormula } from './formula.js';
 import { computeDerived } from './derived.js';
 
@@ -47,7 +47,7 @@ function contentDependencies(definition) {
 export function selectContent(state, graph, derived, id, args = {}) {
   const definition = graph.definitionsById.get(id);
   if (!definition) return { id, status: 'HIDDEN_SYSTEM', reasons: [{ code: 'UNKNOWN_CONTENT' }] };
-  const context = { state };
+  const context = { state, derived };
   if (!evaluateCondition(graph, definition.visible, context)) return { id, status: 'HIDDEN_SYSTEM', reasons: [{ code: 'NOT_VISIBLE' }], viewModel: null };
   const selected = definition.kind === 'alignment' || definition.kind === 'faction' ? state.selections[definition.kind] === id : false;
   const isOwned = Boolean(state.permanentUnlocks[id] || state.challenges[id]?.completed || Object.values(state.owned).some(scope => scope[id]));
@@ -79,7 +79,7 @@ export function selectContent(state, graph, derived, id, args = {}) {
     id, status, reasons: [], costs, quantity,
     viewModel: {
       id, kind: definition.kind, uiKind: definition.ui.kind, name: definition.name,
-      description: definition.description || '', quantity,
+      description: formatDescription(definition, graph), quantity,
       active: Boolean(state.timers.spells[id] && (state.timers.spells[id].dueAt !== undefined ? state.timers.spells[id].dueAt > state.stats.run.time : state.timers.spells[id].remaining > 0)),
       remaining: state.timers.spells[id] ? Math.max(0, (state.timers.spells[id].dueAt ?? state.stats.run.time + state.timers.spells[id].remaining) - state.stats.run.time) : 0,
       count: state.buildings[id] || 0,
@@ -94,14 +94,17 @@ export class SelectorCache {
   constructor() { this.entries = new Map(); this.keysByDependency = new Map(); }
   get(state, graph, derived, id, args = {}) {
     const key = `${id}:${args.amount ?? state.settings.buyAmount}`;
-    if (!this.entries.has(key)) {
-      this.entries.set(key, selectContent(state, graph, derived, id, args));
-      for (const dependency of contentDependencies(graph.definitionsById.get(id))) {
-        if (!this.keysByDependency.has(dependency)) this.keysByDependency.set(dependency, new Set());
-        this.keysByDependency.get(dependency).add(key);
-      }
+    const dependencies = contentDependencies(graph.definitionsById.get(id));
+    const derivedDependent = dependencies.some(path => path.startsWith('derived.'));
+    const cached = this.entries.get(key);
+    if (cached && (!cached.derivedDependent || cached.derived === derived)) return cached.value;
+    const value = selectContent(state, graph, derived, id, args);
+    this.entries.set(key, { value, derived, derivedDependent });
+    for (const dependency of dependencies) {
+      if (!this.keysByDependency.has(dependency)) this.keysByDependency.set(dependency, new Set());
+      this.keysByDependency.get(dependency).add(key);
     }
-    return this.entries.get(key);
+    return value;
   }
   invalidate(changedPaths) {
     for (const path of changedPaths) {
