@@ -54,26 +54,48 @@ const BUILDING_UPGRADE_NAMES = {
   hellPortal: ['持续痛苦', '无尽悲伤', '永恒煎熬'],
 };
 
+const BUILDING_UPGRADE_COSTS = {
+  farm: [200, 6580, 1.07e7],
+  inn: [2510, 82300, 1.338e8],
+  blacksmith: [12070, 395020, 6.421e8],
+  warriorBarracks: [36200, 1.185e6, 1.926e9],
+  slavePen: [36200, 1.185e6, 1.926e9],
+  knightsJoust: [112640, 3.687e6, 5.993e9],
+  orcishArena: [112640, 3.687e6, 5.993e9],
+  wizardTower: [764320, 2.502e7, 4.067e10],
+  witchConclave: [764320, 2.502e7, 4.067e10],
+  cathedral: [8.89e6, 2.91e8, 4.73e11],
+  darkTemple: [8.89e6, 2.91e8, 4.73e11],
+  citadel: [1.468e8, 4.806e9, 7.812e12],
+  necropolis: [1.468e8, 4.806e9, 7.812e12],
+  royalCastle: [2.916e9, 9.546e10, 1.552e14],
+  evilFortress: [2.916e9, 9.546e10, 1.552e14],
+  heavensGate: [6.436e10, 2.107e12, 3.425e15],
+  hellPortal: [6.436e10, 2.107e12, 3.425e15],
+};
+
+const upgradePercent = (buildingId, index) => ['farm', 'inn', 'blacksmith'].includes(buildingId) ? [100, 200, 300][index] : 100;
+
 export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(building => [
-  { amount: 1, percent: 50, multiplier: 10 },
-  { amount: 10, percent: 100, multiplier: 100 },
-  { amount: 25, percent: 150, multiplier: 1000 },
+  { amount: 5 },
+  { amount: 25 },
+  { amount: 75 },
 ].map((tier, index) => ({
   id: `${building.id}-tier${index + 1}`,
   kind: 'upgrade', contentVersion: 'base-v1',
   name: BUILDING_UPGRADE_NAMES[building.id][index],
-  description: `${building.name}产出提高 ${tier.percent}%${index < 2 ? '，数字员工 +1' : ''}。`,
+  description: `${building.name}产出提高 ${upgradePercent(building.id, index)}%${index < 2 ? '，数字员工 +1' : ''}。`,
   era: { minR: 0 },
   visible: { all: [building.visible, { op: 'buildingOwned', id: building.id, value: tier.amount }] },
   unlock: { op: 'always' },
   purchase: {
-    costs: [{ resource: 'coins', amount: { constant: building.purchase.costs[0].amount.constant * tier.multiplier } }],
+    costs: [{ resource: 'coins', amount: { constant: BUILDING_UPGRADE_COSTS[building.id][index] } }],
     requires: [{ op: 'notOwned', id: `${building.id}-tier${index + 1}` }],
   },
   effects: [{
     group: `${building.id}-tier${index + 1}`, phase: 'buildingLocal', stat: 'building.production',
     target: { type: 'buildings', ids: [building.id] }, operation: 'multiplyPercent',
-    value: { constant: tier.percent }, stacking: 'multiply',
+    value: { constant: upgradePercent(building.id, index) }, stacking: 'multiply',
   }, ...(index < 2 ? [{
     group: `${building.id}-tier${index + 1}-assistant`, phase: 'assistants', stat: 'assistants.count',
     target: { type: 'global' }, operation: 'add', value: { constant: 1 }, stacking: 'add',

@@ -379,7 +379,7 @@ test('the first two upgrade tiers of every ordinary building grant exactly one a
 });
 
 test('assistants produce five percent of click reward each without producing real clicks', async () => {
-  const seeded = initial(); seeded.buildings.farm = 10;
+  const seeded = initial(); seeded.buildings.farm = 25;
   const { game } = fixture(seeded);
   await game.start();
   assert.equal(game.dispatch({ type: 'purchase', id: 'farm-tier1' }).ok, true);
@@ -388,9 +388,9 @@ test('assistants produce five percent of click reward each without producing rea
   const derived = game.select('derived');
   assert.equal(derived.assistants, 2);
   assert.equal(derived.clickReward, 1);
-  assert.equal(derived.buildingProduction, 60);
+  assert.equal(derived.buildingProduction, 300);
   assertClose(derived.assistantProduction, 0.1, 'two assistants at base click reward');
-  assertClose(derived.production, 60.1, 'building plus assistant production');
+  assertClose(derived.production, 300.1, 'building plus assistant production');
   const before = game.select('state');
   const producedCoins = before.stats.run.coins;
   const clicks = before.stats.total.clicks;
@@ -402,7 +402,7 @@ test('assistants produce five percent of click reward each without producing rea
 });
 
 test('click skills, global skills, Gem Power and spell expiry propagate to assistant production', async () => {
-  const seeded = initial(); seeded.buildings.farm = 1; seeded.resources.gems = 100;
+  const seeded = initial(); seeded.buildings.farm = 5; seeded.resources.gems = 100;
   const { game } = fixture(seeded);
   await game.start();
   game.dispatch({ type: 'purchase', id: 'good' });
@@ -410,7 +410,7 @@ test('click skills, global skills, Gem Power and spell expiry propagate to assis
   game.dispatch({ type: 'purchase', id: 'gemPower' });
   let derived = game.select('derived');
   assert.equal(derived.assistants, 1);
-  assert.equal(derived.buildingProduction, 9);
+  assert.equal(derived.buildingProduction, 60);
   assertClose(derived.assistantProduction, 0.15, 'Gem Power multiplies assistant production');
 
   game.dispatch({ type: 'cast', id: 'callToArms' });
@@ -513,7 +513,7 @@ test('assistant count and production modifiers compose through generic additive 
   const derived = game.select('derived');
   assert.equal(derived.assistants, 9, '(1 building assistant + 2) × 3');
   assertClose(derived.assistantProduction, 1.35, '9 × 1 × 5% × 2 × 1.5');
-  assertClose(derived.production, 4.35);
+  assertClose(derived.production, 5.35);
 });
 
 test('derived dependency fingerprints refresh assistant scaling without clearing unrelated formulas', async () => {
@@ -1109,4 +1109,38 @@ test('Fairy Chanting triples assistant FC online and through offline expiry', as
   assertClose(started.offlineReport.factionCoinsFound.fairy, 0.8);
   assertClose(started.offlineReport.factionCoinsFound.goblin, 0.8);
   assertClose(offlineFixture.game.select('derived').assistantFactionCoinMultiplier, 1);
+});
+
+
+test('implemented building upgrades match original unlocks effects and per-building costs', async () => {
+  const facilityNames = {
+    farm: 'Farms', inn: 'Inns', blacksmith: 'Blacksmiths', warriorBarracks: 'Warrior Barracks',
+    slavePen: 'Slave Pens', knightsJoust: 'Knights Jousts', orcishArena: 'Orcish Arenas',
+    wizardTower: 'Wizard Towers', witchConclave: 'Witch Conclaves', cathedral: 'Cathedrals',
+    darkTemple: 'Dark Temples', citadel: 'Citadels', necropolis: 'Necropolises',
+    royalCastle: 'Royal Castles', evilFortress: 'Evil Fortresses', heavensGate: "Heaven's Gates", hellPortal: 'Hell Portals',
+  };
+  const source = await readFile(new URL('../docs/原版设施建筑升级独特建筑与奖杯全量清单.md', import.meta.url), 'utf8');
+  const original = new Map();
+  for (const line of source.split('\n')) {
+    const parts = line.split('|').slice(1, -1).map(part => part.trim());
+    if (parts.length >= 5 && ['1', '2', '3'].includes(parts[1])) original.set(`${parts[0]}:${parts[1]}`, parts);
+  }
+  const graph = compileContentGraph(CONTENT);
+  for (const [id, facility] of Object.entries(facilityNames)) {
+    for (const tier of [1, 2, 3]) {
+      const upgrade = graph.definitionsById.get(`${id}-tier${tier}`);
+      const requirement = [5, 25, 75][tier - 1];
+      assert.deepEqual(upgrade.visible.all[1], { op: 'buildingOwned', id, value: requirement });
+      const originalRow = original.get(`${facility}:${tier}`);
+      const expectedPercent = Number(originalRow[6].match(/production by ([\d.]+)%/)[1]);
+      assert.equal(upgrade.effects[0].value.constant, expectedPercent);
+      assert.equal(originalRow[3], `${requirement} ${facility}`);
+      assert.match(originalRow[6], new RegExp(`production by ${expectedPercent}%`));
+      const costText = originalRow[4];
+      const scientific = costText.match(/\(([\d.]+e\d+)\)/);
+      const expectedCost = scientific ? Number(scientific[1]) : Number(costText.replaceAll(',', ''));
+      assert.equal(upgrade.purchase.costs[0].amount.constant, expectedCost, `${upgrade.id} original cost`);
+    }
+  }
 });

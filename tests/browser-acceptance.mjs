@@ -114,9 +114,9 @@ try {
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('.app-nav [data-tab="upgrades"]').click();
-  await gamePage.locator('[data-upgrade-card="farm-tier2"]').waitFor();
+  await gamePage.locator('[data-upgrade-card="farm-tier1"]').waitFor();
+  assert.equal(await gamePage.locator('[data-upgrade-card="farm-tier2"]').count(), 0, 'second original upgrade stays hidden below 25 Farms');
   assert.equal(await gamePage.locator('[data-upgrade-card="farm-tier1"] img').getAttribute('src'), 'assets/images/content-icons/upgrades/farm-tier1.svg');
-  assert.equal(await gamePage.locator('[data-upgrade-card="farm-tier2"] img').getAttribute('src'), 'assets/images/content-icons/upgrades/farm-tier2.svg');
   await gamePage.waitForFunction(() => [...document.querySelectorAll('#mainPanel [data-upgrade-card] img')].every(image => image.complete && image.naturalWidth > 0));
   await gamePage.locator('[data-upgrade-card="gemPower"]').waitFor();
   await gamePage.locator('[data-upgrade-card="gemPower"] [data-action="purchase"]').click();
@@ -129,7 +129,7 @@ try {
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 3, 'mobile quick bar caps at three');
   await gamePage.locator('#workContent [data-tab="skills"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-skill-row]').count(), 4);
-  assert.equal(await gamePage.locator('[data-skill-row="fairyChanting"] p').textContent(), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%。');
+  assert.equal(await gamePage.locator('[data-skill-row="fairyChanting"] p').textContent(), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%，数字员工影响力产出 ×3。');
   await noOverflow(gamePage, 'skill library');
   await gamePage.locator('[data-skill-row="fairyChanting"] [data-action="prioritize-skill"]').click();
   assert.equal(await gamePage.locator('#workContent .skill-btn').first().getAttribute('data-id'), 'fairyChanting');
@@ -208,22 +208,22 @@ try {
   await gameContext.close();
 
   const assistantState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
-  assistantState.resources.coins = 1e12; assistantState.buildings.farm = 10; assistantState.stats.total.clicks = 1;
+  assistantState.resources.coins = 1e12; assistantState.buildings.farm = 25; assistantState.stats.total.clicks = 1;
   const assistantContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await assistantContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(assistantState) });
   const assistantPage = await assistantContext.newPage(); watch(assistantPage);
   await assistantPage.goto(origin, { waitUntil: 'domcontentloaded' });
   await closeStory(assistantPage, 'intro.retirement_eligible');
   assert.equal(await assistantPage.locator('#assistants').textContent(), '0');
-  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 20');
+  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 50');
   await assistantPage.locator('.app-nav [data-tab="upgrades"]').click();
   assert.match(await assistantPage.locator('[data-upgrade-card="farm-tier1"]').textContent(), /数字员工 \+1/);
   await assistantPage.locator('[data-upgrade-card="farm-tier1"] [data-action="purchase"]').click();
   assert.equal(await assistantPage.locator('#assistants').textContent(), '1');
-  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 30.05');
+  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 100');
   await assistantPage.locator('[data-upgrade-card="farm-tier2"] [data-action="purchase"]').click();
   assert.equal(await assistantPage.locator('#assistants').textContent(), '2');
-  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 60.10');
+  assert.equal(await assistantPage.locator('#production').textContent(), '¥ 300');
   await assistantContext.close();
 
   const retireState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
