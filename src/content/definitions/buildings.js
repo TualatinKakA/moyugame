@@ -13,12 +13,6 @@ const tiers = [
   [10, 1200000, 3200000000, 'heavensGate', '轨道办公港', 'hellPortal', '全天候工作井'],
 ];
 
-const BUILDING_ICONS = {
-  farm: 'briefcase', inn: 'coffee', blacksmith: 'keyboard', warriorBarracks: 'laptop', slavePen: 'headphones',
-  knightsJoust: 'id-card', orcishArena: 'cash', wizardTower: 'monitor', witchConclave: 'headphones',
-  cathedral: 'tower', darkTemple: 'tower', citadel: 'briefcase', necropolis: 'tower',
-  royalCastle: 'cash', evilFortress: 'briefcase', heavensGate: 'monitor', hellPortal: 'tower',
-};
 const definition = (id, name, tier, rate, cost, alignment) => ({
   id, kind: 'building', contentVersion: 'base-v1', name,
   era: { minR: 0 },
@@ -29,7 +23,7 @@ const definition = (id, name, tier, rate, cost, alignment) => ({
   tier,
   alignment,
   effects: [], grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'buildingCard', panel: 'buildings', icon: `assets/images/${BUILDING_ICONS[id]}.png` },
+  ui: { kind: 'buildingCard', panel: 'buildings', icon: `assets/images/content-icons/buildings/${id}.svg` },
 });
 
 export const BUILDING_DEFINITIONS = [
@@ -85,5 +79,5 @@ export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(buildin
     target: { type: 'global' }, operation: 'add', value: { constant: 1 }, stacking: 'add',
   }] : [])],
   grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'building', icon: building.ui.icon },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'building', icon: `assets/images/content-icons/upgrades/${building.id}-tier${index + 1}.svg` },
 })));

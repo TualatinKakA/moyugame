@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">标准打印模具 · 第2段</title>
+  <desc id="desc">与打印维修间完全相同的设施主体，右上角银色数字2表示第2段升级。</desc>
+  <g id="blacksmith-body">
+    <path d="m7 25 43-7 9 21-45 12-7-5Z" fill="#333B3A"/>
+    <path d="m7 23 42-5 8 19-44 10-6-4Z" fill="#697473"/>
+    <path d="m10 25 37-5 6 14-39 9Z" fill="#46504F"/>
+    <path d="m13 44 44-10 2 5-45 12-7-5 6-2Z" fill="#3E4746"/>
+    <path d="m14 26 6-1 1 4-6 1ZM23 25l6-1 1 4-6 1ZM32 24l6-1 1 4-6 1ZM41 23l5-1 2 4-6 1Z" fill="#899492"/>
+    <path d="m16 32 6-1 1 4-6 1ZM25 31l6-1 1 4-6 1ZM34 29l6-1 1 4-6 1ZM43 28l6-1 2 4-6 1Z" fill="#788381"/>
+    <path d="m20 38 18-3 2 4-19 3ZM43 34l7-1 2 4-7 1Z" fill="#2F3736"/>
+    <path d="m7 23 42-5 2 3-42 6Z" fill="#AAB8B8" opacity=".55"/>
+  </g>
+  <g id="upgrade-tier-2">
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#303636" opacity=".45" transform="translate(1 1)"/>
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#C3CECE"/>
+    <path d="M46 3h11l5 5v3l-5-5H46l-5 5V8Z" fill="#EEF3F2"/>
+    <path d="M46 25h11l5-5v-3l-3 5H44Z" fill="#8E9C9C"/>
+    <path d="M47 10c0-6 11-6 11 0 0 4-10 5-10 9h11" fill="none" stroke="#252A27" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter"/>
+  </g>
+</svg>

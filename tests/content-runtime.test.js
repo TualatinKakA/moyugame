@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { CONTENT } from '../src/content/index.js';
 import { compileContentGraph, ContentValidationError, formatDescription } from '../src/systems/content-registry.js';
 import { createGameRuntime } from '../src/systems/runtime.js';
@@ -34,6 +35,29 @@ test('content graph contains only Fairy and Goblin factions with declarative pro
   assert.ok(game.graph.arraysByKind.get('trophy').length >= 8);
   assert.equal(game.graph.arraysByKind.get('building').some(item => item.alignment === 'neutral'), false);
   await game.start();
+});
+
+test('facility artwork resolves to 17 bodies and 51 upgrades with identical bodies and explicit tier badges', async () => {
+  const buildings = CONTENT.definitions.filter(item => item.kind === 'building');
+  const upgrades = CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.ui.category === 'building');
+  assert.equal(buildings.length, 17);
+  assert.equal(upgrades.length, 51);
+  const bodyOf = svg => svg.match(/  <g id="[^"]+-body">[\s\S]*?  <\/g>/)?.[0];
+  for (const building of buildings) {
+    assert.equal(building.ui.icon, `assets/images/content-icons/buildings/${building.id}.svg`);
+    const base = await readFile(new URL(`../${building.ui.icon}`, import.meta.url), 'utf8');
+    const body = bodyOf(base);
+    assert.ok(body, `${building.id} has an identifiable facility body`);
+    for (let tier = 1; tier <= 3; tier++) {
+      const id = `${building.id}-tier${tier}`;
+      const upgrade = upgrades.find(item => item.id === id);
+      assert.equal(upgrade.ui.icon, `assets/images/content-icons/upgrades/${id}.svg`);
+      const svg = await readFile(new URL(`../${upgrade.ui.icon}`, import.meta.url), 'utf8');
+      assert.equal(bodyOf(svg), body, `${id} preserves the exact facility body`);
+      assert.ok(svg.includes(`id="upgrade-tier-${tier}"`), `${id} has the correct tier badge`);
+      assert.doesNotMatch(svg, /<script|<image|<animate|filter=/);
+    }
+  }
 });
 
 test('startup validation aggregates duplicate IDs and unknown actions', () => {

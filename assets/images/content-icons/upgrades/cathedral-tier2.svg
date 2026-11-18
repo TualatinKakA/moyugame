@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">创始人纪念堂 · 第2段</title>
+  <desc id="desc">与企业文化礼堂完全相同的设施主体，右上角银色数字2表示第2段升级。</desc>
+  <g id="cathedral-body">
+    <path d="m9 24 23-16 24 14-5 7-40 2Z" fill="#697473"/>
+    <path d="m7 22 24-14 22 13-4 5-38 2Z" fill="#D9E2E2"/>
+    <path d="m7 22 24-14 22 13-7-2-15-9-17 13Z" fill="#EEF3F2"/>
+    <path d="m12 28 38-2-1 24-38 3Z" fill="#AAB8B8"/>
+    <path d="m16 29 30-2-1 20-30 3Z" fill="#D9E2E2"/>
+    <path d="m19 30 5 0-1 18-5 1ZM29 29l5 0-1 18-5 1ZM39 28l5 0-1 18-5 1Z" fill="#697473"/>
+    <path d="m8 51 43-4 5 6-47 5Z" fill="#46504F"/>
+    <path d="m9 49 41-3 3 4-44 5Z" fill="#899492"/>
+    <path d="m27 16 5-4 6 4-2 7-7 1Z" fill="#C4764D"/>
+    <path d="m27 16 5-4 1 5-5 4Z" fill="#DF9A6C"/>
+    <path d="m50 27 5-3 1 24-5 4Z" fill="#46504F"/>
+  </g>
+  <g id="upgrade-tier-2">
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#303636" opacity=".45" transform="translate(1 1)"/>
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#C3CECE"/>
+    <path d="M46 3h11l5 5v3l-5-5H46l-5 5V8Z" fill="#EEF3F2"/>
+    <path d="M46 25h11l5-5v-3l-3 5H44Z" fill="#8E9C9C"/>
+    <path d="M47 10c0-6 11-6 11 0 0 4-10 5-10 9h11" fill="none" stroke="#252A27" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter"/>
+  </g>
+</svg>

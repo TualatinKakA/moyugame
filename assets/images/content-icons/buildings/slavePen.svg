@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">外包压缩舱</title>
+  <desc id="desc">T4 务实设施：三层灰黑低多边形外包舱位，以重复堆叠和橙色压缩标记表现密集空间。</desc>
+  <g id="slave-pen-body">
+    <path d="m14 12 36-2 5 42-40 4Z" fill="#333B3A"/>
+    <path d="m12 11 35-1 4 40-38 3Z" fill="#697473"/>
+    <path d="m47 10 6 4 4 37-6 1Z" fill="#46504F"/>
+    <path d="m16 15 27-1 2 10-29 2ZM17 28l29-2 2 10-30 2ZM18 41l30-2 2 9-31 2Z" fill="#AAB8B8"/>
+    <path d="m19 17 20-1 1 6-21 1ZM20 30l21-1 1 6-21 1ZM21 43l22-1 1 5-22 1Z" fill="#3E4746"/>
+    <path d="m40 16 3 0 1 6-3 0ZM42 29l3 0 1 6-3 0ZM44 42l3 0 1 5-3 0Z" fill="#C4764D"/>
+    <path d="m9 20 5 4-5 4ZM57 18l-5 4 6 3ZM10 35l5 4-5 4ZM58 33l-6 4 6 3Z" fill="#C4764D"/>
+    <path d="m12 53 39-3 5 4-39 5-5-3Z" fill="#333B3A"/>
+  </g>
+</svg>

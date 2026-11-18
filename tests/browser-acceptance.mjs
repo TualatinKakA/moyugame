@@ -94,6 +94,10 @@ try {
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('.app-nav [data-tab="buildings"]').click();
+  assert.equal(await gamePage.locator('#mainPanel [data-building-card]').count(), 10, 'all three common and seven ideal facilities are visible');
+  await gamePage.waitForFunction(() => [...document.querySelectorAll('#mainPanel .building-icon')].every(image => image.complete && image.naturalWidth === 64));
+  const buildingIconSources = await gamePage.locator('#mainPanel .building-icon').evaluateAll(images => images.map(image => image.getAttribute('src')));
+  assert.ok(buildingIconSources.every(src => /^assets\/images\/content-icons\/buildings\/[A-Za-z]+\.svg$/.test(src)), 'building cards use the new SVG asset set');
   await gamePage.locator('#mainPanel [data-id="farm"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="count"]').textContent(), '× 1');
   await gamePage.locator('#mainPanel [data-action="buy-amount"][data-value="10"]').click();
@@ -104,6 +108,10 @@ try {
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('.app-nav [data-tab="upgrades"]').click();
+  await gamePage.locator('[data-upgrade-card="farm-tier2"]').waitFor();
+  assert.equal(await gamePage.locator('[data-upgrade-card="farm-tier1"] img').getAttribute('src'), 'assets/images/content-icons/upgrades/farm-tier1.svg');
+  assert.equal(await gamePage.locator('[data-upgrade-card="farm-tier2"] img').getAttribute('src'), 'assets/images/content-icons/upgrades/farm-tier2.svg');
+  await gamePage.waitForFunction(() => [...document.querySelectorAll('#mainPanel [data-upgrade-card] img')].every(image => image.complete && image.naturalWidth > 0));
   await gamePage.locator('[data-upgrade-card="gemPower"]').waitFor();
   await gamePage.locator('[data-upgrade-card="gemPower"] [data-action="purchase"]').click();
   assert.equal(await gamePage.locator('#production').textContent(), '¥ 66', 'Gem Power applies 2% production per gem');

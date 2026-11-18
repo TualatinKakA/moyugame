@@ -141,10 +141,10 @@ button.danger { color: var(--red); }
 .source-name { margin: 4px 0; color: #939e8e; font-size: 9px; overflow-wrap: anywhere; }
 .badge { display: inline-block; padding: 2px 6px; margin-right: 5px; border: 1px solid var(--line); color: var(--green); font-size: 9px; }
 .building-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-button.card.building-card { position: relative; width: 100%; min-height: 94px; margin: 0; padding: 8px; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-rows: auto auto auto; align-items: center; gap: 4px 7px; text-align: left; }
+button.card.building-card { position: relative; width: 100%; min-height: 94px; margin: 0; padding: 8px; display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; grid-template-rows: auto auto auto; align-items: center; gap: 4px 7px; text-align: left; }
 button.card.building-card:hover:not(:disabled) { border-color: var(--green); background: #273022; }
-.building-icon { grid-column: 1; grid-row: 1; width: 30px; height: 30px; object-fit: contain; image-rendering: auto; }
-.content-icon { display: block; width: 40px; height: 40px; margin-bottom: 8px; object-fit: contain; }
+.building-icon { grid-column: 1; grid-row: 1; width: 38px; height: 38px; object-fit: contain; image-rendering: auto; }
+.content-icon { display: block; width: 48px; height: 48px; margin-bottom: 8px; object-fit: contain; }
 .content-icon.locked { opacity: .35; filter: grayscale(1); }
 .inline-icon { flex: 0 0 auto; width: 20px; height: 20px; object-fit: contain; vertical-align: middle; }
 .skill-btn b, .skill-copy h3 { display: flex; align-items: center; gap: 5px; }
@@ -177,7 +177,7 @@ button.card.building-card:hover:not(:disabled) { border-color: var(--green); bac
 .error { color: var(--red); }
 .upgrade-icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
 .upgrade-icon { position: relative; min-width: 0; min-height: 88px; padding: 7px 5px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
-.upgrade-icon img { width: 28px; height: 28px; object-fit: contain; }
+.upgrade-icon img { width: 36px; height: 36px; object-fit: contain; }
 .upgrade-icon > span:not(.upgrade-corner):not(.upgrade-glyph) { width: 100%; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .upgrade-icon small { width: 100%; overflow: hidden; color: var(--yellow); font: 8px Consolas, monospace; text-overflow: ellipsis; white-space: nowrap; }
 .upgrade-icon.affordable { border-color: var(--green); background: #222b1d; }
@@ -188,7 +188,7 @@ button.card.building-card:hover:not(:disabled) { border-color: var(--green); bac
 .rail-upgrade-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .rail-upgrade-grid .rail-empty { grid-column: 1 / -1; }
 .rail-upgrade-grid .upgrade-icon { min-height: 62px; padding: 5px 3px; }
-.rail-upgrade-grid .upgrade-icon img, .rail-upgrade-grid .upgrade-glyph { width: 24px; height: 24px; }
+.rail-upgrade-grid .upgrade-icon img, .rail-upgrade-grid .upgrade-glyph { width: 30px; height: 30px; }
 .rail-upgrade-grid .upgrade-icon small { display: none; }
 .upgrade-detail { margin-bottom: 12px; padding: 10px; border: 1px solid #71865d; background: #20261d; }
 .upgrade-detail h3 { margin: 4px 0; font-size: 14px; }
@@ -248,8 +248,8 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .facility-head h2 { font-size: 14px; }
   .facility-head .buy-controls button { min-width: 40px; padding-inline: 5px; }
   .facility-scroll { padding: 6px; }
-  button.card.building-card { grid-template-columns: 25px minmax(0, 1fr) auto; padding: 6px; gap: 4px 5px; }
-  .building-icon { width: 25px; height: 25px; }
+  button.card.building-card { grid-template-columns: 32px minmax(0, 1fr) auto; padding: 6px; gap: 4px 5px; }
+  .building-icon { width: 32px; height: 32px; }
   .building-buy small { display: none; }
 }
 @media (max-width: 900px) {
