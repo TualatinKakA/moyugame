@@ -20,7 +20,7 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('callToArms', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '(25 + 0.3 * x) ^ 0.975', variables: { x: 'buildings.total' } })],
   }),
   spell({
-    id: 'holyLight', name: '奋斗动员', description: '10 秒内点击收入提高 1750%。', cost: 900, duration: 10,
+    id: 'holyLight', name: '自驱动员', description: '10 秒内点击收入提高 1750%。', cost: 900, duration: 10,
     visible: { op: 'selected', key: 'alignment', value: 'good' },
     effects: [effect('holyLight', 'click', 'click.reward', { type: 'global' }, 'multiplyPercent', { constant: 1750 })],
   }),

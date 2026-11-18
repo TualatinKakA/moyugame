@@ -40,6 +40,26 @@ export const BUILDING_DEFINITIONS = [
   ]),
 ];
 
+const BUILDING_UPGRADE_NAMES = {
+  farm: ['工位轮换', '精力灌溉', '职业带教师'],
+  inn: ['精品咖啡', '工位虫害消杀', '丝滑午休毯'],
+  blacksmith: ['重型订书锤', '标准打印模具', '高温装订炉'],
+  warriorBarracks: ['青铜任务卡', '铁纪早操', '钢铁答辩'],
+  slavePen: ['更小的工位', '惩罚教鞭', '选择性招聘'],
+  knightsJoust: ['尖头需求枪', '高机动项目组', '受训答辩手'],
+  orcishArena: ['不公正评委', '废除规则', '追加淘汰'],
+  wizardTower: ['自动化法阵', '算力引导', '高级算法师'],
+  witchConclave: ['午夜例会', '黑箱作业', '密谋小组'],
+  cathedral: ['黄金价值观十字', '创始人纪念堂', '价值观圣像'],
+  darkTemple: ['故障献祭台', '暗箱仪式', '黑盒核心'],
+  citadel: ['事业群守卫训练', '瞭望员', '跨部门信号火'],
+  necropolis: ['被删档的墓穴', '腐烂项目遗体', '项目灵魂存储'],
+  royalCastle: ['加固城墙', '总部气氛组', '舒适总裁椅'],
+  evilFortress: ['带刺围墙', '深入地牢', '黑曜王座'],
+  heavensGate: ['黄金钥匙', '飞行云平台', '自动闸门'],
+  hellPortal: ['持续痛苦', '无尽悲伤', '永恒煎熬'],
+};
+
 export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(building => [
   { amount: 1, percent: 50, multiplier: 10 },
   { amount: 10, percent: 100, multiplier: 100 },
@@ -47,7 +67,7 @@ export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(buildin
 ].map((tier, index) => ({
   id: `${building.id}-tier${index + 1}`,
   kind: 'upgrade', contentVersion: 'base-v1',
-  name: `${building.name} · 流程改善 ${index + 1}`,
+  name: BUILDING_UPGRADE_NAMES[building.id][index],
   description: `${building.name}产出提高 ${tier.percent}%。`,
   era: { minR: 0 },
   visible: { all: [building.visible, { op: 'buildingOwned', id: building.id, value: tier.amount }] },
