@@ -281,7 +281,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const runCoins = tx.state.stats.run.coins || 0;
       const earned = gemsForRunCoins(runCoins);
       const firstRetirement = (tx.state.stats.total.abdications || 0) === 0;
-      const eligible = firstRetirement ? runCoins >= 1e8 : earned >= 1;
+      const eligible = firstRetirement ? runCoins >= 1e8 : true;
       if (!eligible) { tx.emit('abdication.rejected', { reason: 'TARGET_NOT_MET' }); return { rejected: false }; }
       increment(tx, 'resources.gems', earned);
       increment(tx, 'stats.total.abdications', 1);
@@ -383,7 +383,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (selector === 'retirement') {
       const earned = gemsForRunCoins(state.stats.run.coins || 0);
       const firstRetirement = (state.stats.total.abdications || 0) === 0;
-      return { earned, eligible: firstRetirement ? state.stats.run.coins >= 1e8 : earned >= 1, target: firstRetirement ? 1e8 : 0 };
+      return { earned, eligible: firstRetirement ? state.stats.run.coins >= 1e8 : true, target: firstRetirement ? 1e8 : 0 };
     }
     if (selector === 'reincarnation') {
       const requirement = reincarnationRequirement(state.progression.reincarnations);
