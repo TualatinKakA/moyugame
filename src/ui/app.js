@@ -84,6 +84,17 @@ function workFeedback(event) {
   }
 }
 function viewModelReward() { return derived().clickReward; }
+function showAssistantIncome() {
+  const container = $('assistantIncomeFx');
+  if (!container || document.hidden) return;
+  const amount = derived().assistantProduction;
+  if (!amount || amount <= 0) { container.replaceChildren(); return; }
+  const floater = document.createElement('span');
+  floater.className = 'assistant-income-floater';
+  floater.textContent = `+${money(amount)}`;
+  container.appendChild(floater);
+  setTimeout(() => floater.remove(), 1200);
+}
 
 function renderLogs() {
   $('latestLog').textContent = logs[0] || '暂无记录';
@@ -650,6 +661,7 @@ async function bootstrap() {
     const now = performance.now(); const delta = (now - lastTick) / 1000; lastTick = now;
     if (!document.hidden) game.tick(delta);
   }, 200);
+  setInterval(showAssistantIncome, 1000);
   setInterval(() => { if (!resetting && game.select('saveStatus').dirty) game.save(); }, 15000);
 }
 bootstrap().catch(error => {
