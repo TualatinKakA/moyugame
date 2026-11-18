@@ -193,16 +193,24 @@ function buildingPanel() {
 function upgradeCard(item) {
   const status = view(item.id).status;
   const statusClass = status === 'OWNED' ? 'owned' : status === 'NEED_RESOURCE' ? 'insufficient' : '';
-  return `<article class="card ${statusClass}" data-upgrade-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>${description(item)}</p><div class="meta" data-field="cost"></div><button data-action="purchase" data-id="${item.id}">购买升级</button></article>`;
+  const tooltipId = `upgrade-tooltip-${item.id}`;
+  return `<article class="upgrade-entry ${statusClass}" data-upgrade-card="${item.id}"><button type="button" class="upgrade-entry-button" data-action="purchase" data-id="${item.id}" aria-describedby="${tooltipId}"><img class="upgrade-entry-icon" src="${item.ui.icon}" alt=""></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost"></span><span class="upgrade-tooltip-description">${description(item)}</span><small data-field="hint"></small></span></article>`;
 }
 function sortedUpgrades(items) {
   const order = { PURCHASABLE: 0, NEED_RESOURCE: 1, AVAILABLE_UNAFFORDABLE: 1, LOCKED_REQUIREMENT: 2, OWNED: 3, SELECTED: 3 };
   return [...items].sort((left, right) => (order[view(left.id).status] ?? 4) - (order[view(right.id).status] ?? 4));
 }
+function upgradeSections(items) {
+  if (!items.length) return '<p class="notice">增加设施或加入部门后显示升级。</p>';
+  const unpurchased = sortedUpgrades(items.filter(item => view(item.id).status !== 'OWNED'));
+  const purchased = sortedUpgrades(items.filter(item => view(item.id).status === 'OWNED'));
+  const section = (title, entries, owned = false) => entries.length ? `<section class="upgrade-section ${owned ? 'purchased' : ''}"><h3><span>${title}</span><small>${entries.length}</small></h3><div class="upgrade-entry-grid">${entries.map(upgradeCard).join('')}</div></section>` : '';
+  return `${section('未购买升级', unpurchased)}${section('已购买升级', purchased, true)}`;
+}
 function upgradesPanel(category = null) {
-  const items = sortedUpgrades(visible('upgrade').filter(item => !category || item.ui.category === category));
+  const items = visible('upgrade').filter(item => !category || item.ui.category === category);
   const title = category === 'building' ? '设施升级' : category === 'general' ? '通用升级' : '升级';
-  return `<div class="panel-head"><div><h2>${title}</h2><p>改善设施流程，提高产值与协作效率。</p></div></div><div class="card-grid">${items.map(upgradeCard).join('') || '<p class="notice">增加设施或加入部门后显示升级。</p>'}</div>`;
+  return `<div class="panel-head"><div><h2>${title}</h2><p>点击购买，悬停或长按查看名称、价格与效果。</p></div></div>${upgradeSections(items)}`;
 }
 function choiceCard(item) {
   const status = view(item.id).status;
@@ -213,8 +221,8 @@ function choiceCard(item) {
   return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3 class="choice-heading"><span>${item.name}</span>${price}</h3><p>${description(item)}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
 }
 function factionsPanel() {
-  const factionUpgrades = sortedUpgrades(visible('upgrade').filter(item => item.ui.category === 'faction'));
-  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3><div class="card-grid">${factionUpgrades.map(upgradeCard).join('') || '<p class="notice">签署部门条约后显示对应升级。</p>'}</div></section>`;
+  const factionUpgrades = visible('upgrade').filter(item => item.ui.category === 'faction');
+  return `<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div><section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section><section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section><section class="subsection"><h3>部门升级</h3>${upgradeSections(factionUpgrades)}</section>`;
 }
 function skillsPanel() {
   const available = visible('spell');
@@ -256,15 +264,28 @@ function updatePanel() {
   updateBuildingCards(); updateCastButtons();
   document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card])').forEach(button => {
     const model = view(button.dataset.id);
-    button.disabled = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
+    const unavailable = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
+    const card = button.closest('[data-upgrade-card]');
+    if (card) {
+      const item = definition(button.dataset.id);
+      const cost = model.costs.map(value => value.resource === 'coins' ? money(value.value) : `${formatNumber(value.value)} ${value.resource}`).join(' + ');
+      const hint = model.status === 'OWNED' ? '已生效' : model.status === 'NEED_RESOURCE' ? '资源不足' : model.status === 'LOCKED_REQUIREMENT' ? '尚未满足条件' : '点击购买';
+      button.setAttribute('aria-disabled', String(unavailable));
+      button.setAttribute('aria-label', `${item.name}，价格 ${cost || '无'}。${description(item)}${hint}。`);
+      card.classList.toggle('owned', model.status === 'OWNED');
+      card.classList.toggle('insufficient', model.status === 'NEED_RESOURCE');
+      card.classList.toggle('affordable', model.status === 'PURCHASABLE');
+      card.querySelector('[data-field="cost"]').textContent = cost || '无需工资';
+      card.querySelector('[data-field="hint"]').textContent = hint;
+      return;
+    }
+    button.disabled = unavailable;
     if (model.status === 'OWNED') button.textContent = '已生效';
     else if (model.status === 'SELECTED') {
       const kind = definition(button.dataset.id).kind;
       button.textContent = kind === 'alignment' ? '当前立场' : kind === 'faction' ? '当前部门' : '当前已选择';
     }
     else if (model.status === 'NEED_RESOURCE') button.textContent = '资源不足';
-    const card = button.closest('[data-upgrade-card]');
-    if (card) card.querySelector('[data-field="cost"]').textContent = model.costs.map(cost => `${formatNumber(cost.value)} ${cost.resource === 'coins' ? '工资' : cost.resource}`).join(' + ');
   });
   document.querySelectorAll('[data-stat]').forEach(cell => {
     const value = cell.dataset.stat.split('.').reduce((object, key) => object?.[key], state()) || 0;
@@ -272,6 +293,8 @@ function updatePanel() {
   });
 }
 function renderPanel() {
+  cancelUpgradeLongPress();
+  closeUpgradeTooltip();
   if (activeTab === 'work') { $('mainPanel').hidden = true; return; }
   $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
   $('mainPanel').classList.toggle('skills-dialog', activeTab === 'skills');
@@ -388,6 +411,111 @@ function commandResult(result) {
   return false;
 }
 
+let activeUpgradeTooltip = null;
+let touchUpgradeTooltip = null;
+let dismissedUpgradeTooltip = null;
+let upgradeLongPress = null;
+let suppressedUpgradeClick = null;
+const upgradeLongPressDelay = 500;
+const upgradeLongPressMoveLimit = 12;
+function positionUpgradeTooltip(entry) {
+  const rect = entry.getBoundingClientRect();
+  const tooltip = entry.querySelector('.upgrade-tooltip');
+  const center = Math.max(138, Math.min(innerWidth - 138, rect.left + rect.width / 2));
+  const above = rect.top >= 190;
+  tooltip.style.left = `${center}px`;
+  tooltip.style.top = `${above ? rect.top - 8 : rect.bottom + 8}px`;
+  tooltip.style.transform = above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)';
+}
+function closeUpgradeTooltip() {
+  if (!activeUpgradeTooltip) return;
+  activeUpgradeTooltip.classList.remove('tooltip-open');
+  activeUpgradeTooltip.querySelector('.upgrade-tooltip').setAttribute('aria-hidden', 'true');
+  activeUpgradeTooltip = null;
+  touchUpgradeTooltip = null;
+}
+function openUpgradeTooltip(entry, touch = false) {
+  if (activeUpgradeTooltip && activeUpgradeTooltip !== entry) closeUpgradeTooltip();
+  activeUpgradeTooltip = entry;
+  touchUpgradeTooltip = touch ? entry : null;
+  entry.classList.add('tooltip-open');
+  entry.querySelector('.upgrade-tooltip').setAttribute('aria-hidden', 'false');
+  positionUpgradeTooltip(entry);
+}
+function cancelUpgradeLongPress() {
+  if (!upgradeLongPress) return;
+  clearTimeout(upgradeLongPress.timer);
+  upgradeLongPress = null;
+}
+document.addEventListener('pointerover', event => {
+  if (event.pointerType !== 'mouse') return;
+  const entry = event.target.closest('[data-upgrade-card]');
+  if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
+  if (entry !== dismissedUpgradeTooltip) openUpgradeTooltip(entry);
+});
+document.addEventListener('pointerout', event => {
+  if (event.pointerType !== 'mouse') return;
+  const entry = event.target.closest('[data-upgrade-card]');
+  if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
+  if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
+  dismissedUpgradeTooltip = null;
+});
+document.addEventListener('focusin', event => {
+  const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  if (!button || !button.matches(':focus-visible')) return;
+  dismissedUpgradeTooltip = null;
+  openUpgradeTooltip(button.closest('[data-upgrade-card]'));
+});
+document.addEventListener('focusout', event => {
+  const entry = event.target.closest('[data-upgrade-card]');
+  if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
+  if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
+  dismissedUpgradeTooltip = null;
+});
+document.addEventListener('pointerdown', event => {
+  suppressedUpgradeClick = null;
+  if (touchUpgradeTooltip && event.pointerType !== 'mouse') closeUpgradeTooltip();
+  cancelUpgradeLongPress();
+  if (!['touch', 'pen'].includes(event.pointerType) || !event.isPrimary) return;
+  const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  if (!button) return;
+  const record = {
+    button, pointerId: event.pointerId, x: event.clientX, y: event.clientY, triggered: false, timer: null,
+  };
+  record.timer = setTimeout(() => {
+    if (upgradeLongPress !== record) return;
+    record.triggered = true;
+    openUpgradeTooltip(button.closest('[data-upgrade-card]'), true);
+  }, upgradeLongPressDelay);
+  upgradeLongPress = record;
+});
+document.addEventListener('pointermove', event => {
+  const press = upgradeLongPress;
+  if (!press || press.pointerId !== event.pointerId) return;
+  if (Math.hypot(event.clientX - press.x, event.clientY - press.y) <= upgradeLongPressMoveLimit) return;
+  if (press.triggered) closeUpgradeTooltip();
+  cancelUpgradeLongPress();
+});
+document.addEventListener('pointerup', event => {
+  const press = upgradeLongPress;
+  if (!press || press.pointerId !== event.pointerId) return;
+  if (press.triggered) suppressedUpgradeClick = { button: press.button, until: performance.now() + 700 };
+  cancelUpgradeLongPress();
+});
+document.addEventListener('pointercancel', event => {
+  if (upgradeLongPress?.pointerId !== event.pointerId) return;
+  if (upgradeLongPress.triggered) closeUpgradeTooltip();
+  cancelUpgradeLongPress();
+});
+document.addEventListener('contextmenu', event => {
+  const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  if (button && (upgradeLongPress?.button === button || touchUpgradeTooltip?.contains(button))) event.preventDefault();
+});
+$('mainPanel').addEventListener('scroll', () => {
+  cancelUpgradeLongPress();
+  closeUpgradeTooltip();
+}, { passive: true });
+
 function setAssistantTooltip(open) {
   const summary = $('assistantSummary');
   const tooltip = $('assistantTooltip');
@@ -406,13 +534,19 @@ $('assistantSummary').addEventListener('keydown', event => {
   } else if (event.key === 'Escape') setAssistantTooltip(false);
 });
 document.addEventListener('click', event => {
+  const upgradeButton = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  if (upgradeButton && suppressedUpgradeClick?.button === upgradeButton && performance.now() < suppressedUpgradeClick.until) {
+    event.preventDefault();
+    suppressedUpgradeClick = null;
+    return;
+  }
   if (!event.target.closest('#assistantSummary')) setAssistantTooltip(false);
   if (!event.target.closest('.event-strip') && !$('eventLog').hidden) setEventLogOpen(false);
   if (event.target.closest('#workArea') && activeTab !== 'work') closeAuxPanel();
   const tab = event.target.closest('[data-tab]');
   if (tab) { if (activeTab === tab.dataset.tab) closeAuxPanel(); else openAuxPanel(tab.dataset.tab, tab); return; }
   const button = event.target.closest('[data-action]');
-  if (!button || button.disabled) return;
+  if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
   const action = button.dataset.action; const id = button.dataset.id;
   if (action === 'start') {
     $('intro').classList.add('hidden');
@@ -487,13 +621,21 @@ $('importFile').addEventListener('change', async event => {
 });
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && !$('eventLog').hidden) { setEventLogOpen(false, true); return; }
+  if (event.key === 'Escape' && activeUpgradeTooltip) {
+    dismissedUpgradeTooltip = activeUpgradeTooltip;
+    closeUpgradeTooltip();
+    return;
+  }
   if (event.key === 'Escape' && activeTab !== 'work') closeAuxPanel();
   if (event.code === 'Space' && $('intro').classList.contains('hidden') && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
     event.preventDefault(); if (commandResult(game.dispatch({ type: 'work' }))) workFeedback();
   }
 });
 window.addEventListener('popstate', () => { if (activeTab !== 'work') closeAuxPanel(true); panelHistory = false; });
-window.addEventListener('resize', () => { if (game) { quickStructure = ''; renderQuickSkills(); updateCastButtons(); } });
+window.addEventListener('resize', () => {
+  cancelUpgradeLongPress(); closeUpgradeTooltip();
+  if (game) { quickStructure = ''; renderQuickSkills(); updateCastButtons(); }
+});
 window.addEventListener('beforeunload', () => { if (!resetting) game?.save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !resetting) game?.save(); });
 
