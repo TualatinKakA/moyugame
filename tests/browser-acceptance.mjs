@@ -73,6 +73,7 @@ try {
 
   await gamePage.locator('.app-nav [data-tab="factions"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 2, 'only two alignments before selection');
+  gamePage.once('dialog', dialog => dialog.accept());
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
   const alignmentImage = gamePage.locator('.story-overlay[data-story-id="alignment.commitment"] .story-image');
   await alignmentImage.waitFor();

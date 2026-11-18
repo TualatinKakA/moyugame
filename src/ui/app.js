@@ -375,7 +375,14 @@ document.addEventListener('click', event => {
     commandResult(game.dispatch({ type: 'start' })); return;
   }
   if (action === 'work') { if (commandResult(game.dispatch({ type: 'work' }))) workFeedback(event); return; }
-  if (action === 'purchase') { commandResult(game.dispatch({ type: 'purchase', id, amount: state().settings.buyAmount })); return; }
+  if (action === 'purchase') {
+    if (definition(id).kind === 'alignment') {
+      const accepted = confirm(`选择后，本轮退休前都无法更改立场。\n确定选择【${definition(id).name}】吗？`);
+      if (!accepted) return;
+    }
+    commandResult(game.dispatch({ type: 'purchase', id, amount: state().settings.buyAmount }));
+    return;
+  }
   if (action === 'cast') { commandResult(game.dispatch({ type: 'cast', id })); return; }
   if (action === 'buy-amount') { game.dispatch({ type: 'setting', key: 'buyAmount', value: button.dataset.value === 'max' ? 'max' : Number(button.dataset.value) }); return; }
   if (action === 'toggle-quick-skill') { updateQuickSkill(id, quickSkillIds(6).includes(id) ? 'remove' : 'pin'); return; }
