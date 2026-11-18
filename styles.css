@@ -103,14 +103,9 @@ button.danger { color: var(--red); }
 .office-window { position: absolute; left: 22px; top: 25px; width: 130px; height: 115px; padding: 6px; border: 2px solid #596555; background: #1c231d; }
 .window-view { width: 100%; height: 100%; background: linear-gradient(#91a99b, #cfce9e); position: relative; overflow: hidden; }
 .window-view::after { content: ""; position: absolute; inset: 35% 0 0; background: repeating-linear-gradient(90deg, #52635b 0 12%, #738074 12% 24%); }
-.work-btn { position: absolute; z-index: 3; left: 50%; bottom: 70px; width: 220px; height: 208px; margin-left: -110px; border: 0; background: transparent; transform-origin: center bottom; }
+.work-btn { position: absolute; z-index: 3; left: 50%; bottom: 70px; width: 240px; height: 208px; margin-left: -120px; padding: 0; border: 0; background: transparent; transform-origin: center bottom; }
 .work-btn:hover:not(:disabled) { border: 0; background: transparent; }
-.workstation-img { width: 220px; height: 208px; display: block; }
-.monitor-screen { position: absolute; left: 30px; top: 19px; width: 160px; height: 104px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #162014; color: var(--green); }
-.monitor-screen strong { font: 48px Consolas, monospace; }
-.monitor-screen small { color: #b0c59f; font-size: 9px; }
-.desk-edge { position: absolute; left: 0; right: 0; bottom: 35px; height: 80px; border-top: 12px solid #827355; background: linear-gradient(#544b39, #342f26); }
-.coffee-img { position: absolute; z-index: 4; right: calc(50% - 175px); bottom: 75px; width: 52px; pointer-events: none; }
+.workstation-img { width: 240px; height: 208px; display: block; pointer-events: none; }
 .work-caption { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; color: #b2bcac; font-size: 10px; }
 .event-strip { position: relative; flex-shrink: 0; min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; }
 .event-strip > button { min-height: 34px; padding: 5px 10px; color: var(--green); font-size: 10px; }
@@ -330,8 +325,6 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
   .work-btn { top: auto; bottom: 42px; transform: scale(.75); transform-origin: center bottom; }
   .work-btn:active:not(:disabled) { transform: scale(.75); }
   .office-window { width: 95px; height: 90px; left: 12px; top: 18px; }
-  .desk-edge { bottom: 27px; height: 62px; border-top-width: 9px; }
-  .coffee-img { bottom: 57px; width: 42px; right: calc(50% - 140px); }
   .work-caption { bottom: 5px; font-size: 8px; }
   .event-strip > button { min-height: 32px; padding: 4px 8px; }
   #latestLog { font-size: 9px; }

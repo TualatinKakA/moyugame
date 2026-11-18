@@ -143,8 +143,7 @@ function renderUpgradeRail() {
 function workView() {
   return `<div id="skillMount"></div><section class="work-zone">
     <div class="office-window"><div class="window-view"></div></div>
-    <button class="work-btn" data-action="work" aria-label="点击显示器搬砖"><img class="workstation-img" src="assets/images/workstation.png" alt=""><span class="monitor-screen"><small>待办事项</small><strong>∞</strong><small>点击显示器搬砖</small></span></button>
-    <div class="desk-edge"></div><img class="coffee-img" src="assets/images/coffee.png" alt="">
+    <button class="work-btn" data-action="work" aria-label="点击工位搬砖"><img class="workstation-img" src="assets/images/workstation-neon.svg" alt="霓虹夜班工作站，点击工位任意位置搬砖"></button>
     <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state().progression.reincarnations}</div></section>`;
 }
 function quickLimit() { return innerWidth >= 1200 ? 6 : innerWidth >= 901 ? 4 : 3; }

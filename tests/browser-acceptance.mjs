@@ -149,12 +149,13 @@ try {
     const layout = await gamePage.evaluate(() => {
       const zone = document.querySelector('.work-zone').getBoundingClientRect();
       const image = document.querySelector('.workstation-img').getBoundingClientRect();
-      const screen = document.querySelector('.monitor-screen').getBoundingClientRect();
-      return { imageTop: image.top, imageBottom: image.bottom, zoneTop: zone.top, zoneBottom: zone.bottom, screenBottom: screen.bottom, keyboardTop: image.top + image.height * (158 / 208) };
+      return { imageTop: image.top, imageBottom: image.bottom, zoneTop: zone.top, zoneBottom: zone.bottom };
     });
     assert.ok(layout.imageTop >= layout.zoneTop - 1, `${width}px: combined workstation is not clipped at top: ${JSON.stringify(layout)}`);
     assert.ok(layout.imageBottom <= layout.zoneBottom + 1, `${width}px: combined workstation is not clipped at bottom`);
-    assert.ok(layout.screenBottom <= layout.keyboardTop + 1, `${width}px: keyboard does not cover screen`);
+    assert.equal(await gamePage.locator('.workstation-img').getAttribute('src'), 'assets/images/workstation-neon.svg');
+    assert.equal(await gamePage.locator('.work-btn img').count(), 1);
+    assert.equal(await gamePage.locator('.monitor-screen, .coffee-img, .desk-edge').count(), 0);
     if (width <= 900) {
       await gamePage.locator('.app-nav [data-tab="buildings"]').click();
       assert.equal(await visible(gamePage, '#mainPanel'), true);

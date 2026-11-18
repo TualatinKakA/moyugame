@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="416" viewBox="0 0 480 416" role="img" aria-labelledby="title desc">
+  <title id="title">暖色模拟控制台</title>
+  <desc id="desc">一张完整的复古未来工位备选插画：弧形终端、磁带卷盘、模拟仪表、机械开关、台灯、笔记本和木质控制台。</desc>
+  <defs>
+    <linearGradient id="analog-screen" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#293526"/><stop offset="1" stop-color="#111810"/></linearGradient>
+    <linearGradient id="analog-wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9a7049"/><stop offset=".5" stop-color="#674b36"/><stop offset="1" stop-color="#3d3027"/></linearGradient>
+    <radialGradient id="lamp-glow"><stop stop-color="#e7ca74" stop-opacity=".3"/><stop offset="1" stop-color="#e7ca74" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="334" cy="211" rx="130" ry="145" fill="url(#lamp-glow)"/>
+  <ellipse cx="238" cy="394" rx="210" ry="17" fill="#090b08" opacity=".45"/>
+  <path d="m90 333 25-2-8 69H82ZM372 327l25-3 16 70h-28Z" fill="#302a24"/>
+  <path d="m36 284 347-32 74 58-357 48Z" fill="url(#analog-wood)"/>
+  <path d="m100 358 357-48-3 22-351 45Z" fill="#35291f"/>
+  <path d="m36 284 64 74 3 19-65-75Z" fill="#513c2b"/>
+  <path d="m65 302 340-36M91 329l326-39" stroke="#b08052" stroke-width="3" opacity=".3"/>
+  <path d="M80 77 289 61l24 18-4 163-219 13-21-17Z" fill="#454b43"/>
+  <path d="m80 77 209-16 15 12-212 17-23 148-11-11Z" fill="#747c6e"/>
+  <path d="m94 94 183-13 12 10-5 127-180 12-15-12Z" fill="#252d26"/>
+  <path d="m106 105 157-11 9 8-5 103-151 10-10-8Z" fill="url(#analog-screen)"/>
+  <path d="m122 120 62-5 1 4-62 5ZM122 133l102-8 1 4-102 8ZM122 146l81-6 1 4-81 6Z" fill="#b7ef72" opacity=".7"/>
+  <path d="m122 174 28-2 1 20-29 2ZM160 170l88-6 1 27-89 7Z" fill="#263820"/>
+  <path d="m169 184 11-8 13 3 14-11 14 6 17-8 1 17-70 5Z" fill="#e7ca74" opacity=".75"/>
+  <circle cx="282" cy="83" r="5" fill="#e7ca74"/>
+  <path d="m180 250 60-4 10 40-76 5Z" fill="#4d554b"/>
+  <path d="m159 290 105-9 20 12-119 12Z" fill="#343b34"/>
+  <path d="m312 93 104 7 13 127-109-3Z" fill="#4a5047"/>
+  <path d="m323 106 80 5 8 97-82-3Z" fill="#252c25"/>
+  <circle cx="346" cy="139" r="24" fill="#171d18" stroke="#7d8678" stroke-width="5"/>
+  <circle cx="386" cy="141" r="22" fill="#171d18" stroke="#7d8678" stroke-width="5"/>
+  <circle cx="346" cy="139" r="7" fill="#aab0a1"/><circle cx="386" cy="141" r="7" fill="#aab0a1"/>
+  <path d="m346 115 4 17-10 13-8-7ZM386 121l-3 14 12 10 6-8Z" fill="#d9ded2"/>
+  <path d="m346 139 40 2 8 58-67-2Z" fill="#c5b58a" opacity=".65"/>
+  <path d="m334 181 12 1 1 5-12-1ZM357 183l12 1 1 5-12-1ZM380 184l12 1 1 5-12-1Z" fill="#e7ca74"/>
+  <path d="m352 225 31 2 9 57-42-1Z" fill="#4b5349"/>
+  <path d="m337 287 66-1 16 10-86 2Z" fill="#343a33"/>
+  <path d="m127 309 191-27 58 33-200 34Z" fill="#3d4137"/>
+  <path d="m142 309 165-22 42 24-173 28Z" fill="#585c4e"/>
+  <path d="m159 309 20-3 11 6-20 3ZM187 305l20-3 11 6-20 3ZM215 301l20-3 11 6-20 3ZM243 297l20-3 11 6-20 3ZM271 293l20-3 11 6-20 3Z" fill="#c2c4af"/>
+  <path d="m174 320 24-4 12 7-25 4ZM207 315l24-4 12 7-25 4ZM240 310l24-4 12 7-25 4ZM273 305l24-4 12 7-25 4Z" fill="#929886"/>
+  <path d="m214 330 55-9 17 8-58 10Z" fill="#e7ca74" opacity=".55"/>
+  <path d="m53 262 18-4 7 41-20 3Z" fill="#4b4c3e"/>
+  <path d="m58 259 8-67 11-1-3 66Z" fill="#7a806d"/>
+  <path d="m66 194 58-49 12 8-57 52Z" fill="#7a806d"/>
+  <path d="m123 145 45 9 14 31-27 16-43-25Z" fill="#bb9c5f"/>
+  <path d="m126 151 33 8 9 19-17 10-30-18Z" fill="#e7ca74"/>
+  <path d="m56 300 42-6 16 11-44 7Z" fill="#34392f"/>
+  <path d="m381 235 12-65 9 1-4 66Z" fill="#5a6154"/>
+  <path d="m392 171 35-20 8 10-37 20Z" fill="#5a6154"/>
+  <path d="m425 149 31 9 8 22-21 13-28-20Z" fill="#bb9c5f"/>
+  <path d="m393 235 19 1 12 8-39 2Z" fill="#3b4239"/>
+  <path d="m55 323 58-9 29 19-5 9-61 9-24-16Z" fill="#c9bd97"/>
+  <path d="m58 324 49-7 22 14-52 8Z" fill="#e1d7b6"/>
+  <path d="m69 326 31-4 9 5-32 5Z" fill="#8b7652"/>
+  <path d="m335 322 35-5 16 17-4 18-31 5-19-17Z" fill="#d5d6c6"/>
+  <path d="m339 326 25-4 11 12-3 11-22 4-11-12Z" fill="#6f4c32"/>
+  <path d="m371 326 12-1 9 8-1 12-10 3-5-6 6-3 1-6-6-3-5 2Z" fill="#b9bdac"/>
+  <circle cx="109" cy="275" r="7" fill="#e7ca74"/><circle cx="293" cy="266" r="6" fill="#b7ef72"/>
+</svg>
