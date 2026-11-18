@@ -55,7 +55,7 @@ function playTrophySound() {
 }
 const purchaseSounds = {
   building: new Audio('assets/audio/register-buy.wav'),
-  upgrade: new Audio('assets/audio/register-upgrade.wav'),
+  upgrade: new Audio('assets/audio/register-buy.wav'),
 };
 for (const audio of Object.values(purchaseSounds)) {
   audio.preload = 'auto';
