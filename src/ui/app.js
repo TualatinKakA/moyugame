@@ -295,7 +295,7 @@ function updateRetirement() {
   $('pendingGemsValue').textContent = formatNumber(retirement.earned);
   $('totalGemsValue').textContent = formatNumber(state().resources.gems);
   $('retirementRunCoins').textContent = `本轮产值 ${money(state().stats.run.coins)} · 首次退休目标 ¥100M`;
-  $('retirementButton').textContent = retirement.eligible ? '退休并进入新工位' : '申请退休（需100M）';
+  $('retirementButton').textContent = retirement.eligible ? '退休' : '申请退休（需100M）';
   $('retirementPanel').firstElementChild.classList.toggle('ready', retirement.eligible);
 }
 function renderTop() {
