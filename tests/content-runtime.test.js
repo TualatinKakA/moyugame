@@ -152,7 +152,7 @@ test('schema 3 migration preserves supported progress and quarantines removed co
     stats: { total: { clicks: 10 }, run: { coins: 1000 } },
   };
   const { state, report } = migrateAndNormalizeState(old, graph);
-  assert.equal(report.from, 3); assert.equal(report.to, 4);
+  assert.equal(report.from, 3); assert.equal(report.to, 5);
   assert.equal(state.resources.coins, 1000); assert.equal(state.buildings.farm, 5);
   assert.equal(state.owned.run['fairy-1'], true);
   assert.equal(state.spellSources.fairyChanting.fairy, true);
@@ -621,28 +621,37 @@ test('Fairy treaty is free only at R0 with zero gems and later spends twenty tar
   assert.equal(game.select('state').selections.faction, null);
   game.select('state').resources.factionCoins.fairy = 20;
   game.select('state').stats.run.factionCoins = 20;
+  game.select('state').stats.run.factionCoinsByFaction.fairy = 20;
   const model = game.select('content', { id: 'fairy' });
   assert.equal(model.costs[0].resource, 'factionCoin.target');
   assert.equal(model.costs[0].value, 20);
   assert.equal(game.dispatch({ type: 'purchase', id: 'fairy' }).ok, true);
   assert.equal(game.select('state').resources.factionCoins.fairy, 0);
   assert.equal(game.select('state').stats.run.factionCoins, 20);
+  assert.equal(game.select('state').stats.run.factionCoinsByFaction.fairy, 20);
 });
 
 test('abdication clears FC balances and run found while preserving longer scopes', async () => {
   const seeded = initial();
   seeded.stats.run.coins = 1e12;
   seeded.resources.factionCoins = { fairy: 5, goblin: 7 };
-  for (const scope of ['run', 'r', 'ascension', 'total']) seeded.stats[scope].factionCoins = 12;
+  for (const scope of ['run', 'r', 'ascension', 'total']) {
+    seeded.stats[scope].factionCoins = 12;
+    seeded.stats[scope].factionCoinsByFaction = { fairy: 5, goblin: 7 };
+  }
   const { game } = fixture(seeded);
   await game.start();
   assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
   const state = game.select('state');
   assert.deepEqual(state.resources.factionCoins, {});
   assert.equal(state.stats.run.factionCoins, 0);
+  assert.deepEqual(state.stats.run.factionCoinsByFaction, {});
   assert.equal(state.stats.r.factionCoins, 12);
+  assert.deepEqual(state.stats.r.factionCoinsByFaction, { fairy: 5, goblin: 7 });
   assert.equal(state.stats.ascension.factionCoins, 12);
+  assert.deepEqual(state.stats.ascension.factionCoinsByFaction, { fairy: 5, goblin: 7 });
   assert.equal(state.stats.total.factionCoins, 12);
+  assert.deepEqual(state.stats.total.factionCoinsByFaction, { fairy: 5, goblin: 7 });
 });
 
 test('assistants batch continuous FC across both factions without clicks or click income', async () => {
@@ -656,6 +665,8 @@ test('assistants batch continuous FC across both factions without clicks or clic
   assertClose(state.resources.factionCoins.fairy, 1);
   assertClose(state.resources.factionCoins.goblin, 1);
   assertClose(state.stats.run.factionCoins, 2);
+  assertClose(state.stats.run.factionCoinsByFaction.fairy, 1);
+  assertClose(state.stats.run.factionCoinsByFaction.goblin, 1);
   assert.equal(state.stats.run.clicks, 0);
   assert.equal(state.stats.run.clickCoins, 0);
 });
@@ -665,11 +676,22 @@ test('offline assistants use the same batched FC source and do not apply the gol
   seeded.owned.run['farm-tier1'] = true; seeded.owned.run['farm-tier2'] = true;
   seeded.lastWallClock = 0;
   const { game } = fixture(seeded, { nowStart: 50000 });
-  await game.start();
+  let offlineFact;
+  game.subscribe(message => {
+    offlineFact = message.facts.find(fact => fact.type === 'offline.settled') || offlineFact;
+  });
+  const started = await game.start();
+  assertClose(started.offlineReport.factionCoinsFound.fairy, 1);
+  assertClose(started.offlineReport.factionCoinsFound.goblin, 1);
+  assertClose(offlineFact.payload.factionCoinsFound.fairy, 1);
+  assertClose(offlineFact.payload.factionCoinsFound.goblin, 1);
+  assert.deepEqual(game.select('lastOfflineReport'), started.offlineReport);
   const state = game.select('state');
   assertClose(state.resources.factionCoins.fairy, 1);
   assertClose(state.resources.factionCoins.goblin, 1);
   assertClose(state.stats.run.factionCoins, 2);
+  assertClose(state.stats.run.factionCoinsByFaction.fairy, 1);
+  assertClose(state.stats.run.factionCoinsByFaction.goblin, 1);
   assert.equal(state.stats.run.clicks, 0);
   assert.equal(state.stats.run.clickCoins, 0);
 });
@@ -687,6 +709,10 @@ test('faction coin selector exposes balances, scoped found, pool and assistant r
   assert.deepEqual(model.pool, [{ factionId: 'fairy', weight: 1 }, { factionId: 'goblin', weight: 1 }]);
   assert.deepEqual(model.balances, { fairy: 3, goblin: 0 });
   assert.deepEqual(model.found, { run: 5, r: 5, ascension: 5, total: 5 });
+  assert.deepEqual(model.foundByFaction, {
+    run: { fairy: 0, goblin: 0 }, r: { fairy: 0, goblin: 0 },
+    ascension: { fairy: 0, goblin: 0 }, total: { fairy: 0, goblin: 0 },
+  });
   assertClose(model.assistant.totalPerSecond, 0.04);
   assertClose(model.assistant.perFaction.fairy, 0.02);
   assertClose(model.assistant.perFaction.goblin, 0.02);
@@ -700,4 +726,69 @@ test('faction coin selector exposes balances, scoped found, pool and assistant r
   assertClose(after.found.r, 7);
   assertClose(after.found.ascension, 7);
   assertClose(after.found.total, 7);
+  for (const scope of ['run', 'r', 'ascension', 'total']) {
+    assertClose(after.foundByFaction[scope].fairy, 1);
+    assertClose(after.foundByFaction[scope].goblin, 1);
+  }
+});
+
+
+test('spell grants update the selected faction in every scoped per-faction found ledger', async () => {
+  const { game } = fixture(initial());
+  await game.start();
+  game.dispatch({ type: 'purchase', id: 'evil' });
+  game.dispatch({ type: 'purchase', id: 'goblin' });
+  assert.equal(game.dispatch({ type: 'cast', id: 'goblinsGreed' }).ok, true);
+  const state = game.select('state');
+  const factionId = state.resources.factionCoins.fairy ? 'fairy' : 'goblin';
+  for (const scope of ['run', 'r', 'ascension', 'total']) {
+    assert.equal(state.stats[scope].factionCoins, 20);
+    assert.equal(state.stats[scope].factionCoinsByFaction[factionId], 20);
+    assert.equal(state.stats[scope].factionCoinsByFaction[factionId === 'fairy' ? 'goblin' : 'fairy'] || 0, 0);
+  }
+});
+
+test('schema 4 upgrades to schema 5 without inventing historical faction breakdown or losing current state', () => {
+  const graph = compileContentGraph(CONTENT);
+  const old = createSaveState({ now: 1000 });
+  old.schemaVersion = 4;
+  old.resources.factionCoins.fairy = 9;
+  old.stats.run.factionCoins = 12;
+  old.owned.run['farm-tier1'] = true;
+  old.rng.streams['drops:manualClick'] = { calls: 2, value: 123 };
+  for (const scope of ['run', 'r', 'ascension', 'total']) delete old.stats[scope].factionCoinsByFaction;
+  const { state, report } = migrateAndNormalizeState(old, graph);
+  assert.deepEqual(report, { from: 4, to: 5, migrated: true });
+  assert.equal(state.resources.factionCoins.fairy, 9);
+  assert.equal(state.stats.run.factionCoins, 12);
+  assert.deepEqual(state.stats.run.factionCoinsByFaction, {});
+  assert.equal(state.owned.run['farm-tier1'], true);
+  assert.deepEqual(state.rng.streams['drops:manualClick'], { calls: 2, value: 123 });
+});
+
+test('schema 5 per-faction found survives normalization and invalid values are quarantined', () => {
+  const graph = compileContentGraph(CONTENT);
+  const saved = createSaveState();
+  saved.stats.run.factionCoinsByFaction = { fairy: 2.5, goblin: -1, unknown: 4 };
+  const { state, report } = migrateAndNormalizeState(saved, graph);
+  assert.equal(report.migrated, false);
+  assert.deepEqual(state.stats.run.factionCoinsByFaction, { fairy: 2.5 });
+  assert.equal(state.quarantined.invalidValues.goblin, -1);
+  assert.equal(state.quarantined.unknownIds.unknown, 4);
+});
+
+test('reincarnation clears run and r per-faction found while preserving ascension and total', async () => {
+  const seeded = initial(); seeded.resources.gems = 1e27;
+  for (const scope of ['run', 'r', 'ascension', 'total']) {
+    seeded.stats[scope].factionCoins = 4;
+    seeded.stats[scope].factionCoinsByFaction = { fairy: 1, goblin: 3 };
+  }
+  const { game } = fixture(seeded);
+  await game.start();
+  assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
+  const state = game.select('state');
+  assert.deepEqual(state.stats.run.factionCoinsByFaction, {});
+  assert.deepEqual(state.stats.r.factionCoinsByFaction, {});
+  assert.deepEqual(state.stats.ascension.factionCoinsByFaction, { fairy: 1, goblin: 3 });
+  assert.deepEqual(state.stats.total.factionCoinsByFaction, { fairy: 1, goblin: 3 });
 });

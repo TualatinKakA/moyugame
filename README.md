@@ -31,7 +31,7 @@ npm run serve
 - 期权：`floor(((1 + 4 × runCoins / 5e11) ^ 0.5 - 1) / 2)`。
 - Gem Power：以 1 工资购买“期权激励”后，每份期权提供 2% 总产出，并附带 FC 发现率加成；随本轮升级重置。
 - 数字员工：每名数字员工每秒产出当前点击收入的 5%，再乘专属产出倍率与全局产出倍率；不增加真实点击或点击收入统计。普通设施第 1、2 档升级各提供 1 名数字员工。数量支持加算与乘算，后续公式可读取 `derived.assistants`，派生依赖通过输入指纹刷新缓存。数字员工 FC 当前采用 `assistants × 0.2 × fcChance` 的连续速率，在两个已开放派系间等额批量分配；该简化不代表已核实原版底层采样。
-- 部门影响力：余额与累计 found 分离，消费不回扣 found；退休清空余额与本轮 found。Fairy／Goblin 在 R0、0 期权时免费签约，之后消耗 20 点目标部门影响力。
+- 部门影响力：余额与累计 found 分离，消费不回扣 found；四层分派系 found 使用稀疏存档，离线报告提供本次分派系实际获得明细；退休清空余额与本轮 found。Fairy／Goblin 在 R0、0 期权时免费签约，之后消耗 20 点目标部门影响力。
 - 首次退休仍使用序章的 100M 引导门槛；后续退休要求至少可结算 1 期权。
 - R 投胎门槛：`1e27 × 1000^R`；期权不足时不显示投胎入口。
 - R1+：全局产出 `+(50 × R)%`，离线产出增加 `+(500 × R)` 个百分点，FC 发现率 `+(10 × R)` 个百分点，法力恢复 `+(2 × R)`。
@@ -52,7 +52,7 @@ Content Definitions → ContentGraph → GameRuntime → Selector / ViewModel �
 ```
 
 - `ContentGraph`：启动时校验并编译全部定义，建立事件、统计、可见性、购买和效果依赖索引。
-- `SaveState`：schema 4 稀疏权威状态，只保存玩家事实，不保存派生产值和 UI 状态。
+- `SaveState`：schema 5 稀疏权威状态，只保存玩家事实，不保存派生产值和 UI 状态。
 - `GameRuntime`：唯一运行门面；Command／Tick 开启事务，UI 不直接修改 State。
 - `Transaction`：Undo Journal、changedPaths、Domain Facts、Reaction 队列、原子提交与失败回滚。
 - `Reaction`：统一处理 Trophy、Challenge 和 Story；永久奖励按稳定 ID 幂等。

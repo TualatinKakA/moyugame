@@ -33,7 +33,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   let started = false;
   let activeTransaction = null;
   let stopped = false;
-  const diagnostics = { lastTransaction: null, recoveredSave: false, migration: null, offlineTruncated: false };
+  const diagnostics = { lastTransaction: null, recoveredSave: false, migration: null, offlineTruncated: false, lastOfflineReport: null };
 
   function notify(type, transaction = null) {
     const message = { type, commandType: transaction?.commandType || null, revision: state?.revision || 0, changedPaths: transaction ? [...transaction.changedPaths] : [], facts: transaction?.facts || [], diagnostics };
@@ -99,7 +99,10 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid faction coin amount for ${sourceId || source}`);
     if (amount === 0) return false;
     increment(tx, `resources.factionCoins.${factionId}`, amount);
-    for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.factionCoins`, amount);
+    for (const scope of ['run', 'r', 'ascension', 'total']) {
+      increment(tx, `stats.${scope}.factionCoins`, amount);
+      increment(tx, `stats.${scope}.factionCoinsByFaction.${factionId}`, amount);
+    }
     tx.emit('factionCoins.found', { factionId, amount, source, sourceId, mode });
     return true;
   }
@@ -385,17 +388,28 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return result;
   }
   function settleOffline(seconds) {
-    if (seconds <= 0 || cache.get().production <= 0) return;
+    if (seconds <= 0 || cache.get().production <= 0) return null;
     const plan = planOfflineSegments(seconds, state, scheduler);
     diagnostics.offlineTruncated = plan.truncated;
-    runTransaction('offline', tx => {
+    let report = null;
+    const result = runTransaction('offline', tx => {
       const before = tx.state.resources.coins;
+      const beforeFactionFound = { ...tx.state.stats.run.factionCoinsByFaction };
       for (const segment of plan.segments) tickSimulation(tx, segment, true);
       const earned = tx.state.resources.coins - before;
+      const factionCoinsFound = {};
+      for (const definition of graph.arraysByKind.get('faction') || []) {
+        if (definition.factionCoin?.enabled !== true) continue;
+        const amount = (tx.state.stats.run.factionCoinsByFaction[definition.id] || 0) - (beforeFactionFound[definition.id] || 0);
+        if (amount > 0) factionCoinsFound[definition.id] = amount;
+      }
       for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, seconds - plan.remaining);
-      tx.emit('offline.settled', { seconds, earned, segments: plan.segments.length, truncated: plan.truncated });
+      report = { seconds, earned, segments: plan.segments.length, truncated: plan.truncated, factionCoinsFound };
+      tx.emit('offline.settled', report);
       tx.critical = true;
     });
+    if (result.ok) diagnostics.lastOfflineReport = report;
+    return result.ok ? report : null;
   }
   function updateSetting(key, value) {
     if (!['buyAmount', 'quickSkills', 'manaRegenOverride'].includes(key)) return { ok: false, reason: 'UNKNOWN_SETTING' };
@@ -417,7 +431,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const away = Math.max(0, (clock.wallNow() - state.lastWallClock) / 1000);
     if (away > 10) settleOffline(away);
     notify('start');
-    return { ok: true, migration: migrated.report, recovered: diagnostics.recoveredSave };
+    return { ok: true, migration: migrated.report, recovered: diagnostics.recoveredSave, offlineReport: diagnostics.lastOfflineReport };
   }
   function select(selector, args = {}) {
     if (!state) return null;
@@ -425,15 +439,17 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (selector === 'derived') return cache.get();
     if (selector === 'factionCoins') {
       const derived = cache.get();
+      const factions = (graph.arraysByKind.get('faction') || []).filter(definition => definition.factionCoin?.enabled === true);
       const pool = eligibleFactionCoins(state).map(definition => ({ factionId: definition.id, weight: definition.factionCoin.baseWeight }));
       const assistantPerSecond = pool.length ? derived.assistants * 0.2 * (derived.fcChance / 100) : 0;
       const assistantShare = pool.length ? assistantPerSecond / pool.length : 0;
       return {
         chance: derived.fcChance,
-        balances: Object.fromEntries((graph.arraysByKind.get('faction') || [])
-          .filter(definition => definition.factionCoin?.enabled === true)
-          .map(definition => [definition.id, state.resources.factionCoins[definition.id] || 0])),
+        balances: Object.fromEntries(factions.map(definition => [definition.id, state.resources.factionCoins[definition.id] || 0])),
         found: Object.fromEntries(['run', 'r', 'ascension', 'total'].map(scope => [scope, state.stats[scope].factionCoins || 0])),
+        foundByFaction: Object.fromEntries(['run', 'r', 'ascension', 'total'].map(scope => [scope,
+          Object.fromEntries(factions.map(definition => [definition.id, state.stats[scope].factionCoinsByFaction[definition.id] || 0])),
+        ])),
         pool,
         assistant: {
           totalPerSecond: assistantPerSecond,
@@ -454,6 +470,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       return { requirement, visible: state.resources.gems >= requirement, nextR: state.progression.reincarnations + 1 };
     }
     if (selector === 'stateHash') return stateHash(state);
+    if (selector === 'lastOfflineReport') return diagnostics.lastOfflineReport;
     if (selector === 'saveStatus') return { dirty: persistence.saveDirty, error: persistence.lastSaveError };
     throw new Error(`Unknown selector ${selector}`);
   }
