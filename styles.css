@@ -137,6 +137,7 @@ button.danger { color: var(--red); }
 .card .meta, .upgrade-detail .meta { color: var(--yellow); font-family: Consolas, monospace; font-size: 11px; }
 .card > button:not(.building-card) { width: 100%; min-height: 42px; margin-top: 8px; }
 .card.owned { border-color: #526448; }
+.card.insufficient { opacity: .72; }
 .source-name { margin: 4px 0; color: #939e8e; font-size: 9px; overflow-wrap: anywhere; }
 .badge { display: inline-block; padding: 2px 6px; margin-right: 5px; border: 1px solid var(--line); color: var(--green); font-size: 9px; }
 .building-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -168,6 +169,9 @@ button.card.building-card:hover:not(:disabled) { border-color: var(--green); bac
 .subsection > h3 { padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
 .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 .action-row button { min-height: 42px; padding: 8px 12px; }
+.action-row label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.action-row input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); background: #0f120f; color: var(--text); }
+.action-row input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .notice { padding: 10px; border-left: 2px solid var(--yellow); background: #25271c; color: #dedbc5; font-size: 11px; }
 .success { color: var(--green); }
 .error { color: var(--red); }

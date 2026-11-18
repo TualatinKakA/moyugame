@@ -95,6 +95,9 @@ try {
   await gamePage.locator('[data-upgrade-card="gemPower"]').waitFor();
   await gamePage.locator('[data-upgrade-card="gemPower"] [data-action="purchase"]').click();
   assert.equal(await gamePage.locator('#production').textContent(), '¥ 66', 'Gem Power applies 2% production per gem');
+  const orderedIds = await gamePage.locator('#mainPanel [data-upgrade-card]').evaluateAll(nodes => nodes.map(node => node.dataset.upgradeCard));
+  assert.notEqual(orderedIds[0], 'gemPower', 'owned upgrades do not lead the all-upgrades list');
+  assert.equal(orderedIds.at(-1), 'gemPower', 'owned upgrades sort last in the all-upgrades list');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 3, 'mobile quick bar caps at three');
@@ -142,6 +145,38 @@ try {
       await gamePage.waitForTimeout(100); assert.equal(await gamePage.locator('#mainPanel').isHidden(), true);
     }
   }
+  await gamePage.setViewportSize({ width: 1440, height: 900 });
+  await gamePage.locator('.app-nav [data-tab="building-upgrades"]').click();
+  assert.equal(await gamePage.locator('#mainPanel h2').textContent(), '设施升级');
+  assert.equal(await gamePage.locator('#mainPanel [data-upgrade-card="gemPower"]').count(), 0);
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.locator('.app-nav [data-tab="misc-upgrades"]').click();
+  assert.equal(await gamePage.locator('#mainPanel h2').textContent(), '通用升级');
+  assert.equal(await gamePage.locator('#mainPanel [data-upgrade-card="gemPower"]').count(), 1);
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.locator('.app-nav [data-tab="factions"]').click();
+  assert.equal(await gamePage.locator('#mainPanel [data-upgrade-card="fairy-1"]').count(), 1);
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.waitForTimeout(600);
+  await gamePage.locator('#upgradeRail [data-id="fairy-1"]').click();
+  assert.equal(await gamePage.locator('#upgradeRail [data-id="fairy-1"]').count(), 0, 'quick upgrade disappears after purchase');
+  await gamePage.locator('.app-nav [data-tab="factions"]').click();
+  const factionOrder = await gamePage.locator('#mainPanel [data-upgrade-card]').evaluateAll(nodes => nodes.map(node => node.dataset.upgradeCard));
+  assert.equal(factionOrder.at(-1), 'fairy-1', 'purchased faction upgrade sorts last');
+  await gamePage.locator('[data-action="close-panel"]').click();
+  await gamePage.locator('#moreTabButton').click();
+  await gamePage.locator('#manaPassword').fill('0000');
+  await gamePage.locator('#manaPasswordForm button[type="submit"]').click();
+  assert.equal(await gamePage.locator('#manaRegenEditor').isHidden(), true);
+  await gamePage.locator('#manaPassword').fill('2887');
+  await gamePage.locator('#manaPasswordForm button[type="submit"]').click();
+  assert.equal(await visible(gamePage, '#manaRegenEditor'), true);
+  await gamePage.locator('#manaRegenInput').fill('7');
+  await gamePage.locator('[data-action="apply-mana-regen"]').click();
+  assert.equal(await gamePage.locator('#manaRate').textContent(), '+7 / 秒');
+  await gamePage.locator('#mainPanel [data-action="save"]').click();
+  await gamePage.waitForTimeout(50);
+  assert.equal(await gamePage.evaluate(key => JSON.parse(localStorage.getItem(key)).settings.manaRegenOverride, SAVE_KEY), 7);
   await gameContext.close();
 
   const retireState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
@@ -157,6 +192,33 @@ try {
   await retirePage.locator('#moreTabButton').click();
   assert.equal(await retirePage.locator('[data-action="reincarnate"]').count(), 0, 'reincarnation is hidden below the original gem requirement');
   await retireContext.close();
+
+  const resetState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  resetState.resources.coins = 500; resetState.stats.total.clicks = 1;
+  const resetContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await resetContext.addInitScript(({ key, json }) => {
+    if (!sessionStorage.getItem('acceptance-seeded')) {
+      localStorage.setItem(key, json);
+      sessionStorage.setItem('acceptance-seeded', '1');
+    }
+  }, { key: SAVE_KEY, json: JSON.stringify(resetState) });
+  const resetPage = await resetContext.newPage(); watch(resetPage);
+  await resetPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await resetPage.locator('#moreTabButton').click();
+  resetPage.once('dialog', dialog => dialog.accept());
+  await Promise.all([
+    resetPage.waitForLoadState('load'),
+    resetPage.locator('[data-action="hard-reset"]').click(),
+  ]);
+  const cleared = await resetPage.evaluate(key => ({
+    main: localStorage.getItem(key),
+    previous: localStorage.getItem(`${key}:previous`),
+    corrupt: localStorage.getItem(`${key}:corrupt`),
+  }), SAVE_KEY);
+  assert.deepEqual(cleared, { main: null, previous: null, corrupt: null }, 'hard reset does not resurrect state during unload');
+  assert.equal(await resetPage.locator('#intro').isVisible(), true, 'hard reset returns to the onboarding screen');
+  assert.equal(await resetPage.locator('#coins').textContent(), '¥ 0');
+  await resetContext.close();
 
   assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);

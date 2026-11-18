@@ -351,8 +351,9 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
   function updateSetting(key, value) {
-    if (!['buyAmount', 'quickSkills'].includes(key)) return { ok: false, reason: 'UNKNOWN_SETTING' };
-    return runTransaction('setting', tx => { tx.write(`settings.${key}`, value); });
+    if (!['buyAmount', 'quickSkills', 'manaRegenOverride'].includes(key)) return { ok: false, reason: 'UNKNOWN_SETTING' };
+    if (key === 'manaRegenOverride' && value !== null && (!Number.isFinite(Number(value)) || Number(value) < 0)) return { ok: false, reason: 'INVALID_SETTING' };
+    return runTransaction('setting', tx => { tx.write(`settings.${key}`, key === 'manaRegenOverride' && value !== null ? Number(value) : value); });
   }
 
   async function start() {

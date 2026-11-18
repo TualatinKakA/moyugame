@@ -14,6 +14,6 @@ export const GENERAL_UPGRADE_DEFINITIONS = [
       operation: 'add', value: { constant: 2 }, stacking: 'add',
     }],
     grants: [], reactions: [], scope: 'run',
-    ui: { kind: 'upgradeCard', panel: 'upgrades', icon: 'assets/images/coin.png' },
+    ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'general', icon: 'assets/images/coin.png' },
   },
 ];

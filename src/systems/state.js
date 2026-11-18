@@ -22,7 +22,7 @@ export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = 
     challenges: {}, artifacts: {},
     story: { pending: [], completed: {}, rewarded: {}, choices: {}, groups: {} },
     rng: createRngState(seed), quarantined: { unknownIds: {}, invalidValues: {} },
-    settings: { buyAmount: 1, quickSkills: null },
+    settings: { buyAmount: 1, quickSkills: null, manaRegenOverride: null },
   };
 }
 
@@ -95,6 +95,7 @@ function migrateLegacy(old, state, graph) {
   for (const id of unlocked) if (graph.definitionsById.get(id)?.kind === 'trophy') state.permanentUnlocks[id] = true;
   state.settings.buyAmount = [1, 10, 'max'].includes(old.settings?.buyAmount) ? old.settings.buyAmount : 1;
   state.settings.quickSkills = Array.isArray(old.settings?.quickSkills) ? old.settings.quickSkills.filter(id => graph.definitionsById.get(id)?.kind === 'spell') : null;
+  state.settings.manaRegenOverride = old.settings?.manaRegenOverride == null ? null : Math.max(0, finite(old.settings.manaRegenOverride));
   if (Number.isFinite(old.rngState)) state.rng = createRngState(old.rngState);
 }
 
@@ -135,6 +136,7 @@ function normalizeV4(saved, state, graph) {
   state.story.groups = { ...(saved.story?.groups || {}) };
   state.settings.buyAmount = [1, 10, 'max'].includes(saved.settings?.buyAmount) ? saved.settings.buyAmount : 1;
   state.settings.quickSkills = Array.isArray(saved.settings?.quickSkills) ? saved.settings.quickSkills.filter(id => graph.definitionsById.get(id)?.kind === 'spell') : null;
+  state.settings.manaRegenOverride = saved.settings?.manaRegenOverride == null ? null : Math.max(0, finite(saved.settings.manaRegenOverride));
   if (saved.rng && Number.isFinite(saved.rng.seed)) {
     state.rng = { seed: saved.rng.seed >>> 0, streams: JSON.parse(JSON.stringify(saved.rng.streams || {})) };
   }

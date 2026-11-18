@@ -1,7 +1,7 @@
 const selectionCost = [{ resource: 'coins', amount: { constant: 25000 } }];
 export const ALIGNMENT_DEFINITIONS = [
-  { id: 'good', name: '自驱立场', description: '主动点击、技能与快速扩张。' },
-  { id: 'evil', name: '强压立场', description: '稳定产出、离线收益与高阶设施。' },
+  { id: 'good', name: '上进', description: '主动点击、技能与快速扩张。' },
+  { id: 'evil', name: '狼性', description: '稳定产出、离线收益与高阶设施。' },
 ].map(item => ({
   ...item, kind: 'alignment', contentVersion: 'base-v1', era: { minR: 0 },
   visible: { op: 'notSelected', key: 'alignment' }, unlock: { op: 'always' },
@@ -38,7 +38,7 @@ const upgrade = ({ id, name, description, faction, cost, effects }) => ({
     requires: [{ op: 'notOwned', id }, { op: 'selected', key: 'faction', value: faction }],
   },
   effects, grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', faction, icon: `assets/images/${faction === 'fairy' ? 'laptop' : 'cash'}.png` },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: `assets/images/${faction === 'fairy' ? 'laptop' : 'cash'}.png` },
 });
 const effect = (group, phase, stat, target, operation, value) => ({
   group, phase, stat, target, operation, value, stacking: operation === 'add' ? 'add' : 'multiply',
@@ -52,7 +52,7 @@ export const FACTION_UPGRADE_DEFINITIONS = [
   upgrade({ id: 'fairy-2', name: '产品新人', description: '见习工位、茶水间与打印维修间产出提高 10,000%。', faction: 'fairy', cost: 5e8, effects: [
     effect('fairy-2', 'buildingLocal', 'building.production', { type: 'buildings', ids: ['farm', 'inn', 'blacksmith'] }, 'multiplyPercent', { constant: 10000 }),
   ] }),
-  upgrade({ id: 'fairy-3', name: '善意默认值', description: '按自驱设施数量提高精力上限。', faction: 'fairy', cost: 5e9, effects: [
+  upgrade({ id: 'fairy-3', name: '善意默认值', description: '按上进设施数量提高精力上限。', faction: 'fairy', cost: 5e9, effects: [
     effect('fairy-3', 'mana', 'mana.max', { type: 'global' }, 'add', { formula: '1.3 * x ^ 0.7', variables: { x: 'buildings.alignment.good' } }),
   ] }),
   upgrade({ id: 'goblin-1', name: '强势现金流', description: '按历史部门影响力增加数字员工。', faction: 'goblin', cost: 5e7, effects: [
