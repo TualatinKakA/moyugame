@@ -99,6 +99,10 @@
   margin-top: 20px;
 }
 
+.story-overlay[data-story-id="ui.alignment.confirm"] .story-modal {
+  max-width: 440px;
+}
+
 .story-button-choice {
   width: 100%;
   color: #e2edf1;

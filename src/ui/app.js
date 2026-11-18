@@ -338,16 +338,27 @@ function refresh(message = null) {
   if (activeTab !== 'work' && structural) renderPanel(); else updatePanel();
   syncStories();
 }
+let pendingAlignmentId = null;
 const modal = createStoryModal({
   document,
-  onClose: ({ id, action, replay }) => { if (!replay) game.dispatch({ type: 'story.close', id, skipped: action === 'skip' }); },
+  onClose: ({ id, action, replay }) => {
+    if (id === 'ui.alignment.confirm') { pendingAlignmentId = null; return; }
+    if (!replay) game.dispatch({ type: 'story.close', id, skipped: action === 'skip' });
+  },
   onChoice: ({ id, choiceId }) => {
+    if (id === 'ui.alignment.confirm') {
+      const selectedId = pendingAlignmentId;
+      pendingAlignmentId = null;
+      modal.close();
+      if (choiceId === 'confirm') commandResult(game.dispatch({ type: 'purchase', id: selectedId, amount: state().settings.buyAmount }));
+      return;
+    }
     const result = game.dispatch({ type: 'story.choice', id, choiceId });
     if (result.ok && definition(id).choices.find(choice => choice.id === choiceId).close !== false) modal.close();
   },
 });
 function syncStories() {
-  if (modal.current?.replay) return;
+  if (modal.current?.replay || modal.current?.story.id === 'ui.alignment.confirm') return;
   const next = game.select('storyQueue')[0];
   if (next && modal.current?.story.id !== next.id) modal.show({ story: next });
 }
@@ -377,8 +388,17 @@ document.addEventListener('click', event => {
   if (action === 'work') { if (commandResult(game.dispatch({ type: 'work' }))) workFeedback(event); return; }
   if (action === 'purchase') {
     if (definition(id).kind === 'alignment') {
-      const accepted = confirm(`选择后，本轮退休前都无法更改立场。\n确定选择【${definition(id).name}】吗？`);
-      if (!accepted) return;
+      pendingAlignmentId = id;
+      modal.show({
+        story: {
+          id: 'ui.alignment.confirm',
+          title: `确认选择【${definition(id).name}】`,
+          paragraphs: ['确认后将无法更改当前立场。'],
+          choices: [{ id: 'confirm', label: '确认' }],
+          buttonLabel: '取消',
+        },
+      });
+      return;
     }
     commandResult(game.dispatch({ type: 'purchase', id, amount: state().settings.buyAmount }));
     return;

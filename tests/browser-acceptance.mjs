@@ -73,16 +73,15 @@ try {
 
   await gamePage.locator('.app-nav [data-tab="factions"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 2, 'only two alignments before selection');
-  gamePage.once('dialog', dialog => dialog.accept());
   await gamePage.locator('#mainPanel [data-action="purchase"][data-id="good"]').click();
-  const alignmentImage = gamePage.locator('.story-overlay[data-story-id="alignment.commitment"] .story-image');
+  const alignmentImage = gamePage.locator('.story-overlay[data-story-id="alignment.idealism"] .story-image');
   await alignmentImage.waitFor();
   assert.match(await alignmentImage.getAttribute('src'), /alignment-commitment\.svg/);
   await gamePage.waitForFunction(() => {
-    const image = document.querySelector('.story-overlay[data-story-id="alignment.commitment"] .story-image');
+    const image = document.querySelector('.story-overlay[data-story-id="alignment.idealism"] .story-image');
     return image.complete && image.naturalWidth > 0;
   });
-  await closeStory(gamePage, 'alignment.commitment');
+  await closeStory(gamePage, 'alignment.idealism');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card]').count(), 3, 'selected alignment stays beside the faction choice');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').textContent(), '当前立场');
   assert.equal(await gamePage.locator('#mainPanel [data-choice-card="good"] button').isDisabled(), true);
