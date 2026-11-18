@@ -66,9 +66,8 @@ const upgradeEffects = (id, buildingId, data) => {
 };
 
 const upgradeDescription = (building, data) => {
-  const post = data.postPercent === null ? '' : `，投胎后改为 ${data.postPercent}%`;
   const assistants = data.assistants ? '，数字员工 +1' : '';
-  return `${building.name}产出提高 ${data.prePercent}%${post}${assistants}。`;
+  return `${building.name}产出提高 {activeProductionPercent}%${assistants}。`;
 };
 
 export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(building =>

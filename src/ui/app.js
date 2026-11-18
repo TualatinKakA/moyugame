@@ -3,7 +3,7 @@ import { createGameRuntime } from '../systems/runtime.js';
 import { createSaveAdapter } from '../systems/persistence.js';
 import { formatNumber, formatTime } from '../core/number.js';
 import { createStoryModal } from './story/story-modal.js';
-import { formatDescription } from '../systems/content-registry.js';
+import { evaluateCondition, formatDescription } from '../systems/content-registry.js';
 
 const $ = id => document.getElementById(id);
 const editableSelector = 'input, textarea, [contenteditable="true"]';
@@ -70,7 +70,13 @@ const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
 const description = item => {
-  const text = formatDescription(item, graph);
+  let text = formatDescription(item, graph);
+  if (text.includes('{activeProductionPercent}')) {
+    const context = { state: state(), derived: derived() };
+    const effect = item.effects.find(candidate => candidate.stat === 'building.production'
+      && (!candidate.when || evaluateCondition(graph, candidate.when, context)));
+    text = text.replaceAll('{activeProductionPercent}', formatNumber(effect?.value.constant ?? 0));
+  }
   return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
 };
 const formatCost = cost => {
