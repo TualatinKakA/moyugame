@@ -41,7 +41,7 @@ function percentFactor(operation, value) { return operation === 'multiplyPercent
 function createModifiers() {
   return {
     globalAdd: 0, globalMult: 1, buildingAdd: {}, buildingMult: {}, buildingBaseAdd: {}, buildingCostAdd: 0,
-    assistantsAdd: 0, manaMaxAdd: 0, manaRegenAdd: 0, clickAdd: 0, clickMult: 1, taxSecondsAdd: 0,
+    assistantsAdd: 0, manaMaxAdd: 0, manaRegenAdd: 0, clickAdd: 0, clickMult: 1, taxSecondsAdd: 0, gemPowerAdd: 0,
   };
 }
 function applyEffect(mods, effect, amount, targetId) {
@@ -58,6 +58,7 @@ function applyEffect(mods, effect, amount, targetId) {
   else if (effect.stat === 'click.reward') {
     if (additive) mods.clickAdd += amount; else mods.clickMult *= percentFactor(effect.operation, amount);
   } else if (effect.stat === 'taxCollection.seconds') mods.taxSecondsAdd += amount;
+  else if (effect.stat === 'gem.power') mods.gemPowerAdd += amount;
   else throw new Error(`Unknown derived effect stat ${effect.stat}`);
 }
 
@@ -89,7 +90,8 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     }
   }
   const outputs = {};
-  const globalMult = (1 + mods.globalAdd / 100) * mods.globalMult;
+  const gemPowerMultiplier = 1 + state.resources.gems * mods.gemPowerAdd / 100;
+  const globalMult = (1 + mods.globalAdd / 100) * mods.globalMult * gemPowerMultiplier;
   let buildingProduction = 0;
   for (const definition of buildings(graph)) {
     const count = buildingOverrides[definition.id] ?? state.buildings[definition.id] ?? 0;
@@ -100,11 +102,14 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
   }
   const assistants = Math.floor(mods.assistantsAdd);
   const production = buildingProduction + assistants;
+  const gemFactionCoinChance = mods.gemPowerAdd > 0
+    ? Math.floor(1.25 * Math.log(1 + state.resources.gems) ** 0.9 / Math.log(10))
+    : 0;
   return Object.freeze({
     outputs, production, buildingProduction, assistants,
     clickReward: Math.max(1, (1 + mods.clickAdd / 100) * mods.clickMult),
     manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: Math.max(0, 1 + mods.manaRegenAdd),
-    fcChance: 10 + power.factionCoinChanceAdd, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
+    fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance, taxSeconds: Math.max(0, 30 + mods.taxSecondsAdd),
     offlineMultiplier: power.offlineMultiplier,
     buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
   });
@@ -119,7 +124,7 @@ export class RuntimeCache {
     let dirty = false;
     const groups = new Set();
     for (const path of changedPaths) {
-      if (/^(buildings|owned|permanentUnlocks|timers\.spells|selections|resources\.factionCoins|progression)/.test(path)) dirty = true;
+      if (/^(buildings|owned|permanentUnlocks|timers\.spells|selections|resources\.(factionCoins|gems)|progression)/.test(path)) dirty = true;
       for (const dependency of [path, 'buildings', 'owned', 'permanentUnlocks', 'timers.spells', 'resources.factionCoins']) {
         if (dependency !== path && !path.startsWith(`${dependency}.`)) continue;
         for (const group of this.graph.effectDependencies.get(dependency) || []) groups.add(group);

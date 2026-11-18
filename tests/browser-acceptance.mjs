@@ -53,7 +53,7 @@ try {
   await context.close();
 
   const seeded = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
-  seeded.resources.coins = 1e12; seeded.resources.mana = 10000; seeded.stats.total.clicks = 1;
+  seeded.resources.coins = 1e12; seeded.resources.mana = 10000; seeded.resources.gems = 100; seeded.stats.total.clicks = 1;
   const gameContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await gameContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(seeded) });
   const gamePage = await gameContext.newPage(); watch(gamePage);
@@ -89,6 +89,12 @@ try {
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="output"]').textContent(), '本次 +¥ 20 / 秒');
   await gamePage.locator('#mainPanel [data-id="farm"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="count"]').textContent(), '× 11');
+  await gamePage.locator('[data-action="close-panel"]').click();
+
+  await gamePage.locator('.app-nav [data-tab="upgrades"]').click();
+  await gamePage.locator('[data-upgrade-card="gemPower"]').waitFor();
+  await gamePage.locator('[data-upgrade-card="gemPower"] [data-action="purchase"]').click();
+  assert.equal(await gamePage.locator('#production').textContent(), '¥ 66', 'Gem Power applies 2% production per gem');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 3, 'mobile quick bar caps at three');
