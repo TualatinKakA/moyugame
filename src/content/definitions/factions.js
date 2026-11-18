@@ -1,7 +1,7 @@
 const selectionCost = [{ resource: 'coins', amount: { constant: 25000 } }];
 export const ALIGNMENT_DEFINITIONS = [
-  { id: 'good', name: '上进', description: '主动点击、技能与快速扩张。' },
-  { id: 'evil', name: '狼性', description: '稳定产出、离线收益与高阶设施。' },
+  { id: 'good', name: '理想', description: '主动点击、技能与快速扩张。' },
+  { id: 'evil', name: '务实', description: '稳定产出、离线收益与高阶设施。' },
 ].map(item => ({
   ...item, kind: 'alignment', contentVersion: 'base-v1', era: { minR: 0 },
   visible: { op: 'notSelected', key: 'alignment' }, unlock: { op: 'always' },
@@ -52,13 +52,13 @@ export const FACTION_UPGRADE_DEFINITIONS = [
   upgrade({ id: 'fairy-2', name: '产品新人', description: '见习工位、茶水间与打印维修间产出提高 10,000%。', faction: 'fairy', cost: 5e8, effects: [
     effect('fairy-2', 'buildingLocal', 'building.production', { type: 'buildings', ids: ['farm', 'inn', 'blacksmith'] }, 'multiplyPercent', { constant: 10000 }),
   ] }),
-  upgrade({ id: 'fairy-3', name: '善意默认值', description: '按上进设施数量提高精力上限。', faction: 'fairy', cost: 5e9, effects: [
+  upgrade({ id: 'fairy-3', name: '善意默认值', description: '按理想设施数量提高精力上限。', faction: 'fairy', cost: 5e9, effects: [
     effect('fairy-3', 'mana', 'mana.max', { type: 'global' }, 'add', { formula: '1.3 * x ^ 0.7', variables: { x: 'buildings.alignment.good' } }),
   ] }),
   upgrade({ id: 'goblin-1', name: '强势现金流', description: '按历史部门影响力增加数字员工。', faction: 'goblin', cost: 5e7, effects: [
     effect('goblin-1', 'assistants', 'assistants.count', { type: 'global' }, 'add', { formula: '0.5 * ln(1 + x) ^ 2', variables: { x: 'factionCoins.total' } }),
   ] }),
-  upgrade({ id: 'goblin-2', name: '外包交易', description: '按强压设施数量提高全部设施产出。', faction: 'goblin', cost: 5e8, effects: [
+  upgrade({ id: 'goblin-2', name: '外包交易', description: '按务实设施数量提高全部设施产出。', faction: 'goblin', cost: 5e8, effects: [
     effect('goblin-2', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '2 * x ^ 0.7', variables: { x: 'buildings.alignment.evil' } }),
   ] }),
   upgrade({ id: 'goblin-3', name: '低成本物料', description: '按设施总数增加工资结算的结算秒数。', faction: 'goblin', cost: 5e9, effects: [

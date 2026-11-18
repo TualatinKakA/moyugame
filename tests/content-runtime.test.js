@@ -293,7 +293,7 @@ test('Gem Power unlock applies production and FC bonuses then resets with the ru
 test('player-facing names match the workplace naming reference without changing stable IDs', () => {
   const graph = compileContentGraph(CONTENT);
   const expected = {
-    good: '上进', evil: '狼性', holyLight: '奋斗动员', bloodFrenzy: '狼性冲刺',
+    good: '理想', evil: '务实', holyLight: '奋斗动员', bloodFrenzy: '务实冲刺',
     'fairy-1': '需求培养土', 'fairy-2': '产品新人', 'fairy-3': '善意默认值',
     'goblin-1': '强势现金流', 'goblin-2': '外包交易', 'goblin-3': '低成本物料',
     'farm-tier1': '工位轮换', 'inn-tier1': '精品咖啡', 'blacksmith-tier1': '重型订书锤',

@@ -25,7 +25,7 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('holyLight', 'click', 'click.reward', { type: 'global' }, 'multiplyPercent', { constant: 1750 })],
   }),
   spell({
-    id: 'bloodFrenzy', name: '狼性冲刺', description: '20 秒内狼性设施产出提高 1250%。', cost: 600, duration: 20,
+    id: 'bloodFrenzy', name: '务实冲刺', description: '20 秒内务实设施产出提高 1250%。', cost: 600, duration: 20,
     visible: { op: 'selected', key: 'alignment', value: 'evil' },
     effects: [effect('bloodFrenzy', 'buildingLocal', 'building.production', { type: 'alignment', id: 'evil' }, 'addPercent', { constant: 1250 })],
   }),
