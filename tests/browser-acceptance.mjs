@@ -67,6 +67,7 @@ try {
   const playerCopy = await gamePage.locator('body').textContent();
   assert.doesNotMatch(playerCopy, /本地自动存档|数值规则独立配置|无外部运行依赖|内容包|schema|运行时|当前版本|本次更新|手机显示|桌面最多/);
   assert.equal(await gamePage.locator('#facilityRail [data-building-card]').count(), 3);
+  assert.equal(await gamePage.locator('#factionCoinList [data-faction]').count(), 6);
   await gamePage.waitForFunction(() => [...document.querySelectorAll('.building-icon, .inline-icon')].every(image => image.complete && image.naturalWidth > 0));
   assert.equal(await gamePage.locator('#facilityRail .building-icon').count(), 3);
   assert.equal(await gamePage.locator('#workContent .skill-btn .inline-icon').count(), 2);
@@ -229,9 +230,11 @@ try {
   await retireContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(retireState) });
   const retirePage = await retireContext.newPage(); watch(retirePage);
   await retirePage.goto(origin, { waitUntil: 'domcontentloaded' });
+  assert.equal(await retirePage.locator('#retirementRunCoins').textContent(), '本轮产值 ¥ 100M · 退休目标 ¥100M');
   retirePage.once('dialog', dialog => dialog.accept());
   await retirePage.locator('#retirementButton').click();
   await closeStory(retirePage, 'intro.first_retirement');
+  assert.doesNotMatch(await retirePage.locator('#retirementPanel').textContent(), /100M/);
   assert.equal(await retirePage.locator('#gems').textContent(), '0');
   await retirePage.locator('#moreTabButton').click();
   assert.equal(await retirePage.locator('[data-action="reincarnate"]').count(), 0, 'reincarnation is hidden below the original gem requirement');
@@ -371,8 +374,8 @@ try {
   assert.ok(wages >= 216180 && wages < 217000, `one hidden hour settles offline wages once: ${wages}`);
   assert.ok(Math.abs(afterBackground.stats.total.offlineTime - beforeBackground.stats.total.offlineTime - 3600) < 1.5);
   assert.equal(afterBackground.resources.mana, 1000);
-  for (const faction of ['fairy', 'goblin']) {
-    assert.ok(afterBackground.resources.factionCoins[faction] >= 72 && afterBackground.resources.factionCoins[faction] < 73,
+  for (const faction of ['fairy', 'goblin', 'elven', 'angel', 'undead', 'demon']) {
+    assert.ok(afterBackground.resources.factionCoins[faction] >= 24 && afterBackground.resources.factionCoins[faction] < 25,
       `${faction} assistant FC is included in hidden settlement`);
   }
   await backgroundPage.waitForTimeout(500);

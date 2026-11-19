@@ -23,17 +23,17 @@ export const FACTION_DEFINITIONS = [
   {
     id: 'fairy', kind: 'faction', contentVersion: 'base-v1', name: '产品部', sourceName: 'Fairy', alignment: 'good',
     description: '强化见习工位、茶水间与打印维修间，偏向低阶设施协同。',
-    spellId: 'fairyChanting', icon: 'laptop',
+    spellId: 'fairyChanting', icon: 'laptop', coinIcon: 'assets/images/laptop.png',
   },
   {
     id: 'goblin', kind: 'faction', contentVersion: 'base-v1', name: '财务部', sourceName: 'Goblin', alignment: 'evil',
     description: '将设施规模、影响力与工资结算转化为长期收益。',
-    spellId: 'goblinsGreed', icon: 'cash',
+    spellId: 'goblinsGreed', icon: 'cash', coinIcon: 'assets/images/cash.png',
   },
 ].map(faction => ({
   ...faction, era: { minR: 0 },
   visible: { op: 'selected', key: 'alignment', value: faction.alignment }, unlock: { op: 'always' },
-  factionCoin: { enabled: true, dropUnlock: { op: 'always' }, baseWeight: 1 },
+  factionCoin: { enabled: true, dropUnlock: { op: 'always' }, baseWeight: 1, icon: faction.coinIcon },
   purchase: { costs: treatyCost, requires: [{ op: 'notSelected', key: 'faction' }] },
   effects: [], grants: [{ type: 'grantSpellSource', id: faction.spellId, source: faction.id }],
   reactions: [], scope: 'run', ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/content-icons/factions/${faction.id}-contract-tier1.svg` },

@@ -477,7 +477,7 @@ function updateRetirement() {
   const retirement = game.select('retirement');
   $('pendingGemsValue').textContent = formatNumber(retirement.earned);
   $('totalGemsValue').textContent = formatNumber(state().resources.gems);
-  $('retirementRunCoins').textContent = `本轮产值 ${money(state().stats.run.coins)} · 首次退休目标 ¥100M`;
+  $('retirementRunCoins').textContent = `本轮产值 ${money(state().stats.run.coins)}${retirement.target > 0 ? ' · 退休目标 ¥100M' : ''}`;
   $('retirementButton').textContent = retirement.eligible ? '退休' : '申请退休（需100M）';
   $('retirementPanel').firstElementChild.classList.toggle('ready', retirement.eligible);
 }
@@ -491,9 +491,13 @@ function renderTop() {
   $('manaFill').style.width = `${Math.max(0, Math.min(100, state().resources.mana / d.manaMax * 100))}%`;
   $('manaProgress').setAttribute('aria-valuemax', String(d.manaMax)); $('manaProgress').setAttribute('aria-valuenow', String(state().resources.mana));
   $('fcChance').textContent = `${formatNumber(d.fcChance)}%`;
-  for (const factionId of ['fairy', 'goblin']) {
-    $(`${factionId}FactionCoins`).textContent = formatNumber(state().resources.factionCoins[factionId] || 0);
+  const coinFactions = content('faction').filter(item => item.factionCoin?.enabled);
+  const factionSignature = coinFactions.map(item => item.id).join('|');
+  if ($('factionCoinList').dataset.structure !== factionSignature) {
+    $('factionCoinList').dataset.structure = factionSignature;
+    $('factionCoinList').innerHTML = coinFactions.map(item => `<span data-faction="${item.id}" title="${item.name}影响力"><img src="${item.factionCoin.icon}" alt="">${item.name} <b id="${item.id}FactionCoins">0</b></span>`).join('');
   }
+  for (const item of coinFactions) $(`${item.id}FactionCoins`).textContent = formatNumber(state().resources.factionCoins[item.id] || 0);
   $('rankText').textContent = `R${state().progression.reincarnations} · 地方分公司`;
   const faction = state().selections.faction ? definition(state().selections.faction) : null;
   $('factionName').textContent = faction ? faction.name : '尚未选择部门';

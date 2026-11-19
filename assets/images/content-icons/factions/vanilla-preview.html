@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vanilla 新增部门 SVG 预览</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px; background: #111311; color: #edf0e8; font-family: "Microsoft YaHei", sans-serif; }
+    main { max-width: 1000px; margin: auto; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    p { color: #a0a99b; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+    .card { padding: 18px; border: 1px solid #384036; background: #191c19; text-align: center; }
+    .card h2 { margin: 12px 0 2px; font-size: 16px; }
+    .card code { color: #788271; font-size: 11px; }
+    .large { display: grid; place-items: center; height: 88px; }
+    .large img { width: 64px; height: 64px; }
+    .samples { display: flex; align-items: end; justify-content: center; gap: 18px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #30372e; }
+    .samples img { width: 32px; height: 32px; }
+    .samples .gray { filter: grayscale(1); }
+    .samples span { display: block; margin-top: 4px; color: #788271; font-size: 10px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 420px) { body { padding: 16px; } .grid { gap: 10px; } .card { padding: 10px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Vanilla 新增部门</h1>
+    <p>64px 主图、32px 实尺寸与灰度效果。产品部和财务部保持原设计，不在本次修改范围内。</p>
+    <div class="grid">
+      <section class="card"><div class="large"><img src="elven.svg" alt="技术部"></div><h2>技术部</h2><code>elven</code><div class="samples"><div><img src="elven.svg" alt=""><span>32px</span></div><div><img class="gray" src="elven.svg" alt=""><span>灰度</span></div></div></section>
+      <section class="card"><div class="large"><img src="angel.svg" alt="战略部"></div><h2>战略部</h2><code>angel</code><div class="samples"><div><img src="angel.svg" alt=""><span>32px</span></div><div><img class="gray" src="angel.svg" alt=""><span>灰度</span></div></div></section>
+      <section class="card"><div class="large"><img src="undead.svg" alt="运维部"></div><h2>运维部</h2><code>undead</code><div class="samples"><div><img src="undead.svg" alt=""><span>32px</span></div><div><img class="gray" src="undead.svg" alt=""><span>灰度</span></div></div></section>
+      <section class="card"><div class="large"><img src="demon.svg" alt="执行部"></div><h2>执行部</h2><code>demon</code><div class="samples"><div><img src="demon.svg" alt=""><span>32px</span></div><div><img class="gray" src="demon.svg" alt=""><span>灰度</span></div></div></section>
+    </div>
+  </main>
+</body>
+</html>

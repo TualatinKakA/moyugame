@@ -40,9 +40,12 @@ test('number formatting switches to four-decimal scientific notation at 1000T', 
   assert.equal(formatNumber(-1.23456789e20), '-1.2346e20');
 });
 
-test('content graph contains only Fairy and Goblin factions with declarative prologue content', async () => {
+test('content graph contains two playable and four influence-only factions', async () => {
   const { game } = fixture();
-  assert.deepEqual(game.graph.arraysByKind.get('faction').map(item => item.id), ['fairy', 'goblin']);
+  const factions = game.graph.arraysByKind.get('faction');
+  assert.deepEqual(factions.map(item => item.id), ['fairy', 'goblin', 'elven', 'angel', 'undead', 'demon']);
+  assert.deepEqual(factions.filter(item => item.purchase === null).map(item => item.id), ['elven', 'angel', 'undead', 'demon']);
+  assert.ok(factions.every(item => item.factionCoin?.enabled));
   assert.equal(game.graph.arraysByKind.get('story').length, 8);
   assert.ok(game.graph.arraysByKind.get('trophy').length >= 8);
   assert.equal(game.graph.arraysByKind.get('building').some(item => item.alignment === 'neutral'), false);
@@ -229,7 +232,7 @@ test('background settlement applies wages mana and all assistant FC in one segme
   assert.equal(game.select('state').resources.mana, game.select('derived').manaMax);
   assert.equal(game.select('state').stats.run.time, seconds);
   assert.equal(game.select('state').stats.total.offlineTime, seconds);
-  const expectedPerFaction = current.assistants * 0.2 * (current.fcChance / 100) * seconds / 2;
+  const expectedPerFaction = current.assistants * 0.2 * (current.fcChance / 100) * seconds / 6;
   assertClose(game.select('state').resources.factionCoins.fairy, expectedPerFaction);
   assertClose(game.select('state').resources.factionCoins.goblin, expectedPerFaction);
   assertClose(game.select('state').stats.total.factionCoinsByFaction.fairy, expectedPerFaction);
@@ -680,14 +683,14 @@ test('manual clicks use the two-faction pool before alignment and after joining 
   assert.ok(state.resources.factionCoins.goblin > before.goblin, 'joining Fairy does not remove Goblin from the pool');
 });
 
-test('a declarative third faction enters the same drop pool without runtime changes', async () => {
+test('an additional declarative faction enters the same drop pool without runtime changes', async () => {
   const fairy = CONTENT.definitions.find(item => item.id === 'fairy');
-  const third = { ...fairy, id: 'elven', name: '技术部', factionCoin: { ...fairy.factionCoin } };
-  const content = { packs: CONTENT.packs, definitions: [...CONTENT.definitions, third] };
+  const custom = { ...fairy, id: 'customFaction', name: '测试部', factionCoin: { ...fairy.factionCoin } };
+  const content = { packs: CONTENT.packs, definitions: [...CONTENT.definitions, custom] };
   const { game } = fixture(null, { content, seed: 4242 });
   await game.start();
   for (let index = 0; index < 600; index++) game.dispatch({ type: 'work' });
-  assert.ok(game.select('state').resources.factionCoins.elven > 0);
+  assert.ok(game.select('state').resources.factionCoins.customFaction > 0);
 });
 
 test('Fairy treaty is free only at R0 with zero gems and later spends twenty target FC without reducing found', async () => {
@@ -1138,7 +1141,7 @@ test('assistant FC ignores base click production while Tax Collection stays wage
   await game.start();
   const derived = game.select('derived');
   assert.ok(derived.clickReward > 1, 'Golden Pots raises base click production');
-  const expectedPerFaction = derived.assistants * 0.2 * (derived.fcChance / 100) / 2;
+  const expectedPerFaction = derived.assistants * 0.2 * (derived.fcChance / 100) / 6;
   game.tick(1);
   assertClose(game.select('state').resources.factionCoins.fairy, expectedPerFaction);
   assertClose(game.select('state').resources.factionCoins.goblin, expectedPerFaction);
