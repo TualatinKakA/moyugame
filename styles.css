@@ -142,6 +142,8 @@ button.danger { color: var(--red); }
 button.card.building-card { position: relative; width: 100%; min-height: 94px; margin: 0; padding: 8px; display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; grid-template-rows: auto auto auto; align-items: center; gap: 4px 7px; text-align: left; }
 button.card.building-card:hover:not([aria-disabled="true"]) { border-color: var(--green); background: #273022; }
 button.card.building-card:active { transform: none; }
+button.card.building-card.insufficient { opacity: 1; }
+.building-card.insufficient > :not(.building-tooltip) { opacity: .72; }
 .building-icon { grid-column: 1; grid-row: 1; width: 38px; height: 38px; object-fit: contain; image-rendering: auto; }
 .content-icon { display: block; width: 48px; height: 48px; margin-bottom: 8px; object-fit: contain; }
 .content-icon.locked { opacity: .35; filter: grayscale(1); }

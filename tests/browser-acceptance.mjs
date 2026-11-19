@@ -55,6 +55,8 @@ try {
   await unavailableFarm.dispatchEvent('pointerdown', { ...unavailablePoint, pointerType: 'touch', pointerId: 6, isPrimary: true });
   await page.waitForTimeout(250);
   assert.equal(await unavailableFarm.locator('.building-tooltip').getAttribute('aria-hidden'), 'false', 'selected or unavailable facilities still open the long press tooltip');
+  assert.equal(await unavailableFarm.evaluate(card => getComputedStyle(card).opacity), '1', 'unavailable card does not dim its tooltip through parent opacity');
+  assert.equal(await unavailableFarm.locator('.building-tooltip').evaluate(tooltip => getComputedStyle(tooltip).opacity), '1');
   await unavailableFarm.dispatchEvent('pointerup', { ...unavailablePoint, pointerType: 'touch', pointerId: 6, isPrimary: true });
   await unavailableFarm.dispatchEvent('click');
   assert.equal(await unavailableFarm.locator('[data-field="count"]').textContent(), '× 0');
