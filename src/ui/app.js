@@ -330,7 +330,9 @@ function updateBuildingCards() {
     card.querySelector('[data-field="tooltip-count"]').textContent = `当前 ${formatNumber(count)} 个`;
     card.querySelector('[data-field="unit-output"]').textContent = `${money(unitOutput)} / 秒`;
     card.querySelector('[data-field="total-output"]').textContent = `${money(totalOutput)} / 秒`;
-    card.disabled = model.status === 'NEED_RESOURCE';
+    const unavailable = model.status === 'NEED_RESOURCE';
+    card.setAttribute('aria-disabled', String(unavailable));
+    card.classList.toggle('insufficient', unavailable);
     card.setAttribute('aria-label', `${model.viewModel.name}，当前 ${count} 个，单个每秒产出 ${money(unitOutput)}，当前总产出每秒 ${money(totalOutput)}，价格 ${money(model.costs[0]?.value || 0)}`);
   });
   document.querySelectorAll('[data-action="buy-amount"]').forEach(button => {

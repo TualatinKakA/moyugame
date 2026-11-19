@@ -140,7 +140,8 @@ button.danger { color: var(--red); }
 .badge { display: inline-block; padding: 2px 6px; margin-right: 5px; border: 1px solid var(--line); color: var(--green); font-size: 9px; }
 .building-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 button.card.building-card { position: relative; width: 100%; min-height: 94px; margin: 0; padding: 8px; display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; grid-template-rows: auto auto auto; align-items: center; gap: 4px 7px; text-align: left; }
-button.card.building-card:hover:not(:disabled) { border-color: var(--green); background: #273022; }
+button.card.building-card:hover:not([aria-disabled="true"]) { border-color: var(--green); background: #273022; }
+button.card.building-card:active { transform: none; }
 .building-icon { grid-column: 1; grid-row: 1; width: 38px; height: 38px; object-fit: contain; image-rendering: auto; }
 .content-icon { display: block; width: 48px; height: 48px; margin-bottom: 8px; object-fit: contain; }
 .content-icon.locked { opacity: .35; filter: grayscale(1); }
@@ -154,7 +155,7 @@ button.card.building-card:hover:not(:disabled) { border-color: var(--green); bac
 .building-buy { grid-column: 3; grid-row: 1 / 4; min-width: 38px; text-align: right; }
 .building-buy b { display: block; color: var(--green); font: 700 13px Consolas, monospace; }
 .building-buy small { color: #b0b9aa; font-size: 8px; white-space: nowrap; }
-button.card.building-card { -webkit-touch-callout: none; user-select: none; }
+button.card.building-card { -webkit-touch-callout: none; user-select: none; touch-action: manipulation; }
 .building-tooltip { position: fixed; z-index: 72; left: 0; top: 0; width: 260px; max-width: calc(100vw - 16px); padding: 12px 14px; border: 1px solid #71865d; border-radius: 10px; background: #20261d; box-shadow: 0 10px 35px #000c; color: var(--text); text-align: left; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s ease-out, visibility .12s ease-out; }
 .building-card.tooltip-open .building-tooltip { opacity: 1; visibility: visible; }
 .building-tooltip > b, .building-tooltip > small { display: block; }
