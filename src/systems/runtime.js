@@ -428,7 +428,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return result;
   }
   function settleOffline(seconds) {
-    if (seconds <= 0 || cache.get().production <= 0) return null;
+    if (seconds <= 0) return null;
     const plan = planOfflineSegments(seconds, state, scheduler);
     diagnostics.offlineTruncated = plan.truncated;
     let report = null;
@@ -450,6 +450,12 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
     if (result.ok) diagnostics.lastOfflineReport = report;
     return result.ok ? report : null;
+  }
+  function settleBackground(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) return { ok: false, reason: 'INVALID_DELTA' };
+    if (seconds === 0) return { ok: true, report: null };
+    const report = settleOffline(seconds);
+    return report ? { ok: true, report } : { ok: false, reason: 'BACKGROUND_SETTLE_FAILED' };
   }
   function updateSetting(key, value) {
     if (!['buyAmount', 'quickSkills', 'manaRegenOverride'].includes(key)) return { ok: false, reason: 'UNKNOWN_SETTING' };
@@ -476,7 +482,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     cache = new RuntimeCache(state, graph);
     cache.rebuild(); rebuildScheduler(); started = true; stopped = false;
     const away = Math.max(0, (clock.wallNow() - state.lastWallClock) / 1000);
-    if (away > 10) settleOffline(away);
+    if (away > 0) settleOffline(away);
     notify('start');
     return { ok: true, migration: migrated.report, recovered: diagnostics.recoveredSave, offlineReport: diagnostics.lastOfflineReport };
   }
@@ -537,6 +543,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         case 'start': return runTransaction('start', tx => tx.emit('game.started', {}));
         case 'work': return work();
         case 'purchase': return purchase(command.id, command.amount);
+        case 'background.settle': return settleBackground(command.seconds);
         case 'cast': return cast(command.id);
         case 'story.close': return closeStory(command.id, command);
         case 'story.choice': return storyChoice(command.id, command.choiceId);

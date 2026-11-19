@@ -327,11 +327,56 @@ try {
   await audioPage.locator('.app-nav [data-tab="upgrades"]:visible').click();
   await audioPage.locator('[data-upgrade-card="farm-tier1"] [data-action="purchase"]').click();
   await audioPage.waitForFunction(() => window.__purchaseSounds.length === 2);
-  assert.deepEqual(await audioPage.evaluate(() => window.__purchaseSounds), ['register-buy.wav', 'register-upgrade.wav']);
+  assert.deepEqual(await audioPage.evaluate(() => window.__purchaseSounds), ['register-buy.wav', 'register-buy.wav']);
   await audioPage.locator('[data-upgrade-card="farm-tier1"] [data-action="purchase"]').evaluate(button => button.click());
   await audioPage.waitForTimeout(50);
   assert.equal(await audioPage.evaluate(() => window.__purchaseSounds.length), 2, 'owned upgrades do not replay purchase audio');
   await audioContext.close();
+
+  const backgroundState = createSaveState({ now: Date.now(), contentVersions: ['base-v1'] });
+  backgroundState.resources.coins = 1e12;
+  backgroundState.resources.mana = 0;
+  backgroundState.buildings.farm = 10;
+  backgroundState.owned.run['farm-tier1'] = true;
+  backgroundState.owned.run['farm-tier2'] = true;
+  backgroundState.stats.total.clicks = 1;
+  const backgroundContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await backgroundContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(backgroundState) });
+  const backgroundPage = await backgroundContext.newPage(); watch(backgroundPage);
+  await backgroundPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await backgroundPage.locator('#retirementPanel .retirement-card').waitFor();
+  await backgroundPage.evaluate(() => {
+    window.__testHidden = false;
+    window.__backgroundOffset = 0;
+    const wallNow = Date.now;
+    Date.now = () => wallNow() + window.__backgroundOffset;
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => window.__testHidden });
+    window.__testHidden = true;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await backgroundPage.waitForTimeout(100);
+  const beforeBackground = await backgroundPage.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  await backgroundPage.evaluate(() => {
+    window.__backgroundOffset = 3600000;
+    window.__testHidden = false;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await backgroundPage.waitForFunction(key => JSON.parse(localStorage.getItem(key)).stats.total.offlineTime >= 3600, SAVE_KEY);
+  const afterBackground = await backgroundPage.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  const wages = afterBackground.resources.coins - beforeBackground.resources.coins;
+  assert.ok(wages >= 216180 && wages < 217000, `one hidden hour settles offline wages once: ${wages}`);
+  assert.ok(Math.abs(afterBackground.stats.total.offlineTime - beforeBackground.stats.total.offlineTime - 3600) < 1.5);
+  assert.equal(afterBackground.resources.mana, 1000);
+  for (const faction of ['fairy', 'goblin']) {
+    assert.ok(afterBackground.resources.factionCoins[faction] >= 72 && afterBackground.resources.factionCoins[faction] < 73,
+      `${faction} assistant FC is included in hidden settlement`);
+  }
+  await backgroundPage.waitForTimeout(500);
+  await backgroundPage.locator('.top-actions [data-action="save"]').click();
+  await backgroundPage.waitForTimeout(50);
+  const later = await backgroundPage.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  assert.ok(later.stats.run.time - afterBackground.stats.run.time < 2, 'foreground ticks do not double-count hidden time');
+  await backgroundContext.close();
 
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);
   assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);

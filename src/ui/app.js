@@ -38,6 +38,9 @@ let manaEditorUnlocked = false;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
 let lastCoinSound = 0;
+let lastTick = performance.now();
+let backgroundStartedAt = null;
+let backgroundRetryAfter = 0;
 const assistantFactionCoinGains = new Map();
 const coinSoundPools = Array.from({ length: 8 }, (_, index) => {
   const pool = Array.from({ length: 3 }, () => {
@@ -815,8 +818,27 @@ window.addEventListener('resize', () => {
   cancelUpgradeLongPress(); closeUpgradeTooltip();
   if (game) { quickStructure = ''; renderQuickSkills(); updateCastButtons(); }
 });
-window.addEventListener('beforeunload', () => { if (!resetting) game?.save(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && !resetting) game?.save(); });
+function settleBackgroundElapsed(force = false) {
+  if (backgroundStartedAt === null || !graph) return true;
+  const now = Date.now();
+  if (!force && now < backgroundRetryAfter) return false;
+  const seconds = Math.max(0, (now - backgroundStartedAt) / 1000);
+  const result = seconds > 0 ? game.dispatch({ type: 'background.settle', seconds }) : { ok: true };
+  if (!result.ok) { backgroundRetryAfter = now + 1000; return false; }
+  backgroundStartedAt = null; backgroundRetryAfter = 0; lastTick = performance.now();
+  return true;
+}
+window.addEventListener('beforeunload', () => {
+  if (resetting) return;
+  if (backgroundStartedAt !== null && !settleBackgroundElapsed(true)) return;
+  game?.save();
+});
+document.addEventListener('visibilitychange', () => {
+  if (!graph || resetting) return;
+  if (document.hidden) {
+    if (backgroundStartedAt === null) { backgroundStartedAt = Date.now(); game.save(); }
+  } else settleBackgroundElapsed();
+});
 
 async function bootstrap() {
   game = createGameRuntime({ content: CONTENT, saveAdapter, mode: 'production' });
@@ -825,14 +847,16 @@ async function bootstrap() {
   if (state().stats.total.clicks > 0 || Object.keys(state().buildings).length || state().story.pending.length || Object.keys(state().story.completed).length) $('intro').classList.add('hidden');
   game.subscribe(message => { if (message.type === 'commit') factFeedback(message.facts); refresh(message); });
   refresh();
-  let lastTick = performance.now();
+  lastTick = performance.now();
   setInterval(() => {
     const now = performance.now(); const delta = (now - lastTick) / 1000; lastTick = now;
-    if (!document.hidden) game.tick(delta);
+    if (document.hidden) return;
+    if (backgroundStartedAt !== null) { settleBackgroundElapsed(); return; }
+    game.tick(delta);
   }, 200);
   setInterval(showAssistantIncome, 1000);
   setInterval(showAssistantFactionCoins, 1000);
-  setInterval(() => { if (!resetting && game.select('saveStatus').dirty) game.save(); }, 15000);
+  setInterval(() => { if (!resetting && !document.hidden && backgroundStartedAt === null && game.select('saveStatus').dirty) game.save(); }, 15000);
 }
 bootstrap().catch(error => {
   console.error(error);

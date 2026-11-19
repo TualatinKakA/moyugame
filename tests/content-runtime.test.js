@@ -208,6 +208,62 @@ test('offline settlement uses event segments rather than 200ms replay', async ()
   assert.equal(game.select('state').stats.total.offlineTime, 20);
 });
 
+test('background settlement applies wages mana and all assistant FC in one segment', async () => {
+  const seeded = initial();
+  seeded.buildings.farm = 10;
+  seeded.resources.mana = 0;
+  seeded.owned.run['farm-tier1'] = true;
+  seeded.owned.run['farm-tier2'] = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  const before = game.select('state').resources.coins;
+  const current = game.select('derived');
+  const seconds = 8 * 3600;
+  const result = game.dispatch({ type: 'background.settle', seconds });
+  assert.equal(result.ok, true);
+  assert.equal(result.report.segments, 1, 'an idle eight-hour background period needs one calculation');
+  assertClose(game.select('state').resources.coins, before + current.production * current.offlineMultiplier * seconds);
+  assert.equal(game.select('state').resources.mana, game.select('derived').manaMax);
+  assert.equal(game.select('state').stats.run.time, seconds);
+  assert.equal(game.select('state').stats.total.offlineTime, seconds);
+  const expectedPerFaction = current.assistants * 0.2 * (current.fcChance / 100) * current.clickReward * seconds / 2;
+  assertClose(game.select('state').resources.factionCoins.fairy, expectedPerFaction);
+  assertClose(game.select('state').resources.factionCoins.goblin, expectedPerFaction);
+  assertClose(game.select('state').stats.total.factionCoinsByFaction.fairy, expectedPerFaction);
+  assertClose(game.select('state').stats.total.factionCoinsByFaction.goblin, expectedPerFaction);
+});
+
+test('offline and background settlement advance time and mana without production', async () => {
+  const seeded = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  const { game } = fixture(seeded);
+  await game.start();
+  const result = game.dispatch({ type: 'background.settle', seconds: 30 });
+  assert.equal(result.ok, true);
+  assert.equal(game.select('state').stats.run.time, 30);
+  assert.equal(game.select('state').resources.mana, 30);
+  assert.equal(game.select('state').resources.coins, 0);
+
+  const closed = createSaveState({ now: 0, contentVersions: ['base-v1'] });
+  const reopened = fixture(closed, { nowStart: 5000 });
+  await reopened.game.start();
+  assert.equal(reopened.game.select('state').stats.run.time, 5, 'short closed sessions are settled too');
+  assert.equal(reopened.game.select('state').resources.mana, 5);
+});
+
+test('background settlement splits at spell expiry instead of replaying ticks', async () => {
+  const seeded = initial();
+  seeded.buildings.farm = 10;
+  seeded.spellSources.holyLight = { good: true };
+  seeded.timers.spells.holyLight = { remaining: 10 };
+  const { game } = fixture(seeded);
+  await game.start();
+  const result = game.dispatch({ type: 'background.settle', seconds: 30 });
+  assert.equal(result.ok, true);
+  assert.equal(result.report.segments, 2);
+  assert.equal(game.select('state').timers.spells.holyLight, undefined);
+  assert.equal(game.select('state').stats.run.time, 30);
+});
+
 test('abdication uses original gem growth and preserves trophies and prologue', async () => {
   const seeded = initial(); seeded.stats.run.coins = 1e12; seeded.permanentUnlocks['trophy.first_click'] = true;
   const { game } = fixture(seeded);
