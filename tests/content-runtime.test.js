@@ -7,6 +7,7 @@ import { createGameRuntime } from '../src/systems/runtime.js';
 import { createSaveAdapter, createMemoryStorage, SAVE_KEY } from '../src/systems/persistence.js';
 import { createSaveState, migrateAndNormalizeState, stateHash } from '../src/systems/state.js';
 import { gemsForRunCoins, reincarnationRequirement } from '../src/systems/progression.js';
+import { formatNumber } from '../src/core/number.js';
 
 function fixture(initial = null, { failSave = false, nowStart = 1000, content = CONTENT, seed = 0x6d2b79f5 } = {}) {
   let now = nowStart;
@@ -27,6 +28,14 @@ const assertClose = (actual, expected, message = '') => {
   const tolerance = 1e-9 * Math.max(1, Math.abs(expected));
   assert.ok(Math.abs(actual - expected) <= tolerance, `${message} expected ${expected}, got ${actual}`);
 };
+
+test('number formatting switches to four-decimal scientific notation at 1000T', () => {
+  assert.equal(formatNumber(999e12), '999T');
+  assert.equal(formatNumber(1e15), '1.0000e15');
+  assert.equal(formatNumber(1.3848e275), '1.3848e275');
+  assert.equal(formatNumber(1.23456789e20), '1.2346e20');
+  assert.equal(formatNumber(-1.23456789e20), '-1.2346e20');
+});
 
 test('content graph contains only Fairy and Goblin factions with declarative prologue content', async () => {
   const { game } = fixture();
