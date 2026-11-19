@@ -111,21 +111,24 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     if (phase === 'tax') context.taxSeconds = Math.max(0, 30 + mods.taxSecondsAdd);
     if (phase === 'global') {
       const outputs = {};
+      const unitOutputs = {};
       const gemPowerMultiplier = (1 + state.resources.gems * mods.gemPowerAdd / 100) * mods.gemPowerMult;
       globalMult = (1 + mods.globalAdd / 100) * mods.globalMult * gemPowerMultiplier;
       let buildingProduction = 0;
       for (const definition of buildings(graph)) {
         const count = buildingOverrides[definition.id] ?? state.buildings[definition.id] ?? 0;
         const base = definition.production + (mods.buildingBaseAdd[definition.id] || 0);
-        const output = count * base * (1 + (mods.buildingAdd[definition.id] || 0) / 100) * (mods.buildingMult[definition.id] || 1) * globalMult;
+        const unitOutput = base * (1 + (mods.buildingAdd[definition.id] || 0) / 100) * (mods.buildingMult[definition.id] || 1) * globalMult;
+        const output = count * unitOutput;
+        unitOutputs[definition.id] = unitOutput;
         outputs[definition.id] = output;
         buildingProduction += output;
       }
-      Object.assign(context, { outputs, buildingProduction, globalMult });
+      Object.assign(context, { outputs, unitOutputs, buildingProduction, globalMult });
     }
     if (phase === 'click') context.clickReward = Math.max(1, (1 + mods.clickBaseAdd) * (1 + mods.clickAdd / 100) * mods.clickMult);
   }
-  const { outputs, buildingProduction, assistants, clickReward, taxSeconds } = context;
+  const { outputs, unitOutputs, buildingProduction, assistants, clickReward, taxSeconds } = context;
   // Realm Grinder Assistants continuously produce 5% of click reward each, without emitting clicks.
   const assistantProduction = Math.max(0, assistants * clickReward * 0.05
     * (1 + mods.assistantProdAdd / 100) * mods.assistantProdMult * globalMult);
@@ -134,7 +137,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     ? Math.floor(1.25 * Math.log(1 + state.resources.gems) ** 0.9 / Math.log(10))
     : 0;
   return Object.freeze({
-    outputs, production, buildingProduction, assistantProduction, assistants, clickReward,
+    outputs, unitOutputs, production, buildingProduction, assistantProduction, assistants, clickReward,
     manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, (1 + mods.manaRegenAdd) * mods.manaRegenMult),
     fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance + mods.fcChanceAdd, taxSeconds,
     assistantFactionCoinMultiplier: mods.assistantFcMult,

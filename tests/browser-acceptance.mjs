@@ -115,6 +115,21 @@ try {
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="output"]').textContent(), '本次 +¥ 20 / 秒');
   await gamePage.locator('#mainPanel [data-id="farm"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-id="farm"] [data-field="count"]').textContent(), '× 11');
+  const farmCard = gamePage.locator('#mainPanel [data-building-card][data-id="farm"]');
+  await farmCard.hover();
+  assert.equal(await farmCard.locator('.building-tooltip').getAttribute('aria-hidden'), 'false');
+  assert.equal(await farmCard.locator('[data-field="unit-output"]').textContent(), '¥ 2 / 秒');
+  assert.equal(await farmCard.locator('[data-field="total-output"]').textContent(), '¥ 22 / 秒');
+  await gamePage.locator('#mainPanel [data-action="buy-amount"][data-value="10"]').hover();
+  assert.equal(await farmCard.locator('.building-tooltip').getAttribute('aria-hidden'), 'true');
+  const farmBox = await farmCard.boundingBox();
+  const touchPoint = { clientX: farmBox.x + farmBox.width / 2, clientY: farmBox.y + farmBox.height / 2 };
+  await farmCard.dispatchEvent('pointerdown', { ...touchPoint, pointerType: 'touch', pointerId: 7, isPrimary: true });
+  await gamePage.waitForTimeout(250);
+  assert.equal(await farmCard.locator('.building-tooltip').getAttribute('aria-hidden'), 'false', 'long press opens facility production tooltip');
+  await farmCard.dispatchEvent('pointerup', { ...touchPoint, pointerType: 'touch', pointerId: 7, isPrimary: true });
+  await farmCard.dispatchEvent('click');
+  assert.equal(await farmCard.locator('[data-field="count"]').textContent(), '× 11', 'long press release does not purchase a facility');
   assert.match(await gamePage.locator('#workContent [data-id="taxCollection"]').textContent(), /33\.32 秒/, 'Tax Collection shows live dynamic seconds');
   await gamePage.locator('[data-action="close-panel"]').click();
 
@@ -129,6 +144,11 @@ try {
   const orderedIds = await gamePage.locator('#mainPanel [data-upgrade-card]').evaluateAll(nodes => nodes.map(node => node.dataset.upgradeCard));
   assert.notEqual(orderedIds[0], 'gemPower', 'owned upgrades do not lead the all-upgrades list');
   assert.equal(orderedIds.at(-1), 'gemPower', 'owned upgrades sort last in the all-upgrades list');
+  await gamePage.locator('.app-nav [data-tab="buildings"]').click();
+  const boostedFarmCard = gamePage.locator('#mainPanel [data-building-card][data-id="farm"]');
+  await boostedFarmCard.hover();
+  assert.equal(await boostedFarmCard.locator('[data-field="unit-output"]').textContent(), '¥ 6 / 秒');
+  assert.equal(await boostedFarmCard.locator('[data-field="total-output"]').textContent(), '¥ 66 / 秒', 'facility tooltip refreshes with global production modifiers');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   assert.equal(await gamePage.locator('#workContent .skill-btn').count(), 3, 'mobile quick bar caps at three');

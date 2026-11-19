@@ -154,6 +154,19 @@ button.card.building-card:hover:not(:disabled) { border-color: var(--green); bac
 .building-buy { grid-column: 3; grid-row: 1 / 4; min-width: 38px; text-align: right; }
 .building-buy b { display: block; color: var(--green); font: 700 13px Consolas, monospace; }
 .building-buy small { color: #b0b9aa; font-size: 8px; white-space: nowrap; }
+button.card.building-card { -webkit-touch-callout: none; user-select: none; }
+.building-tooltip { position: fixed; z-index: 72; left: 0; top: 0; width: 260px; max-width: calc(100vw - 16px); padding: 12px 14px; border: 1px solid #71865d; border-radius: 10px; background: #20261d; box-shadow: 0 10px 35px #000c; color: var(--text); text-align: left; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s ease-out, visibility .12s ease-out; }
+.building-card.tooltip-open .building-tooltip { opacity: 1; visibility: visible; }
+.building-tooltip > b, .building-tooltip > small { display: block; }
+.building-tooltip > b { margin-bottom: 2px; font-size: 14px; }
+.building-tooltip > small { margin-bottom: 10px; color: var(--green); font-size: 10px; }
+.building-tooltip-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-top: 7px; border-top: 1px solid var(--line); color: #c0c8ba; font-size: 11px; line-height: 1.5; }
+.building-tooltip-row + .building-tooltip-row { margin-top: 7px; }
+.building-tooltip-row strong { color: var(--yellow); font: 12px Consolas, monospace; white-space: nowrap; }
+@media (max-width: 900px), (pointer: coarse) {
+  .building-card:not(.tooltip-following) .building-tooltip { left: 12px !important; right: 12px; top: auto !important; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); width: auto; max-width: none; transform: none !important; border-radius: 12px; }
+}
+.building-card.tooltip-following .building-tooltip { left: 0; right: auto; top: 0; bottom: auto; width: 260px; max-width: calc(100vw - 16px); }
 .main-panel { position: fixed; z-index: 35; left: 8px; top: 180px; bottom: 20px; width: calc(var(--left-rail) - 16px); min-width: 0; padding: 12px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #526048; background: #141714; box-shadow: 8px 0 30px #0009; }
 .main-panel.more-dialog, .main-panel.skills-dialog { left: 50%; top: 50%; bottom: auto; width: min(960px, calc(100vw - 48px)); height: auto; max-height: calc(100dvh - 64px); transform: translate(-50%, -50%); border-color: #687d58; box-shadow: 0 24px 90px #000c; }
 .main-panel.skills-dialog { width: min(760px, calc(100vw - 48px)); }

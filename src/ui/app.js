@@ -308,22 +308,30 @@ function buyControls() {
   const current = state().settings.buyAmount;
   return `<div class="buy-controls" aria-label="采购数量">${[1, 10, 'max'].map(value => `<button data-action="buy-amount" data-value="${value}" aria-pressed="${current === value}" class="${current === value ? 'active' : ''}">${String(value).toUpperCase()}</button>`).join('')}</div>`;
 }
-function buildingCard(item) {
-  return `<button type="button" class="card building-card" data-action="purchase" data-building-card data-id="${item.id}">
+function buildingCard(item, location) {
+  const tooltipId = `building-tooltip-${location}-${item.id}`;
+  return `<button type="button" class="card building-card" data-action="purchase" data-building-card data-id="${item.id}" aria-describedby="${tooltipId}">
     <img class="building-icon" src="${item.ui.icon}" alt=""><span class="building-name"><b>${item.name}</b><small data-field="count">× 0</small></span>
     <span class="building-output" data-field="output">本次 +¥ 0 / 秒</span><span class="building-price" data-field="cost"></span>
-    <span class="building-buy"><b data-field="quantity"></b><small>点击采购</small></span></button>`;
+    <span class="building-buy"><b data-field="quantity"></b><small>点击采购</small></span>
+    <span class="building-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><small data-field="tooltip-count">当前 0 个</small><span class="building-tooltip-row"><span>单个产出</span><strong data-field="unit-output">¥ 0 / 秒</strong></span><span class="building-tooltip-row"><span>当前总产出</span><strong data-field="total-output">¥ 0 / 秒</strong></span></span></button>`;
 }
 function updateBuildingCards() {
   document.querySelectorAll('[data-building-card]').forEach(card => {
     const model = view(card.dataset.id);
     if (!model.viewModel) return;
-    card.querySelector('[data-field="count"]').textContent = `× ${formatNumber(model.viewModel.count)}`;
+    const count = model.viewModel.count;
+    const unitOutput = derived().unitOutputs[card.dataset.id] || 0;
+    const totalOutput = derived().outputs[card.dataset.id] || 0;
+    card.querySelector('[data-field="count"]').textContent = `× ${formatNumber(count)}`;
     card.querySelector('[data-field="output"]').textContent = `本次 +${money(model.viewModel.purchaseProduction)} / 秒`;
     card.querySelector('[data-field="cost"]').textContent = money(model.costs[0]?.value || 0);
     card.querySelector('[data-field="quantity"]').textContent = `+${model.quantity || 0}`;
+    card.querySelector('[data-field="tooltip-count"]').textContent = `当前 ${formatNumber(count)} 个`;
+    card.querySelector('[data-field="unit-output"]').textContent = `${money(unitOutput)} / 秒`;
+    card.querySelector('[data-field="total-output"]').textContent = `${money(totalOutput)} / 秒`;
     card.disabled = model.status === 'NEED_RESOURCE';
-    card.setAttribute('aria-label', `${model.viewModel.name}，当前 ${model.viewModel.count} 个，价格 ${money(model.costs[0]?.value || 0)}`);
+    card.setAttribute('aria-label', `${model.viewModel.name}，当前 ${count} 个，单个每秒产出 ${money(unitOutput)}，当前总产出每秒 ${money(totalOutput)}，价格 ${money(model.costs[0]?.value || 0)}`);
   });
   document.querySelectorAll('[data-action="buy-amount"]').forEach(button => {
     const value = button.dataset.value === 'max' ? 'max' : Number(button.dataset.value);
@@ -335,7 +343,7 @@ function renderFacilityRail() {
   const items = visible('building');
   const signature = items.map(item => item.id).join(',');
   if (signature !== facilityStructure) {
-    $('facilityRail').innerHTML = `<div class="facility-head"><div><small>常驻设施</small><h2>设施采购</h2></div>${buyControls()}</div><div class="facility-scroll panel-scroll"><div class="card-grid building-grid">${items.map(buildingCard).join('')}</div></div>`;
+    $('facilityRail').innerHTML = `<div class="facility-head"><div><small>常驻设施</small><h2>设施采购</h2></div>${buyControls()}</div><div class="facility-scroll panel-scroll"><div class="card-grid building-grid">${items.map(item => buildingCard(item, 'rail')).join('')}</div></div>`;
     facilityStructure = signature;
   }
   updateBuildingCards();
@@ -397,7 +405,7 @@ function updateQuickSkill(id, mode) {
 }
 
 function buildingPanel() {
-  return `<div class="panel-head"><div><h2>设施采购</h2><p>点击设施卡，按当前数量直接采购。</p></div>${buyControls()}</div><div class="card-grid building-grid">${visible('building').map(buildingCard).join('')}</div>`;
+  return `<div class="panel-head"><div><h2>设施采购</h2><p>点击设施卡，按当前数量直接采购。</p></div>${buyControls()}</div><div class="card-grid building-grid">${visible('building').map(item => buildingCard(item, 'panel')).join('')}</div>`;
 }
 function upgradeCard(item) {
   const status = view(item.id).status;
@@ -504,7 +512,7 @@ function updatePanel() {
   document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card])').forEach(button => {
     const model = view(button.dataset.id);
     const unavailable = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
-    const card = button.closest('[data-upgrade-card]');
+    const card = button.closest(tooltipEntrySelector);
     if (card) {
       const item = definition(button.dataset.id);
       const cost = model.costs.map(formatCost).join(' + ');
@@ -727,9 +735,12 @@ let upgradeLongPress = null;
 let suppressedUpgradeClick = null;
 const upgradeLongPressDelay = 200;
 const upgradeLongPressMoveLimit = 12;
+const tooltipEntrySelector = '[data-upgrade-card], [data-building-card]';
+const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card]';
+const tooltipElement = entry => entry?.querySelector('.upgrade-tooltip, .building-tooltip');
 function positionUpgradeTooltip(entry) {
   const rect = entry.getBoundingClientRect();
-  const tooltip = entry.querySelector('.upgrade-tooltip');
+  const tooltip = tooltipElement(entry);
   const center = Math.max(138, Math.min(innerWidth - 138, rect.left + rect.width / 2));
   const above = rect.top >= 190;
   tooltip.style.left = `${center}px`;
@@ -737,7 +748,7 @@ function positionUpgradeTooltip(entry) {
   tooltip.style.transform = above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)';
 }
 function positionUpgradeTooltipAt(entry, x, y) {
-  const tooltip = entry.querySelector('.upgrade-tooltip');
+  const tooltip = tooltipElement(entry);
   const width = tooltip.offsetWidth;
   const height = tooltip.offsetHeight;
   const left = Math.max(8, Math.min(innerWidth - width - 8, x - width / 2));
@@ -748,7 +759,7 @@ function positionUpgradeTooltipAt(entry, x, y) {
 function closeUpgradeTooltip() {
   if (!activeUpgradeTooltip) return;
   activeUpgradeTooltip.classList.remove('tooltip-open', 'tooltip-following');
-  activeUpgradeTooltip.querySelector('.upgrade-tooltip').setAttribute('aria-hidden', 'true');
+  tooltipElement(activeUpgradeTooltip)?.setAttribute('aria-hidden', 'true');
   activeUpgradeTooltip = null;
   touchUpgradeTooltip = null;
 }
@@ -757,7 +768,7 @@ function openUpgradeTooltip(entry, touch = false) {
   if (activeUpgradeTooltip && activeUpgradeTooltip !== entry) closeUpgradeTooltip();
   activeUpgradeTooltip = entry;
   touchUpgradeTooltip = touch ? entry : null;
-  const tooltip = entry.querySelector('.upgrade-tooltip');
+  const tooltip = tooltipElement(entry);
   tooltip.style.transition = touch ? 'none' : '';
   entry.classList.add('tooltip-open');
   entry.classList.toggle('tooltip-following', touch);
@@ -776,7 +787,7 @@ document.addEventListener('pointerover', event => {
   if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget))) {
     openFactionCoinTooltip(fcItem);
   }
-  const entry = event.target.closest('[data-upgrade-card]');
+  const entry = event.target.closest(tooltipEntrySelector);
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
   if (entry !== dismissedUpgradeTooltip) openUpgradeTooltip(entry);
 });
@@ -786,7 +797,7 @@ document.addEventListener('pointerout', event => {
   if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget)) && activeFactionCoinTooltip === fcItem) {
     closeFactionCoinTooltip();
   }
-  const entry = event.target.closest('[data-upgrade-card]');
+  const entry = event.target.closest(tooltipEntrySelector);
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
   if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
   dismissedUpgradeTooltip = null;
@@ -796,17 +807,17 @@ document.addEventListener('focusin', event => {
   if (fcItem && fcItem.matches(':focus-visible')) {
     openFactionCoinTooltip(fcItem);
   }
-  const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  const button = event.target.closest(tooltipButtonSelector);
   if (!button || !button.matches(':focus-visible')) return;
   dismissedUpgradeTooltip = null;
-  openUpgradeTooltip(button.closest('[data-upgrade-card]'));
+  openUpgradeTooltip(button.closest(tooltipEntrySelector));
 });
 document.addEventListener('focusout', event => {
   const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
   if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget)) && activeFactionCoinTooltip === fcItem) {
     closeFactionCoinTooltip();
   }
-  const entry = event.target.closest('[data-upgrade-card]');
+  const entry = event.target.closest(tooltipEntrySelector);
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
   if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
   dismissedUpgradeTooltip = null;
@@ -840,7 +851,7 @@ document.addEventListener('pointerdown', event => {
     return;
   }
 
-  const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  const button = event.target.closest(tooltipButtonSelector);
   if (!button) return;
   const record = {
     button, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
@@ -849,7 +860,7 @@ document.addEventListener('pointerdown', event => {
   record.timer = setTimeout(() => {
     if (upgradeLongPress !== record) return;
     record.triggered = true;
-    openUpgradeTooltip(button.closest('[data-upgrade-card]'), true);
+    openUpgradeTooltip(button.closest(tooltipEntrySelector), true);
   }, upgradeLongPressDelay);
   upgradeLongPress = record;
 });
@@ -880,7 +891,7 @@ document.addEventListener('pointermove', event => {
     return;
   }
   event.preventDefault();
-  const entry = document.elementFromPoint(press.x, press.y)?.closest('[data-upgrade-card]');
+  const entry = document.elementFromPoint(press.x, press.y)?.closest(tooltipEntrySelector);
   if (entry && entry !== activeUpgradeTooltip) openUpgradeTooltip(entry, true);
   else if (touchUpgradeTooltip) positionUpgradeTooltipAt(touchUpgradeTooltip, press.x, press.y);
 });
@@ -917,13 +928,14 @@ document.addEventListener('pointercancel', event => {
 document.addEventListener('contextmenu', event => {
   const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
   if (fcItem) event.preventDefault();
-  const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  const button = event.target.closest(tooltipButtonSelector);
   if (button && (upgradeLongPress?.button === button || touchUpgradeTooltip?.contains(button))) event.preventDefault();
 });
-$('mainPanel').addEventListener('scroll', () => {
+document.addEventListener('scroll', event => {
+  if (!(event.target instanceof Element) || !event.target.matches('#mainPanel, .facility-scroll')) return;
   cancelUpgradeLongPress();
   closeUpgradeTooltip();
-}, { passive: true });
+}, { passive: true, capture: true });
 
 function setAssistantTooltip(open) {
   const summary = $('assistantSummary');
@@ -962,7 +974,7 @@ document.addEventListener('click', event => {
   }
 
   if (!event.target.closest('#factionCoinDock') && !event.target.closest('#factionCoinToggle')) setFactionCoinPanel(false);
-  const upgradeButton = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
+  const upgradeButton = event.target.closest(tooltipButtonSelector);
   if (upgradeButton && suppressedUpgradeClick && performance.now() < suppressedUpgradeClick.until) {
     event.preventDefault();
     suppressedUpgradeClick = null;
