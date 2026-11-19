@@ -229,7 +229,7 @@ test('background settlement applies wages mana and all assistant FC in one segme
   assert.equal(game.select('state').resources.mana, game.select('derived').manaMax);
   assert.equal(game.select('state').stats.run.time, seconds);
   assert.equal(game.select('state').stats.total.offlineTime, seconds);
-  const expectedPerFaction = current.assistants * 0.2 * (current.fcChance / 100) * current.clickReward * seconds / 2;
+  const expectedPerFaction = current.assistants * 0.2 * (current.fcChance / 100) * seconds / 2;
   assertClose(game.select('state').resources.factionCoins.fairy, expectedPerFaction);
   assertClose(game.select('state').resources.factionCoins.goblin, expectedPerFaction);
   assertClose(game.select('state').stats.total.factionCoinsByFaction.fairy, expectedPerFaction);
@@ -570,14 +570,14 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
 test('spell descriptions resolve effect targets through current building names', () => {
   const spell = CONTENT.definitions.find(item => item.id === 'fairyChanting');
   const graph = compileContentGraph(CONTENT);
-  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%，数字员工影响力产出 ×3。');
+  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%。');
   const renamed = {
     packs: CONTENT.packs,
     definitions: CONTENT.definitions.map(item => item.id === 'farm' ? { ...item, name: '附魔工位' } : item),
   };
   const renamedGraph = compileContentGraph(renamed);
   const renamedSpell = renamedGraph.definitionsById.get('fairyChanting');
-  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出提高 50000%，数字员工影响力产出 ×3。');
+  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出提高 50000%。');
 });
 
 test('assistant count and production modifiers compose through generic additive and multiplicative channels', async () => {
@@ -1090,7 +1090,7 @@ test('Fairy and Goblin contracts and upgrades use 24 self-contained SVG icons wi
 });
 
 
-test('assistant faction coins apply click multipliers online and across offline spell expiry', async () => {
+test('assistant faction coins ignore click multipliers online and across offline spell expiry', async () => {
   const makeAssistantSave = () => {
     const seeded = initial();
     seeded.selections.alignment = 'good';
@@ -1104,31 +1104,31 @@ test('assistant faction coins apply click multipliers online and across offline 
   assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
   assert.equal(game.dispatch({ type: 'cast', id: 'holyLight' }).ok, true);
   assertClose(game.select('derived').clickReward, 18.5);
-  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.74);
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04, 'click skills do not change assistant FC rate');
   game.tick(1);
-  assertClose(game.select('state').resources.factionCoins.fairy, 0.37);
-  assertClose(game.select('state').resources.factionCoins.goblin, 0.37);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.02);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.02);
   game.tick(9);
-  assertClose(game.select('state').resources.factionCoins.fairy, 3.7);
-  assertClose(game.select('state').resources.factionCoins.goblin, 3.7);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.2);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.2);
   assertClose(game.select('derived').clickReward, 1);
   assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
   game.tick(1);
-  assertClose(game.select('state').resources.factionCoins.fairy, 3.72);
-  assertClose(game.select('state').resources.factionCoins.goblin, 3.72);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.22);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.22);
 
   const offline = makeAssistantSave();
   offline.lastWallClock = 0;
   offline.timers.spells.holyLight = { remaining: 10 };
   const offlineFixture = fixture(offline, { nowStart: 20000 });
   const started = await offlineFixture.game.start();
-  assertClose(started.offlineReport.factionCoinsFound.fairy, 3.9);
-  assertClose(started.offlineReport.factionCoinsFound.goblin, 3.9);
+  assertClose(started.offlineReport.factionCoinsFound.fairy, 0.4);
+  assertClose(started.offlineReport.factionCoinsFound.goblin, 0.4);
   assertClose(offlineFixture.game.select('derived').clickReward, 1);
 });
 
 
-test('assistant FC includes base click production while Tax Collection stays wage-only without Coin Pillage', async () => {
+test('assistant FC ignores base click production while Tax Collection stays wage-only without Coin Pillage', async () => {
   const seeded = initial();
   seeded.selections.alignment = 'good'; seeded.selections.faction = 'fairy';
   seeded.buildings = { farm: 10, inn: 10, blacksmith: 10 };
@@ -1138,7 +1138,7 @@ test('assistant FC includes base click production while Tax Collection stays wag
   await game.start();
   const derived = game.select('derived');
   assert.ok(derived.clickReward > 1, 'Golden Pots raises base click production');
-  const expectedPerFaction = derived.assistants * 0.2 * (derived.fcChance / 100) * derived.clickReward / 2;
+  const expectedPerFaction = derived.assistants * 0.2 * (derived.fcChance / 100) / 2;
   game.tick(1);
   assertClose(game.select('state').resources.factionCoins.fairy, expectedPerFaction);
   assertClose(game.select('state').resources.factionCoins.goblin, expectedPerFaction);
@@ -1149,7 +1149,7 @@ test('assistant FC includes base click production while Tax Collection stays wag
 });
 
 
-test('manual click FC uses the same click production buffs as assistant FC', async () => {
+test('manual click FC grants one coin per hit regardless of click buffs', async () => {
   const seeded = initial();
   seeded.selections.alignment = 'good';
   seeded.progression.reincarnations = 9;
@@ -1159,12 +1159,12 @@ test('manual click FC uses the same click production buffs as assistant FC', asy
   assertClose(manualFact(game.dispatch({ type: 'work' })).payload.amount, 1);
   assert.equal(game.dispatch({ type: 'cast', id: 'holyLight' }).ok, true);
   const buffed = manualFact(game.dispatch({ type: 'work' }));
-  assertClose(buffed.payload.amount, 19.425);
-  assertClose(game.select('state').stats.run.factionCoins, 20.425);
+  assertClose(buffed.payload.amount, 1);
+  assertClose(game.select('state').stats.run.factionCoins, 2);
 });
 
 
-test('Fairy Chanting triples assistant FC online and through offline expiry', async () => {
+test('Fairy Chanting leaves assistant FC unchanged online and through offline expiry', async () => {
   const makeSave = () => {
     const seeded = initial();
     seeded.selections.alignment = 'good';
@@ -1178,22 +1178,22 @@ test('Fairy Chanting triples assistant FC online and through offline expiry', as
   assertClose(game.select('derived').assistantFactionCoinMultiplier, 1);
   assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
   assert.equal(game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
-  assertClose(game.select('derived').assistantFactionCoinMultiplier, 3);
-  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.12);
+  assertClose(game.select('derived').assistantFactionCoinMultiplier, 1, 'Fairy Chanting no longer boosts assistant FC');
+  assertClose(game.select('factionCoins').assistant.totalPerSecond, 0.04);
   game.tick(10);
-  assertClose(game.select('state').resources.factionCoins.fairy, 0.6);
-  assertClose(game.select('state').resources.factionCoins.goblin, 0.6);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.2);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.2);
   assertClose(game.select('derived').assistantFactionCoinMultiplier, 1);
   game.tick(1);
-  assertClose(game.select('state').resources.factionCoins.fairy, 0.62);
-  assertClose(game.select('state').resources.factionCoins.goblin, 0.62);
+  assertClose(game.select('state').resources.factionCoins.fairy, 0.22);
+  assertClose(game.select('state').resources.factionCoins.goblin, 0.22);
 
   const offline = makeSave();
   offline.lastWallClock = 0; offline.timers.spells.fairyChanting = { remaining: 10 };
   const offlineFixture = fixture(offline, { nowStart: 20000 });
   const started = await offlineFixture.game.start();
-  assertClose(started.offlineReport.factionCoinsFound.fairy, 0.8);
-  assertClose(started.offlineReport.factionCoinsFound.goblin, 0.8);
+  assertClose(started.offlineReport.factionCoinsFound.fairy, 0.4);
+  assertClose(started.offlineReport.factionCoinsFound.goblin, 0.4);
   assertClose(offlineFixture.game.select('derived').assistantFactionCoinMultiplier, 1);
 });
 

@@ -319,11 +319,13 @@ function upgradesPanel(category = null) {
   return `<div class="panel-head"><div><h2>${title}</h2><p>点击购买，悬停或长按查看名称、价格与效果。</p></div></div>${upgradeSections(items)}`;
 }
 function choiceCard(item) {
-  const status = view(item.id).status;
+  const model = view(item.id);
+  const status = model.status;
   const selected = status === 'SELECTED';
   const locked = selected || status === 'LOCKED_REQUIREMENT';
   const label = selected ? (item.kind === 'alignment' ? '当前立场' : '当前部门') : '选择';
-  const price = item.kind === 'alignment' ? `<small class="choice-price">${money(item.purchase.costs[0].amount.constant)}</small>` : '';
+  const priceText = model.costs.length ? model.costs.map(cost => formatCost(cost.resource === 'factionCoin.target' ? { ...cost, resource: `factionCoin.${item.id}` } : cost)).join(' + ') : '免费';
+  const price = `<small class="choice-price">${priceText}</small>`;
   return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3 class="choice-heading"><span>${item.name}</span>${price}</h3><p>${description(item)}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
 }
 function factionsPanel() {

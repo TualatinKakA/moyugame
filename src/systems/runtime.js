@@ -134,7 +134,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
 
   function settleAssistantFactionCoins(tx, delta, offline, derived) {
     const entries = eligibleFactionCoins(tx.state);
-    const total = derived.assistants * 0.2 * (derived.fcChance / 100) * derived.clickReward * derived.assistantFactionCoinMultiplier * delta;
+    const total = derived.assistants * 0.2 * (derived.fcChance / 100) * derived.assistantFactionCoinMultiplier * delta;
     if (!entries.length || total <= 0) return;
     const amount = total / entries.length;
     for (const definition of entries) grantFactionCoins(tx, {
@@ -271,7 +271,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const eligible = eligibleFactionCoins(tx.state);
       if (eligible.length && random(tx, 'drops:manualClick') < cache.get().fcChance / 100) {
         const factionId = chooseFactionCoin(tx, eligible, 'drops:manualClick');
-        grantFactionCoins(tx, { factionId, amount: cache.get().clickReward, source: 'manualClick' });
+        grantFactionCoins(tx, { factionId, amount: 1, source: 'manualClick' });
       }
       tx.emit('work.clicked', { reward });
     });
@@ -506,7 +506,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const derived = cache.get();
       const factions = (graph.arraysByKind.get('faction') || []).filter(definition => definition.factionCoin?.enabled === true);
       const pool = eligibleFactionCoins(state).map(definition => ({ factionId: definition.id, weight: definition.factionCoin.baseWeight }));
-      const assistantPerSecond = pool.length ? derived.assistants * 0.2 * (derived.fcChance / 100) * derived.clickReward * derived.assistantFactionCoinMultiplier : 0;
+      const assistantPerSecond = pool.length ? derived.assistants * 0.2 * (derived.fcChance / 100) * derived.assistantFactionCoinMultiplier : 0;
       const assistantShare = pool.length ? assistantPerSecond / pool.length : 0;
       return {
         chance: derived.fcChance,
