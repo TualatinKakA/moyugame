@@ -286,17 +286,19 @@ try {
   for (let tier = 1; tier <= 23; tier++) {
     await completePage.locator(`[data-upgrade-card="farm-tier${tier}"] [data-action="purchase"]`).click();
   }
-  assert.equal(await completePage.locator('#mainPanel [data-upgrade-card].owned').count(), 23, 'every upgrade can actually be purchased');
+  assert.equal(await completePage.locator('#mainPanel > .upgrade-section [data-upgrade-card="collection-farm"]').count(), 1, 'purchased Farm upgrades collapse into one collection');
+  await completePage.locator('[data-upgrade-card="collection-farm"] [data-action="toggle-upgrade-collection"]').click();
+  assert.equal(await completePage.locator('.upgrade-collection-detail [data-upgrade-card].owned').count(), 23, 'collection expands to every purchased upgrade');
   assert.equal(await completePage.locator('#assistants').textContent(), '2', 'only the first two tiers grant assistants');
   await completeContext.close();
 
   const artContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const artPage = await artContext.newPage(); watch(artPage);
   await artPage.goto(`${origin}/assets/images/content-icons/preview.html`, { waitUntil: 'domcontentloaded' });
-  assert.equal(await artPage.locator('main img').count(), 816, 'preview renders a large and 32px copy of all 408 SVGs');
+  assert.equal(await artPage.locator('main img').count(), 850, 'preview renders a large and 32px copy of all 425 SVGs');
   await artPage.waitForFunction(() => {
     const images = [...document.querySelectorAll('main img')];
-    return images.length === 816 && images.every(image => image.complete && image.naturalWidth === 64);
+    return images.length === 850 && images.every(image => image.complete && image.naturalWidth === 64);
   });
   await noOverflow(artPage, 'facility artwork preview');
   await artContext.close();

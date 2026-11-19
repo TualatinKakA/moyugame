@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">全球总部 · 已购升级合集</title>
+  <desc id="desc">设施主体图案，右上角叠加红色向上箭头，表示该建筑全部已购买升级的合集。</desc>
+  <g id="royal-castle-body">
+    <path d="m25 13 14-1 4 41-20 2Z" fill="#D9E2E2"/>
+    <path d="m25 13 14-1 1 5-16 2Z" fill="#EEF3F2"/>
+    <path d="m39 12 5 4 4 37-5-1Z" fill="#697473"/>
+    <path d="m7 35 17-4 2 23-20 3Z" fill="#AAB8B8"/>
+    <path d="m40 30 16 3 2 21-18-2Z" fill="#AAB8B8"/>
+    <path d="m56 33 4 5-1 17-4-2Z" fill="#46504F"/>
+    <path d="m6 54 51-3 3 6-50 4-5-3Z" fill="#333B3A"/>
+    <path d="m28 23 4 0 1 5-4 0ZM35 22l4 0 1 5-4 0ZM28 33l4 0 1 5-4 0ZM36 32l4 0 1 5-4 0ZM29 43l4 0 1 6-4 0ZM37 42l4 0 1 6-4 0Z" fill="#697473"/>
+    <path d="m11 40 5-1 1 5-5 1ZM45 39l5 1 1 5-5-1Z" fill="#46504F"/>
+    <path d="m23 12 10-7 11 6-5 6-14 1Z" fill="#C4764D"/>
+    <path d="m23 12 10-7 2 5-9 6Z" fill="#DF9A6C"/>
+    <path d="m29 1 7-1 6 5-2 7-8 1-6-5Z" fill="#91B77A"/>
+    <path d="m29 1 7-1 6 5-13 1Z" fill="#B4CDA3"/>
+    <path d="m26 6 16-1-2 3-13 1ZM32 0l2 0 1 12-3 1Z" fill="#697473"/>
+  </g>
+  <g id="purchased-upgrades-arrow">
+    <path d="M51 2 63 15h-7v10H46V15h-7Z" fill="#252A27" opacity=".4" transform="translate(1 1)"/>
+    <path d="M51 2 63 15h-7v10H46V15h-7Z" fill="#E84C4F" stroke="#252A27" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M51 4 60 14h-4v2l-5-6-5 6v-2h4Z" fill="#FF8A80"/>
+  </g>
+</svg>

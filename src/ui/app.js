@@ -36,6 +36,7 @@ let quickStructure = '';
 let facilityStructure = '';
 let lastUpgradeRailRender = 0;
 let upgradeRailStructure = '';
+const expandedUpgradeCollections = new Set();
 let manaEditorUnlocked = false;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
@@ -306,12 +307,33 @@ function sortedUpgrades(items) {
   const order = { PURCHASABLE: 0, NEED_RESOURCE: 1, AVAILABLE_UNAFFORDABLE: 1, LOCKED_REQUIREMENT: 2, OWNED: 3, SELECTED: 3 };
   return [...items].sort((left, right) => (order[view(left.id).status] ?? 4) - (order[view(right.id).status] ?? 4));
 }
+function collectionEffect(building, items) {
+  const context = { state: state(), derived: derived() };
+  let productionMultiplier = 1;
+  let assistants = 0;
+  for (const item of items) for (const effect of item.effects) {
+    if (effect.when && !evaluateCondition(graph, effect.when, context)) continue;
+    if (effect.stat === 'building.production' && effect.operation === 'multiplyPercent') productionMultiplier *= 1 + effect.value.constant / 100;
+    if (effect.stat === 'assistants.count' && effect.operation === 'add') assistants += effect.value.constant;
+  }
+  return `${building.name}产出提高 ${formatNumber((productionMultiplier - 1) * 100)}%${assistants ? `，数字员工 +${formatNumber(assistants)}` : ''}。`;
+}
+function upgradeCollectionCard(building, items) {
+  const expanded = expandedUpgradeCollections.has(building.id);
+  const tooltipId = `upgrade-tooltip-collection-${building.id}`;
+  const effect = collectionEffect(building, items);
+  const card = `<article class="upgrade-entry owned upgrade-collection" data-upgrade-card="collection-${building.id}"><button type="button" class="upgrade-entry-button" data-action="toggle-upgrade-collection" data-building-id="${building.id}" aria-describedby="${tooltipId}" aria-expanded="${expanded}" aria-label="${building.name}已购升级合集，共 ${items.length} 项。${effect}"><img class="upgrade-entry-icon" src="assets/images/content-icons/upgrades/${building.id}-collection.svg" alt=""></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${building.name} · 已购升级合集</b><span class="upgrade-tooltip-cost">${items.length} 项已购升级</span><span class="upgrade-tooltip-description">${effect}</span><small data-field="hint">点击查看全部已购升级</small></span></article>`;
+  if (!expanded) return card;
+  return `${card}<section class="upgrade-collection-detail" aria-label="${building.name}全部已购升级"><h4>${building.name} · ${items.length} 项</h4><div class="upgrade-entry-grid">${items.map(upgradeCard).join('')}</div></section>`;
+}
 function upgradeSections(items) {
   if (!items.length) return '<p class="notice">增加设施或加入部门后显示升级。</p>';
   const unpurchased = sortedUpgrades(items.filter(item => view(item.id).status !== 'OWNED'));
   const purchased = sortedUpgrades(items.filter(item => view(item.id).status === 'OWNED'));
-  const section = (title, entries, owned = false) => entries.length ? `<section class="upgrade-section ${owned ? 'purchased' : ''}"><h3><span>${title}</span><small>${entries.length}</small></h3><div class="upgrade-entry-grid">${entries.map(upgradeCard).join('')}</div></section>` : '';
-  return `${section('未购买升级', unpurchased)}${section('已购买升级', purchased, true)}`;
+  const groups = content('building').map(building => ({ building, items: purchased.filter(item => item.buildingId === building.id) })).filter(group => group.items.length);
+  const cards = [...groups.map(group => upgradeCollectionCard(group.building, group.items)), ...purchased.filter(item => !item.buildingId).map(upgradeCard)];
+  const section = (title, cards, owned = false, count = cards.length) => cards.length ? `<section class="upgrade-section ${owned ? 'purchased' : ''}"><h3><span>${title}</span><small>${count}</small></h3><div class="upgrade-entry-grid">${cards.join('')}</div></section>` : '';
+  return `${section('未购买升级', unpurchased.map(upgradeCard))}${section('已购买升级', cards, true, purchased.length)}`;
 }
 function upgradesPanel(category = null) {
   const items = visible('upgrade').filter(item => !category || item.ui.category === category);
@@ -723,6 +745,13 @@ document.addEventListener('click', event => {
   if (action === 'work') {
     const result = game.dispatch({ type: 'work' });
     if (commandResult(result)) workFeedback(event, result.facts);
+    return;
+  }
+  if (action === 'toggle-upgrade-collection') {
+    const buildingId = button.dataset.buildingId;
+    if (expandedUpgradeCollections.has(buildingId)) expandedUpgradeCollections.delete(buildingId);
+    else expandedUpgradeCollections.add(buildingId);
+    renderPanel();
     return;
   }
   if (action === 'purchase') {

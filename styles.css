@@ -206,6 +206,9 @@ button.card.building-card:hover:not(:disabled) { border-color: var(--green); bac
 .upgrade-entry.insufficient .upgrade-entry-button { opacity: .58; filter: saturate(.4); }
 .upgrade-entry.owned .upgrade-entry-button { border-color: #789582; background: #35443f; opacity: .82; }
 .upgrade-entry.owned::after { content: ""; position: absolute; z-index: 2; right: 7px; bottom: 7px; width: 10px; height: 18px; border-right: 4px solid #72e66b; border-bottom: 4px solid #72e66b; transform: rotate(45deg); filter: drop-shadow(1px 2px 0 #17301b); pointer-events: none; }
+.upgrade-entry.upgrade-collection::after { content: none; }
+.upgrade-collection-detail { grid-column: 1 / -1; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #182019; }
+.upgrade-collection-detail h4 { margin: 0 0 9px; color: var(--green); font-size: 12px; }
 .upgrade-entry-icon { display: block; width: 48px; height: 48px; object-fit: contain; pointer-events: none; }
 .upgrade-tooltip { position: fixed; z-index: 72; width: 260px; max-width: calc(100vw - 16px); padding: 12px 14px; border: 1px solid #71865d; border-radius: 10px; background: #20261d; box-shadow: 0 10px 35px #000c; color: var(--text); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s ease-out, visibility .12s ease-out; }
 .upgrade-entry.tooltip-open .upgrade-tooltip { opacity: 1; visibility: visible; pointer-events: auto; }
