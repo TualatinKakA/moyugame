@@ -24,6 +24,87 @@ for (const eventName of ['selectstart', 'contextmenu', 'dragstart']) {
   }, true);
 }
 document.addEventListener('selectionchange', clearUnexpectedSelection);
+
+/**
+ * 注入部门影响力（Faction Coin）网格布局与悬浮/点击/长按名称提示样式：
+ * 1. 每行至少排列两个部门（auto-fit + min(44%, 84px) 保证窄屏与弹窗内也至少两列）。
+ * 2. 默认仅展示图标与数值，名称通过固定定位的 tooltip 展示，避免被父容器裁剪。
+ */
+function ensureFactionCoinStyles() {
+  if (document.getElementById('faction-coin-ui-style')) return;
+  const style = document.createElement('style');
+  style.id = 'faction-coin-ui-style';
+  style.textContent = `
+    #factionCoinList {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(min(44%, 84px), 1fr)) !important;
+      gap: 6px 8px !important;
+      align-items: center;
+    }
+    #factionCoinList .faction-coin-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      min-width: 0;
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+      transition: background-color 0.15s ease, transform 0.12s ease;
+    }
+    #factionCoinList .faction-coin-item:hover,
+    #factionCoinList .faction-coin-item:focus-visible,
+    #factionCoinList .faction-coin-item.fc-tooltip-open {
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+    #factionCoinList .faction-coin-item img {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    #factionCoinList .faction-coin-item b {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    .faction-coin-tooltip {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 9999;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.95);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.14s ease, visibility 0.14s ease;
+    }
+    #factionCoinList .faction-coin-item.fc-tooltip-open .faction-coin-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+  `;
+  document.head.appendChild(style);
+}
+ensureFactionCoinStyles();
+
 const money = value => `¥ ${formatNumber(value)}`;
 const saveAdapter = createSaveAdapter();
 let game;
@@ -174,24 +255,34 @@ function showManualFactionCoins(facts, zone, x, y) {
 function queueAssistantFactionCoin({ factionId, amount }) {
   assistantFactionCoinGains.set(factionId, (assistantFactionCoinGains.get(factionId) || 0) + amount);
 }
+
+/**
+ * 数字员工（Assistant）生成的部门影响力浮字：
+ * 所有部门影响力均在同一个初始位置生成（不再设置递增的 style.top 偏移），
+ * 同时保留每个部门之间 index * 100ms 的生成时间差。
+ */
 function showAssistantFactionCoins() {
-  const batch = [...assistantFactionCoinGains.entries()].filter(([, amount]) => amount > 0);
+  const factionOrder = new Map(content('faction').map((item, idx) => [item.id, idx]));
+  const batch = [...assistantFactionCoinGains.entries()]
+    .filter(([, amount]) => amount > 0)
+    .sort(([a], [b]) => (factionOrder.get(a) ?? 999) - (factionOrder.get(b) ?? 999));
   assistantFactionCoinGains.clear();
   const container = $('assistantFactionCoinFx');
   if (!container || document.hidden || !batch.length) return;
   batch.forEach(([factionId, amount], index) => {
     setTimeout(() => {
+      if (!container.isConnected || document.hidden) return;
       const floater = document.createElement('span');
       floater.className = 'faction-coin-float assistant-faction-coin-floater';
       floater.dataset.fcSource = 'assistant';
       floater.dataset.faction = factionId;
       floater.textContent = factionCoinGainText(factionId, amount);
-      floater.style.top = `${index * -22}px`;
       container.appendChild(floater);
       setTimeout(() => floater.remove(), 1200);
     }, index * 100);
   });
 }
+
 function showAssistantIncome() {
   const container = $('assistantIncomeFx');
   if (!container || document.hidden) return;
@@ -494,8 +585,10 @@ function renderTop() {
   const coinFactions = content('faction').filter(item => item.factionCoin?.enabled);
   const factionSignature = coinFactions.map(item => item.id).join('|');
   if ($('factionCoinList').dataset.structure !== factionSignature) {
+    closeFactionCoinTooltip();
     $('factionCoinList').dataset.structure = factionSignature;
-    $('factionCoinList').innerHTML = coinFactions.map(item => `<span data-faction="${item.id}" title="${item.name}影响力"><img src="${item.factionCoin.icon}" alt="">${item.name} <b id="${item.id}FactionCoins">0</b></span>`).join('');
+    // 部门影响力仅展示图标与数值，名字放入可交互悬浮提示中（悬停 / 点击 / 长按触发）
+    $('factionCoinList').innerHTML = coinFactions.map(item => `<span class="faction-coin-item" data-faction="${item.id}" tabindex="0" role="button" aria-label="${item.name}影响力" aria-expanded="false"><img src="${item.factionCoin.icon}" alt="${item.name}"><b id="${item.id}FactionCoins">0</b><span class="faction-coin-tooltip" role="tooltip" aria-hidden="true">${item.name}</span></span>`).join('');
   }
   for (const item of coinFactions) $(`${item.id}FactionCoins`).textContent = formatNumber(state().resources.factionCoins[item.id] || 0);
   $('rankText').textContent = `R${state().progression.reincarnations} · 地方分公司`;
@@ -582,6 +675,51 @@ function commandResult(result) {
   return false;
 }
 
+/**
+ * 部门影响力（Faction Coin）名称提示控制：
+ * 支持桌面端鼠标悬停、键盘聚焦，以及移动端点击切换与长按滑动预览。
+ */
+let activeFactionCoinTooltip = null;
+let factionCoinLongPress = null;
+let suppressedFactionCoinClick = null;
+const factionCoinLongPressDelay = 200;
+const factionCoinLongPressMoveLimit = 12;
+
+function positionFactionCoinTooltip(item) {
+  const tooltip = item.querySelector('.faction-coin-tooltip');
+  if (!tooltip) return;
+  const rect = item.getBoundingClientRect();
+  const width = tooltip.offsetWidth || 72;
+  const halfWidth = width / 2;
+  const center = Math.max(8 + halfWidth, Math.min(innerWidth - 8 - halfWidth, rect.left + rect.width / 2));
+  const above = rect.top >= 44;
+  tooltip.style.left = `${Math.round(center)}px`;
+  tooltip.style.top = `${Math.round(above ? rect.top - 6 : rect.bottom + 6)}px`;
+  tooltip.style.transform = above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)';
+}
+function closeFactionCoinTooltip() {
+  if (!activeFactionCoinTooltip) return;
+  activeFactionCoinTooltip.classList.remove('fc-tooltip-open');
+  activeFactionCoinTooltip.setAttribute('aria-expanded', 'false');
+  activeFactionCoinTooltip.querySelector('.faction-coin-tooltip')?.setAttribute('aria-hidden', 'true');
+  activeFactionCoinTooltip = null;
+}
+function openFactionCoinTooltip(item) {
+  if (!item) return;
+  clearUnexpectedSelection();
+  if (activeFactionCoinTooltip && activeFactionCoinTooltip !== item) closeFactionCoinTooltip();
+  activeFactionCoinTooltip = item;
+  item.classList.add('fc-tooltip-open');
+  item.setAttribute('aria-expanded', 'true');
+  item.querySelector('.faction-coin-tooltip')?.setAttribute('aria-hidden', 'false');
+  positionFactionCoinTooltip(item);
+}
+function cancelFactionCoinLongPress() {
+  if (!factionCoinLongPress) return;
+  clearTimeout(factionCoinLongPress.timer);
+  factionCoinLongPress = null;
+}
+
 let activeUpgradeTooltip = null;
 let touchUpgradeTooltip = null;
 let dismissedUpgradeTooltip = null;
@@ -634,24 +772,40 @@ function cancelUpgradeLongPress() {
 }
 document.addEventListener('pointerover', event => {
   if (event.pointerType !== 'mouse') return;
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget))) {
+    openFactionCoinTooltip(fcItem);
+  }
   const entry = event.target.closest('[data-upgrade-card]');
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
   if (entry !== dismissedUpgradeTooltip) openUpgradeTooltip(entry);
 });
 document.addEventListener('pointerout', event => {
   if (event.pointerType !== 'mouse') return;
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget)) && activeFactionCoinTooltip === fcItem) {
+    closeFactionCoinTooltip();
+  }
   const entry = event.target.closest('[data-upgrade-card]');
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
   if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
   dismissedUpgradeTooltip = null;
 });
 document.addEventListener('focusin', event => {
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem && fcItem.matches(':focus-visible')) {
+    openFactionCoinTooltip(fcItem);
+  }
   const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
   if (!button || !button.matches(':focus-visible')) return;
   dismissedUpgradeTooltip = null;
   openUpgradeTooltip(button.closest('[data-upgrade-card]'));
 });
 document.addEventListener('focusout', event => {
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget)) && activeFactionCoinTooltip === fcItem) {
+    closeFactionCoinTooltip();
+  }
   const entry = event.target.closest('[data-upgrade-card]');
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
   if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
@@ -659,9 +813,33 @@ document.addEventListener('focusout', event => {
 });
 document.addEventListener('pointerdown', event => {
   suppressedUpgradeClick = null;
+  suppressedFactionCoinClick = null;
   if (touchUpgradeTooltip && event.pointerType !== 'mouse') closeUpgradeTooltip();
   cancelUpgradeLongPress();
+  cancelFactionCoinLongPress();
+
   if (!['touch', 'pen'].includes(event.pointerType) || !event.isPrimary) return;
+
+  // 处理移动端部门影响力长按手势
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem) {
+    const fcRecord = {
+      item: fcItem,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      triggered: false,
+      timer: null,
+    };
+    fcRecord.timer = setTimeout(() => {
+      if (factionCoinLongPress !== fcRecord) return;
+      fcRecord.triggered = true;
+      openFactionCoinTooltip(fcItem);
+    }, factionCoinLongPressDelay);
+    factionCoinLongPress = fcRecord;
+    return;
+  }
+
   const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
   if (!button) return;
   const record = {
@@ -676,6 +854,22 @@ document.addEventListener('pointerdown', event => {
   upgradeLongPress = record;
 });
 document.addEventListener('pointermove', event => {
+  // 长按部门影响力图标时允许手指滑动切换预览不同部门名字
+  const fcPress = factionCoinLongPress;
+  if (fcPress && fcPress.pointerId === event.pointerId) {
+    if (!fcPress.triggered) {
+      if (Math.hypot(event.clientX - fcPress.startX, event.clientY - fcPress.startY) > factionCoinLongPressMoveLimit) {
+        cancelFactionCoinLongPress();
+      }
+    } else {
+      event.preventDefault();
+      const targetItem = document.elementFromPoint(event.clientX, event.clientY)?.closest('#factionCoinList .faction-coin-item');
+      if (targetItem && targetItem !== activeFactionCoinTooltip) {
+        openFactionCoinTooltip(targetItem);
+      }
+    }
+  }
+
   const press = upgradeLongPress;
   if (!press || press.pointerId !== event.pointerId) return;
   press.x = event.clientX;
@@ -691,9 +885,18 @@ document.addEventListener('pointermove', event => {
   else if (touchUpgradeTooltip) positionUpgradeTooltipAt(touchUpgradeTooltip, press.x, press.y);
 });
 document.addEventListener('touchmove', event => {
-  if (upgradeLongPress?.triggered && event.cancelable) event.preventDefault();
+  if ((upgradeLongPress?.triggered || factionCoinLongPress?.triggered) && event.cancelable) event.preventDefault();
 }, { passive: false });
 document.addEventListener('pointerup', event => {
+  const fcPress = factionCoinLongPress;
+  if (fcPress && fcPress.pointerId === event.pointerId) {
+    if (fcPress.triggered) {
+      suppressedFactionCoinClick = { until: performance.now() + 700 };
+      closeFactionCoinTooltip();
+    }
+    cancelFactionCoinLongPress();
+  }
+
   const press = upgradeLongPress;
   if (!press || press.pointerId !== event.pointerId) return;
   if (press.triggered) {
@@ -703,11 +906,17 @@ document.addEventListener('pointerup', event => {
   cancelUpgradeLongPress();
 });
 document.addEventListener('pointercancel', event => {
+  if (factionCoinLongPress?.pointerId === event.pointerId) {
+    if (factionCoinLongPress.triggered) closeFactionCoinTooltip();
+    cancelFactionCoinLongPress();
+  }
   if (upgradeLongPress?.pointerId !== event.pointerId) return;
   if (upgradeLongPress.triggered) closeUpgradeTooltip();
   cancelUpgradeLongPress();
 });
 document.addEventListener('contextmenu', event => {
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem) event.preventDefault();
   const button = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
   if (button && (upgradeLongPress?.button === button || touchUpgradeTooltip?.contains(button))) event.preventDefault();
 });
@@ -734,10 +943,24 @@ $('assistantSummary').addEventListener('keydown', event => {
   } else if (event.key === 'Escape') setAssistantTooltip(false);
 });
 function setFactionCoinPanel(open) {
+  if (!open) closeFactionCoinTooltip();
   $('factionCoinDock').classList.toggle('faction-coin-open', open);
   $('factionCoinToggle').setAttribute('aria-expanded', String(open));
 }
 document.addEventListener('click', event => {
+  const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
+  if (fcItem) {
+    if (suppressedFactionCoinClick && performance.now() < suppressedFactionCoinClick.until) {
+      suppressedFactionCoinClick = null;
+      return;
+    }
+    if (activeFactionCoinTooltip === fcItem) closeFactionCoinTooltip();
+    else openFactionCoinTooltip(fcItem);
+    return;
+  } else if (activeFactionCoinTooltip) {
+    closeFactionCoinTooltip();
+  }
+
   if (!event.target.closest('#factionCoinDock') && !event.target.closest('#factionCoinToggle')) setFactionCoinPanel(false);
   const upgradeButton = event.target.closest('[data-upgrade-card] .upgrade-entry-button');
   if (upgradeButton && suppressedUpgradeClick && performance.now() < suppressedUpgradeClick.until) {
@@ -848,7 +1071,10 @@ $('importFile').addEventListener('change', async event => {
   event.target.value = '';
 });
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') setFactionCoinPanel(false);
+  if (event.key === 'Escape') {
+    if (activeFactionCoinTooltip) { closeFactionCoinTooltip(); return; }
+    setFactionCoinPanel(false);
+  }
   if (event.key === 'Escape' && !$('eventLog').hidden) { setEventLogOpen(false, true); return; }
   if (event.key === 'Escape' && activeUpgradeTooltip) {
     dismissedUpgradeTooltip = activeUpgradeTooltip;
@@ -864,6 +1090,7 @@ document.addEventListener('keydown', event => {
 });
 window.addEventListener('popstate', () => { if (activeTab !== 'work') closeAuxPanel(true); panelHistory = false; });
 window.addEventListener('resize', () => {
+  cancelFactionCoinLongPress(); closeFactionCoinTooltip();
   cancelUpgradeLongPress(); closeUpgradeTooltip();
   if (game) { quickStructure = ''; renderQuickSkills(); updateCastButtons(); }
 });
