@@ -3,7 +3,8 @@ import { createGameRuntime } from '../systems/runtime.js';
 import { createSaveAdapter } from '../systems/persistence.js';
 import { formatNumber, formatTime } from '../core/number.js';
 import { createStoryModal } from './story/story-modal.js';
-import { evaluateCondition, formatDescription } from '../systems/content-registry.js';
+import { evaluateCondition, formatDescription, pathValue } from '../systems/content-registry.js';
+import { evaluateFormula } from '../systems/formula.js';
 import { createTrustedTime } from '../core/trusted-time.js';
 
 const $ = id => document.getElementById(id);
@@ -75,14 +76,24 @@ function playPurchaseSound(kind) {
 const state = () => game.select('state');
 const derived = () => game.select('derived');
 const definition = id => graph.definitionsById.get(id);
+const effectValue = effect => {
+  if (!effect) return 0;
+  if (effect.value.constant !== undefined) return Number(effect.value.constant);
+  const variables = Object.fromEntries(Object.entries(effect.value.variables || {}).map(([name, path]) => {
+    if (path === 'buildings.total') return [name, Object.values(state().buildings).reduce((sum, count) => sum + count, 0)];
+    if (path === 'buildings.low3') return [name, ['farm', 'inn', 'blacksmith'].reduce((sum, id) => sum + (state().buildings[id] || 0), 0)];
+    if (path.startsWith('derived.')) return [name, derived()[path.slice(8)] || 0];
+    return [name, pathValue(state(), path) || 0];
+  }));
+  return evaluateFormula(effect.value.formula, variables);
+};
 const description = item => {
   let text = formatDescription(item, graph);
-  if (text.includes('{activeProductionPercent}')) {
-    const context = { state: state(), derived: derived() };
-    const effect = item.effects.find(candidate => candidate.stat === 'building.production'
-      && (!candidate.when || evaluateCondition(graph, candidate.when, context)));
-    text = text.replaceAll('{activeProductionPercent}', formatNumber(effect?.value.constant ?? 0));
-  }
+  const context = { state: state(), derived: derived() };
+  const activeEffect = stat => effectValue(item.effects.find(candidate => candidate.stat === stat
+    && (!candidate.when || evaluateCondition(graph, candidate.when, context))));
+  if (text.includes('{activeProductionPercent}')) text = text.replaceAll('{activeProductionPercent}', formatNumber(activeEffect('building.production')));
+  if (text.includes('{activeGlobalPercent}')) text = text.replaceAll('{activeGlobalPercent}', formatNumber(activeEffect('global.production')));
   return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
 };
 const formatCost = cost => {

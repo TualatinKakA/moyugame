@@ -15,7 +15,7 @@ export const SPELL_DEFINITIONS = [
     castActions: [{ type: 'grantResource', resource: 'coins', amount: { formula: 'production * seconds', variables: { production: 'derived.production', seconds: 'derived.taxSeconds' } } }],
   }),
   spell({
-    id: 'callToArms', name: '全员冲刺', description: '20 秒内按设施总数提高全部设施产出。', cost: 400, duration: 20,
+    id: 'callToArms', name: '全员冲刺', description: '20 秒内全部设施产出提高 {activeGlobalPercent}%。', cost: 400, duration: 20,
     visible: { op: 'always' },
     effects: [effect('callToArms', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '(25 + 0.3 * x) ^ 0.975', variables: { x: 'buildings.total' } })],
   }),
