@@ -4,6 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#111311">
+  <script src="assets/vendor/tdem.min.js"></script>
+  <script>
+    if (window.TDEM) {
+      window.tdem = new window.TDEM({
+        id: 'bxN32phAGVf2',
+        url: 'https://dem.rumt-zh.com',
+        version: '1.0.1',
+        env: 'production',
+        spa: false,
+        api: true,
+        assets: true,
+      });
+      window.tdem.reportPageView();
+    }
+  </script>
   <link rel="icon" type="image/png" href="assets/images/cash.png">
   <title>无限工时 · 序章</title>
   <link rel="stylesheet" href="styles.css">
