@@ -8,15 +8,18 @@ import { createSaveAdapter, createMemoryStorage, SAVE_KEY } from '../src/systems
 import { createSaveState, migrateAndNormalizeState, stateHash } from '../src/systems/state.js';
 import { gemsForRunCoins, reincarnationRequirement } from '../src/systems/progression.js';
 import { formatNumber } from '../src/core/number.js';
+import { createTrustedTime } from '../src/core/trusted-time.js';
+import { decodeSave, encodeSave } from '../src/systems/save-integrity.js';
+import { verifyDeveloperPassword } from '../src/systems/developer-access.js';
 
-function fixture(initial = null, { failSave = false, nowStart = 1000, content = CONTENT, seed = 0x6d2b79f5 } = {}) {
+function fixture(initial = null, { failSave = false, nowStart = 1000, content = CONTENT, seed = 0x6d2b79f5, timeVerified = false, mode = 'development' } = {}) {
   let now = nowStart;
   const storage = createMemoryStorage();
   if (failSave) storage.setItem = () => { throw new Error('quota'); };
   const adapter = createSaveAdapter({ storage });
   if (initial) adapter.save(initial);
   const clock = { wallNow: () => now, monotonicNow: () => now };
-  const game = createGameRuntime({ content, saveAdapter: adapter, clock, seed });
+  const game = createGameRuntime({ content, saveAdapter: adapter, clock, seed, mode, isTimeVerified: () => timeVerified });
   return { game, storage, adapter, clock, advance: value => { now += value; } };
 }
 const initial = () => {
@@ -1319,4 +1322,98 @@ test('building upgrade era gates and dynamic Pre-A/Post-A purchase values work a
   await a3.game.start();
   assert.equal(a3.game.select('content', { id: 'farm-tier1' }).status, 'HIDDEN_SYSTEM');
   assert.equal(a3.game.select('content', { id: 'farm-tier23' }).status, 'HIDDEN_SYSTEM');
+});
+
+
+test('GitHub Pages time uses Date Age and round trip while local time stays offline', async () => {
+  let monotonic = 100;
+  let localWall = 1000;
+  let fetchCalls = 0;
+  const local = await createTrustedTime({
+    hostname: 'localhost', href: 'http://localhost:4173/',
+    fetchImpl: async () => { fetchCalls++; throw new Error('unexpected fetch'); },
+    wallNow: () => localWall, monotonicNow: () => monotonic,
+  });
+  assert.equal(fetchCalls, 0);
+  localWall = 999999;
+  monotonic += 500;
+  assert.equal(local.now(), 1500);
+  assert.equal(local.isVerified(), false);
+
+  const serverDate = Date.parse('Thu, 19 Nov 2026 04:23:07 GMT');
+  const github = await createTrustedTime({
+    hostname: 'ttt2718.github.io', href: 'https://ttt2718.github.io/moyugame/',
+    fetchImpl: async url => {
+      fetchCalls++;
+      assert.equal(url.hostname, 'ttt2718.github.io');
+      assert.equal(url.pathname, '/moyugame/');
+      assert.ok(url.searchParams.has('__time'));
+      monotonic += 100;
+      return { ok: true, headers: new Headers({ Date: new Date(serverDate).toUTCString(), Age: '2' }) };
+    },
+    wallNow: () => 0, monotonicNow: () => monotonic,
+  });
+  assert.equal(github.isVerified(), true);
+  assert.equal(github.now(), serverDate + 2050);
+  monotonic += 1000;
+  assert.equal(github.now(), serverDate + 3050);
+});
+
+test('signed saves reject payload and trusted timestamp tampering but accept legacy saves', () => {
+  const state = createSaveState({ now: 1000 });
+  state.resources.coins = 500;
+  const raw = encodeSave(state);
+  assert.deepEqual(decodeSave(raw), { payload: state, legacy: false });
+  const envelope = JSON.parse(raw);
+  envelope.payload.resources.coins = 501;
+  assert.throws(() => decodeSave(JSON.stringify(envelope)), /SAVE_INTEGRITY_MISMATCH/);
+  const valid = encodeSave(state);
+  const changedTime = JSON.parse(valid);
+  changedTime.payload.lastWallClock = 0;
+  assert.throws(() => decodeSave(JSON.stringify(changedTime)), /SAVE_INTEGRITY_MISMATCH/);
+  assert.deepEqual(decodeSave(JSON.stringify(state)), { payload: state, legacy: true });
+  assert.throws(() => decodeSave(JSON.stringify(state), { allowLegacy: false }), /UNSIGNED_SAVE_IMPORT/);
+  const storage = createMemoryStorage();
+  const adapter = createSaveAdapter({ storage });
+  assert.throws(() => adapter.import(JSON.stringify(state)), /UNSIGNED_SAVE_IMPORT/);
+  assert.equal(storage.getItem(SAVE_KEY), null);
+  adapter.import(raw);
+  assert.equal(decodeSave(storage.getItem(SAVE_KEY)).payload.resources.coins, 500);
+});
+
+test('offline settlement caps unverified time at one day and verified time at seven days', async () => {
+  const unverified = fixture(initial());
+  await unverified.game.start();
+  const localReport = unverified.game.dispatch({ type: 'background.settle', seconds: 30 * 86400 }).report;
+  assert.equal(localReport.seconds, 86400);
+  assert.equal(localReport.requestedSeconds, 30 * 86400);
+  assert.equal(localReport.verified, false);
+  assert.equal(localReport.capped, true);
+  assert.equal(unverified.game.select('state').stats.total.offlineTime, 86400);
+
+  const seeded = initial();
+  seeded.owned.run['goblin-9'] = true;
+  const verified = fixture(seeded, { timeVerified: true });
+  const facts = [];
+  verified.game.subscribe(message => facts.push(...message.facts));
+  await verified.game.start();
+  const report = verified.game.dispatch({ type: 'background.settle', seconds: 30 * 86400 }).report;
+  assert.equal(report.seconds, 7 * 86400);
+  assert.equal(report.verified, true);
+  assert.equal(report.capped, true);
+  const discount = facts.find(fact => fact.type === 'greenFingersDiscount.triggered');
+  assert.equal(discount.payload.count, 1008);
+});
+
+test('production clears saved mana override and rejects direct setting while developer mode remains available', async () => {
+  const seeded = initial();
+  seeded.settings.manaRegenOverride = 999;
+  const production = fixture(seeded, { mode: 'production' });
+  await production.game.start();
+  assert.equal(production.game.select('state').settings.manaRegenOverride, null);
+  const rejected = production.game.dispatch({ type: 'setting', key: 'manaRegenOverride', value: 7 });
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.reason, 'DEVELOPER_LOCKED');
+  assert.equal(await production.game.unlockDeveloper('0000'), false);
+  assert.equal(await verifyDeveloperPassword('0000'), false);
 });

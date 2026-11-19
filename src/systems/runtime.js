@@ -11,6 +11,7 @@ import { drawRandom } from '../core/rng.js';
 import { evaluateFormula } from './formula.js';
 import { planOfflineSegments } from './offline.js';
 import { gemsForRunCoins, reincarnationRequirement, ascensionForReincarnation } from './progression.js';
+import { verifyDeveloperPassword } from './developer-access.js';
 
 const increment = (tx, path, amount) => tx.write(path, (pathValue(tx.state, path) || 0) + amount);
 const spellActive = (state, id) => {
@@ -22,7 +23,7 @@ const resettable = state => ({
   spellSources: {}, timers: { spells: {}, tasks: {} },
 });
 
-export function createGameRuntime({ content, saveAdapter, clock = systemClock, seed = 0x6d2b79f5, mode = 'development' }) {
+export function createGameRuntime({ content, saveAdapter, clock = systemClock, seed = 0x6d2b79f5, mode = 'development', isTimeVerified = () => false }) {
   const graph = compileContentGraph(content, { mode });
   const persistence = createPersistence(saveAdapter, { wallNow: clock.wallNow });
   const scheduler = createScheduler();
@@ -33,6 +34,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   let started = false;
   let activeTransaction = null;
   let stopped = false;
+  let developerUnlocked = false;
   const diagnostics = { lastTransaction: null, recoveredSave: false, migration: null, offlineTruncated: false, lastOfflineReport: null };
 
   function notify(type, transaction = null) {
@@ -428,8 +430,11 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return result;
   }
   function settleOffline(seconds) {
-    if (seconds <= 0) return null;
-    const plan = planOfflineSegments(seconds, state, scheduler);
+    if (!Number.isFinite(seconds) || seconds <= 0) return null;
+    const verified = isTimeVerified();
+    const limit = verified ? 7 * 86400 : 86400;
+    const acceptedSeconds = Math.min(seconds, limit);
+    const plan = planOfflineSegments(acceptedSeconds, state, scheduler);
     diagnostics.offlineTruncated = plan.truncated;
     let report = null;
     const result = runTransaction('offline', tx => {
@@ -443,8 +448,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         const amount = (tx.state.stats.run.factionCoinsByFaction[definition.id] || 0) - (beforeFactionFound[definition.id] || 0);
         if (amount > 0) factionCoinsFound[definition.id] = amount;
       }
-      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, seconds - plan.remaining);
-      report = { seconds, earned, segments: plan.segments.length, truncated: plan.truncated, factionCoinsFound };
+      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, acceptedSeconds - plan.remaining);
+      report = { seconds: acceptedSeconds, requestedSeconds: seconds, verified, capped: seconds > acceptedSeconds, earned, segments: plan.segments.length, truncated: plan.truncated, factionCoinsFound };
       tx.emit('offline.settled', report);
       tx.critical = true;
     });
@@ -459,14 +464,21 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   }
   function updateSetting(key, value) {
     if (!['buyAmount', 'quickSkills', 'manaRegenOverride'].includes(key)) return { ok: false, reason: 'UNKNOWN_SETTING' };
+    if (key === 'manaRegenOverride' && mode === 'production' && !developerUnlocked) return { ok: false, reason: 'DEVELOPER_LOCKED' };
     if (key === 'manaRegenOverride' && value !== null && (!Number.isFinite(Number(value)) || Number(value) < 0)) return { ok: false, reason: 'INVALID_SETTING' };
     return runTransaction('setting', tx => { tx.write(`settings.${key}`, key === 'manaRegenOverride' && value !== null ? Number(value) : value); });
+  }
+
+  async function unlockDeveloper(password) {
+    developerUnlocked = mode === 'development' || await verifyDeveloperPassword(password);
+    return developerUnlocked;
   }
 
   async function start() {
     const loaded = saveAdapter.load();
     const migrated = migrateAndNormalizeState(loaded.raw, graph, { now: clock.wallNow(), seed });
     state = migrated.state;
+    if (mode === 'production') state.settings.manaRegenOverride = null;
     diagnostics.recoveredSave = Boolean(loaded.recovered);
     diagnostics.migration = migrated.report;
     for (const [id, timer] of Object.entries(state.timers.spells)) {
@@ -553,7 +565,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         default: return { ok: false, reason: 'UNKNOWN_COMMAND' };
       }
     },
-    tick, save,
+    tick, save, unlockDeveloper,
     get graph() { return graph; },
   });
 }

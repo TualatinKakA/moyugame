@@ -1,3 +1,5 @@
+import { decodeSave, encodeSave } from './save-integrity.js';
+
 export const SAVE_KEY = 'endless-shift-r0r3-v1';
 export const BACKUP_KEY = 'endless-shift-v4-backup';
 export const CORRUPT_KEY = 'endless-shift-v4-corrupt';
@@ -11,14 +13,14 @@ export function createSaveAdapter({ storage = globalThis.localStorage, key = SAV
       const backup = storage.getItem(backupKey);
       const valid = raw => {
         if (!raw) return null;
-        try { const parsed = JSON.parse(raw); return parsed && typeof parsed === 'object' ? raw : null; } catch { return null; }
+        try { return JSON.stringify(decodeSave(raw).payload); } catch { return null; }
       };
       const validMain = valid(main);
       if (main && !validMain) storage.setItem(corruptKey, main);
       return { raw: validMain || valid(backup), recovered: !validMain && Boolean(valid(backup)), corruptedRaw: main && !validMain ? main : null };
     },
     save(state) {
-      const serialized = JSON.stringify(state);
+      const serialized = encodeSave(state);
       const previous = storage.getItem(key);
       if (previous) storage.setItem(backupKey, previous);
       storage.setItem(key, serialized);
@@ -26,8 +28,7 @@ export function createSaveAdapter({ storage = globalThis.localStorage, key = SAV
     },
     backup(raw) { if (raw) storage.setItem(backupKey, raw); },
     import(raw) {
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object') throw new Error('INVALID_SAVE');
+      decodeSave(raw, { allowLegacy: false });
       const previous = storage.getItem(key);
       if (previous) storage.setItem(backupKey, previous);
       storage.setItem(key, raw);

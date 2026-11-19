@@ -11,6 +11,10 @@ const origin = `http://127.0.0.1:${port}`;
 const server = spawn(process.platform === 'win32' ? 'python' : 'python3', ['-m', 'http.server', String(port), '--bind', '127.0.0.1'], { cwd: root, stdio: 'ignore' });
 let browser;
 const visible = (page, selector) => page.locator(selector).isVisible();
+const storedState = (page, key) => page.evaluate(key => {
+  const saved = JSON.parse(localStorage.getItem(key));
+  return saved.payload || saved;
+}, key);
 const noOverflow = async (page, label) => {
   const size = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));
   assert.ok(size.document <= size.viewport, `${label}: horizontal overflow ${size.document} > ${size.viewport}`);
@@ -196,15 +200,6 @@ try {
   await gamePage.locator('#manaPassword').fill('0000');
   await gamePage.locator('#manaPasswordForm button[type="submit"]').click();
   assert.equal(await gamePage.locator('#manaRegenEditor').isHidden(), true);
-  await gamePage.locator('#manaPassword').fill('2887');
-  await gamePage.locator('#manaPasswordForm button[type="submit"]').click();
-  assert.equal(await visible(gamePage, '#manaRegenEditor'), true);
-  await gamePage.locator('#manaRegenInput').fill('7');
-  await gamePage.locator('[data-action="apply-mana-regen"]').click();
-  assert.equal(await gamePage.locator('#manaRate').textContent(), '+7 / 秒');
-  await gamePage.locator('#mainPanel [data-action="save"]').click();
-  await gamePage.waitForTimeout(50);
-  assert.equal(await gamePage.evaluate(key => JSON.parse(localStorage.getItem(key)).settings.manaRegenOverride, SAVE_KEY), 7);
   await gameContext.close();
 
   const assistantState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
@@ -341,28 +336,33 @@ try {
   backgroundState.owned.run['farm-tier2'] = true;
   backgroundState.stats.total.clicks = 1;
   const backgroundContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await backgroundContext.addInitScript(() => {
+    const monotonicNow = performance.now.bind(performance);
+    window.__backgroundOffset = 0;
+    performance.now = () => monotonicNow() + window.__backgroundOffset;
+  });
   await backgroundContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(backgroundState) });
   const backgroundPage = await backgroundContext.newPage(); watch(backgroundPage);
   await backgroundPage.goto(origin, { waitUntil: 'domcontentloaded' });
   await backgroundPage.locator('#retirementPanel .retirement-card').waitFor();
   await backgroundPage.evaluate(() => {
     window.__testHidden = false;
-    window.__backgroundOffset = 0;
-    const wallNow = Date.now;
-    Date.now = () => wallNow() + window.__backgroundOffset;
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => window.__testHidden });
     window.__testHidden = true;
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await backgroundPage.waitForTimeout(100);
-  const beforeBackground = await backgroundPage.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  const beforeBackground = await storedState(backgroundPage, SAVE_KEY);
   await backgroundPage.evaluate(() => {
     window.__backgroundOffset = 3600000;
     window.__testHidden = false;
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await backgroundPage.waitForFunction(key => JSON.parse(localStorage.getItem(key)).stats.total.offlineTime >= 3600, SAVE_KEY);
-  const afterBackground = await backgroundPage.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  await backgroundPage.waitForFunction(key => {
+    const saved = JSON.parse(localStorage.getItem(key));
+    return (saved.payload || saved).stats.total.offlineTime >= 3600;
+  }, SAVE_KEY);
+  const afterBackground = await storedState(backgroundPage, SAVE_KEY);
   const wages = afterBackground.resources.coins - beforeBackground.resources.coins;
   assert.ok(wages >= 216180 && wages < 217000, `one hidden hour settles offline wages once: ${wages}`);
   assert.ok(Math.abs(afterBackground.stats.total.offlineTime - beforeBackground.stats.total.offlineTime - 3600) < 1.5);
@@ -374,7 +374,7 @@ try {
   await backgroundPage.waitForTimeout(500);
   await backgroundPage.locator('.top-actions [data-action="save"]').click();
   await backgroundPage.waitForTimeout(50);
-  const later = await backgroundPage.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  const later = await storedState(backgroundPage, SAVE_KEY);
   assert.ok(later.stats.run.time - afterBackground.stats.run.time < 2, 'foreground ticks do not double-count hidden time');
   await backgroundContext.close();
 

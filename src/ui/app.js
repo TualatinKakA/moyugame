@@ -4,6 +4,7 @@ import { createSaveAdapter } from '../systems/persistence.js';
 import { formatNumber, formatTime } from '../core/number.js';
 import { createStoryModal } from './story/story-modal.js';
 import { evaluateCondition, formatDescription } from '../systems/content-registry.js';
+import { createTrustedTime } from '../core/trusted-time.js';
 
 const $ = id => document.getElementById(id);
 const editableSelector = 'input, textarea, [contenteditable="true"]';
@@ -26,6 +27,7 @@ const money = value => `¥ ${formatNumber(value)}`;
 const saveAdapter = createSaveAdapter();
 let game;
 let graph;
+let timeSource;
 let resetting = false;
 let activeTab = 'work';
 let panelReturnFocus = null;
@@ -779,10 +781,11 @@ document.addEventListener('click', event => {
     } });
   }
 });
-document.addEventListener('submit', event => {
+document.addEventListener('submit', async event => {
   if (event.target.id !== 'manaPasswordForm') return;
   event.preventDefault();
-  if ($('manaPassword').value === '2887') {
+  const unlocked = await game.unlockDeveloper($('manaPassword').value);
+  if (unlocked) {
     manaEditorUnlocked = true;
     $('manaPasswordFeedback').textContent = '';
     $('manaPassword').value = '';
@@ -820,7 +823,7 @@ window.addEventListener('resize', () => {
 });
 function settleBackgroundElapsed(force = false) {
   if (backgroundStartedAt === null || !graph) return true;
-  const now = Date.now();
+  const now = timeSource.now();
   if (!force && now < backgroundRetryAfter) return false;
   const seconds = Math.max(0, (now - backgroundStartedAt) / 1000);
   const result = seconds > 0 ? game.dispatch({ type: 'background.settle', seconds }) : { ok: true };
@@ -836,13 +839,25 @@ window.addEventListener('beforeunload', () => {
 document.addEventListener('visibilitychange', () => {
   if (!graph || resetting) return;
   if (document.hidden) {
-    if (backgroundStartedAt === null) { backgroundStartedAt = Date.now(); game.save(); }
-  } else settleBackgroundElapsed();
+    if (backgroundStartedAt === null) { backgroundStartedAt = timeSource.now(); game.save(); }
+  } else {
+    settleBackgroundElapsed();
+    timeSource.refresh();
+  }
 });
 
 async function bootstrap() {
-  game = createGameRuntime({ content: CONTENT, saveAdapter, mode: 'production' });
-  await game.start(); graph = game.graph;
+  timeSource = await createTrustedTime();
+  game = createGameRuntime({
+    content: CONTENT,
+    saveAdapter,
+    mode: 'production',
+    clock: { wallNow: timeSource.now, monotonicNow: () => performance.now() },
+    isTimeVerified: timeSource.isVerified,
+  });
+  await game.start();
+  await game.save();
+  graph = game.graph;
   $('workContent').innerHTML = workView();
   if (state().stats.total.clicks > 0 || Object.keys(state().buildings).length || state().story.pending.length || Object.keys(state().story.completed).length) $('intro').classList.add('hidden');
   game.subscribe(message => { if (message.type === 'commit') factFeedback(message.facts); refresh(message); });
@@ -856,6 +871,7 @@ async function bootstrap() {
   }, 200);
   setInterval(showAssistantIncome, 1000);
   setInterval(showAssistantFactionCoins, 1000);
+  setInterval(() => timeSource.refresh(), 600000);
   setInterval(() => { if (!resetting && !document.hidden && backgroundStartedAt === null && game.select('saveStatus').dirty) game.save(); }, 15000);
 }
 bootstrap().catch(error => {
