@@ -189,6 +189,7 @@ try {
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('#moreTabButton').click();
+  assert.equal(await gamePage.locator('[data-action="edit-user-id"]').count(), 1);
   assert.match(await gamePage.locator('#mainPanel').textContent(), /奖杯[\s\S]*剧情回看/);
   await gamePage.locator('[data-action="replay-story"][data-id="intro.first_department"]').last().click();
   assert.equal(await gamePage.locator('.story-overlay[data-story-id="intro.first_department"]').count(), 1);
