@@ -1082,7 +1082,12 @@ document.addEventListener('click', event => {
     return;
   }
   if (action === 'save') { game.save().then(result => notify(result.ok ? '存档已写入本地' : '保存失败，将自动重试', !result.ok)); return; }
-  if (action === 'export') { game.save().then(() => { $('exportText').value = saveAdapter.listSlots().main || ''; $('exportText').select(); notify('存档已导出，请复制保存'); }); return; }
+  if (action === 'export') { game.save().then(result => {
+    if (!result.ok) { notify('导出失败：存档未写入，请重试', true); return; }
+    $('exportText').value = saveAdapter.listSlots().main || '';
+    $('exportText').select();
+    notify('存档已导出，请复制保存');
+  }); return; }
   if (action === 'import') { $('importFile').click(); return; }
   if (action === 'import-text') {
     const text = $('exportText').value;

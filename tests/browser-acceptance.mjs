@@ -431,6 +431,35 @@ try {
   assert.ok(later.stats.run.time - afterBackground.stats.run.time < 2, 'foreground ticks do not double-count hidden time');
   await backgroundContext.close();
 
+  const roundTripState = createSaveState({ now: Date.now(), contentVersions: ['base-v1'] });
+  roundTripState.resources.coins = 123456;
+  roundTripState.resources.mana = 10000;
+  roundTripState.stats.total.clicks = 1;
+  const roundTripContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await roundTripContext.addInitScript(({ key, json }) => {
+    if (!sessionStorage.getItem('save-round-trip-seeded')) {
+      localStorage.setItem(key, json);
+      sessionStorage.setItem('save-round-trip-seeded', '1');
+    }
+  }, { key: SAVE_KEY, json: JSON.stringify(roundTripState) });
+  const roundTripPage = await roundTripContext.newPage(); watch(roundTripPage);
+  await roundTripPage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await roundTripPage.locator('#workContent [data-id="callToArms"]').click();
+  assert.match(await roundTripPage.locator('#workContent [data-id="callToArms"]').getAttribute('class'), /active/);
+  await roundTripPage.locator('#moreTabButton').click();
+  await roundTripPage.locator('[data-action="export"]').click();
+  const exportedText = await roundTripPage.locator('#exportText').inputValue();
+  assert.equal(JSON.parse(exportedText).format, 'endless-shift-save');
+  await Promise.all([
+    roundTripPage.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    roundTripPage.locator('[data-action="import-text"]').click(),
+  ]);
+  await roundTripPage.waitForFunction(() => document.querySelector('#workContent [data-id="callToArms"]')?.classList.contains('active'));
+  const importedState = await storedState(roundTripPage, SAVE_KEY);
+  assert.equal(importedState.resources.coins, 123456);
+  assert.ok(importedState.timers.spells.callToArms.dueAt > importedState.stats.run.time);
+  await roundTripContext.close();
+
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);
   assert.deepEqual(errors, [], `browser errors: ${errors.join('\n')}`);
   console.log('Browser acceptance passed: prologue, transactions, Fairy/Goblin scope, trophies/replay, skill management, workstation and responsive layouts.');

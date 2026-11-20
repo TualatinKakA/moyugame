@@ -135,7 +135,11 @@ function normalizeCurrent(saved, state, graph) {
   if (graph.definitionsById.get(state.selections.alignment)?.kind !== 'alignment') state.selections.alignment = null;
   if (graph.definitionsById.get(state.selections.faction)?.kind !== 'faction') state.selections.faction = null;
   for (const [id, timer] of Object.entries(saved.timers?.spells || {})) {
-    if (graph.definitionsById.get(id)?.kind === 'spell' && finite(timer?.remaining) > 0) state.timers.spells[id] = { remaining: finite(timer.remaining) };
+    if (graph.definitionsById.get(id)?.kind !== 'spell') continue;
+    const remaining = timer?.remaining !== undefined
+      ? finite(timer.remaining)
+      : finite(timer?.dueAt) - state.stats.run.time;
+    if (remaining > 0) state.timers.spells[id] = { remaining };
   }
   const greenFingersTimer = saved.timers?.tasks?.greenFingersDiscount;
   if (greenFingersTimer) {

@@ -1453,6 +1453,24 @@ test('GitHub Pages time uses Date Age and round trip while local time stays offl
   assert.equal(github.now(), serverDate + 3050);
 });
 
+test('signed save export and import preserve active spell dueAt timers', async () => {
+  const first = fixture(initial());
+  await first.game.start();
+  assert.equal(first.game.dispatch({ type: 'purchase', id: 'good' }).ok, true);
+  assert.equal(first.game.dispatch({ type: 'purchase', id: 'fairy' }).ok, true);
+  assert.equal(first.game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
+  await first.game.save();
+  const exported = first.adapter.listSlots().main;
+  const importedAdapter = createSaveAdapter({ storage: createMemoryStorage() });
+  importedAdapter.import(exported);
+  const restored = createGameRuntime({ content: CONTENT, saveAdapter: importedAdapter, clock: first.clock });
+  await restored.start();
+  assert.deepEqual(restored.select('state').timers.spells.fairyChanting, { dueAt: 10 });
+  assert.equal(restored.select('state').stats.run.spellCasts.fairyChanting, 1);
+  assert.equal(restored.select('state').selections.faction, 'fairy');
+  assert.equal(restored.select('state').resources.mana, 9200);
+});
+
 test('signed saves reject payload and trusted timestamp tampering but accept legacy saves', () => {
   const state = createSaveState({ now: 1000 });
   state.resources.coins = 500;
