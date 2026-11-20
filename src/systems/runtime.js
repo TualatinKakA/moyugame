@@ -236,6 +236,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
           }
         } else {
           increment(tx, `resources.${action.resource}`, amount);
+          if (action.resource === 'coins') for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, amount);
         }
         tx.emit('resource.granted', { resource: action.resource, amount });
       } else if (action.type === 'grantUnlock') {

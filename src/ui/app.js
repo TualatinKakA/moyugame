@@ -652,6 +652,7 @@ function factFeedback(facts) {
       playTrophySound();
       notify(`获得奖杯：${definition(fact.payload.trophyId).name}`, false, 'trophy');
     }
+    else if (fact.type === 'abdication.rejected') notify('本轮累计产值尚未达到 ¥100M，暂不能退休', true);
     else if (fact.type === 'abdication.completed') notify(`退休结算完成，获得 ${formatNumber(fact.payload.earned)} 期权`);
     else if (fact.type === 'reincarnation.completed') notify(`已进入 R${fact.payload.reincarnations}`);
     else if (fact.type === 'offline.settled') {
@@ -747,7 +748,7 @@ function replayStory(id) {
 function commandResult(result) {
   if (result?.ok) return true;
   if (result?.reason === 'NEED_RESOURCE') notify('当前资源不足', true);
-  else if (result?.error) notify('操作未完成，状态已回滚', true);
+  else if (result?.error) { console.error(result.error); notify('操作未完成，状态已回滚', true); }
   return false;
 }
 

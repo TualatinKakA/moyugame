@@ -983,6 +983,24 @@ test('all nine Fairy upgrades compose their exact targets and dynamic formulas',
   assert.equal(game.select('state').stats.run.buildingMax.blacksmith, 31);
 });
 
+test('Tax Collection coins count toward every production scope and first retirement', async () => {
+  const seeded = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  seeded.resources.coins = 202e6; seeded.resources.mana = 10000; seeded.buildings.farm = 1e6;
+  const scopes = ['run', 'r', 'ascension', 'total'];
+  for (const scope of scopes) seeded.stats[scope].coins = 41.8e6;
+  const { game } = fixture(seeded);
+  await game.start();
+  const expected = game.select('derived').production * game.select('derived').taxSeconds;
+  const beforeCoins = game.select('state').resources.coins;
+  assertClose(expected, 60e6);
+  assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
+  assertClose(game.select('state').resources.coins - beforeCoins, expected);
+  for (const scope of scopes) assertClose(game.select('state').stats[scope].coins - 41.8e6, expected, scope);
+  assert.equal(game.select('retirement').eligible, true);
+  assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
+  assert.equal(game.select('state').stats.total.abdications, 1);
+});
+
 test('Goblin economy upgrades use natural logs, era casts and Black Market gem/offline parts', async () => {
   const seeded = initial();
   seeded.resources.coins = 1e6; seeded.resources.gems = 10;

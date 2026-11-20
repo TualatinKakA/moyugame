@@ -55,7 +55,7 @@ try {
   const unavailableFarm = page.locator('#mainPanel [data-building-card][data-id="farm"]');
   assert.equal(await unavailableFarm.getAttribute('aria-disabled'), 'true');
   assert.equal(await unavailableFarm.evaluate(button => button.disabled), false, 'unavailable facilities still receive touch events');
-  await unavailableFarm.click();
+  await unavailableFarm.dispatchEvent('click');
   const unavailableBox = await unavailableFarm.boundingBox();
   const unavailablePoint = { clientX: unavailableBox.x + unavailableBox.width / 2, clientY: unavailableBox.y + unavailableBox.height / 2 };
   await unavailableFarm.dispatchEvent('pointerdown', { ...unavailablePoint, pointerType: 'touch', pointerId: 6, isPrimary: true });
@@ -154,7 +154,7 @@ try {
   await farmCard.dispatchEvent('pointerup', { ...touchPoint, pointerType: 'touch', pointerId: 7, isPrimary: true });
   await farmCard.dispatchEvent('click');
   assert.equal(await farmCard.locator('[data-field="count"]').textContent(), '× 11', 'long press release does not purchase a facility');
-  assert.match(await gamePage.locator('#workContent [data-id="taxCollection"]').textContent(), /33\.32 秒/, 'Tax Collection shows live dynamic seconds');
+  assert.match(await gamePage.locator('#workContent [data-id="taxCollection"]').textContent(), /34\.97 秒/, 'Tax Collection shows live dynamic seconds');
   await gamePage.locator('[data-action="close-panel"]').click();
 
   await gamePage.locator('.app-nav [data-tab="upgrades"]').click();
@@ -251,7 +251,7 @@ try {
   await gameContext.close();
 
   const assistantState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
-  assistantState.resources.coins = 1e12; assistantState.buildings.farm = 25; assistantState.stats.total.clicks = 1;
+  assistantState.resources.coins = 1e12; assistantState.stats.run.coins = 1e12; assistantState.buildings.farm = 25; assistantState.stats.total.clicks = 1;
   const assistantContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await assistantContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(assistantState) });
   const assistantPage = await assistantContext.newPage(); watch(assistantPage);
@@ -284,6 +284,28 @@ try {
   await retirePage.locator('#moreTabButton').click();
   assert.equal(await retirePage.locator('[data-action="reincarnate"]').count(), 0, 'reincarnation is hidden below the original gem requirement');
   await retireContext.close();
+
+  const taxRetireState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
+  taxRetireState.stats.total.clicks = 1;
+  taxRetireState.resources.coins = 202e6; taxRetireState.resources.mana = 10000;
+  taxRetireState.stats.run.coins = 41.8e6; taxRetireState.buildings.farm = 1e6;
+  const taxRetireContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await taxRetireContext.addInitScript(({ key, json }) => localStorage.setItem(key, json), { key: SAVE_KEY, json: JSON.stringify(taxRetireState) });
+  const taxRetirePage = await taxRetireContext.newPage(); watch(taxRetirePage);
+  await taxRetirePage.goto(origin, { waitUntil: 'domcontentloaded' });
+  await taxRetirePage.locator('#retirementButton').click();
+  await closeStory(taxRetirePage, 'intro.retirement_denied');
+  await taxRetirePage.waitForTimeout(2700);
+  await taxRetirePage.locator('#retirementButton').click();
+  assert.match(await taxRetirePage.locator('#toast').getAttribute('class'), /show/, 'repeated ineligible requests still give feedback');
+  assert.equal(await taxRetirePage.locator('#toast').textContent(), '本轮累计产值尚未达到 ¥100M，暂不能退休');
+  await taxRetirePage.locator('#workContent [data-action="cast"][data-id="taxCollection"]').click();
+  await closeStory(taxRetirePage, 'intro.retirement_eligible');
+  taxRetirePage.once('dialog', dialog => dialog.accept());
+  await taxRetirePage.locator('#retirementButton').click();
+  await closeStory(taxRetirePage, 'intro.first_retirement');
+  assert.equal((await storedState(taxRetirePage, SAVE_KEY)).stats.total.abdications, 1, 'Tax Collection income counts toward the first retirement target');
+  await taxRetireContext.close();
 
   const resetState = createSaveState({ now: 1000, contentVersions: ['base-v1'] });
   resetState.resources.coins = 500; resetState.stats.total.clicks = 1;
