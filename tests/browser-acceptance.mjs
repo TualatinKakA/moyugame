@@ -450,14 +450,33 @@ try {
   await roundTripPage.locator('[data-action="export"]').click();
   const exportedText = await roundTripPage.locator('#exportText').inputValue();
   assert.equal(JSON.parse(exportedText).format, 'endless-shift-save');
+  await roundTripPage.locator('[data-action="close-panel"]').click();
+  await roundTripPage.locator('#facilityRail [data-id="farm"]').click();
+  await roundTripPage.locator('#moreTabButton').click();
+  await roundTripPage.locator('#exportText').fill(exportedText);
   await Promise.all([
     roundTripPage.waitForNavigation({ waitUntil: 'domcontentloaded' }),
     roundTripPage.locator('[data-action="import-text"]').click(),
   ]);
   await roundTripPage.waitForFunction(() => document.querySelector('#workContent [data-id="callToArms"]')?.classList.contains('active'));
   const importedState = await storedState(roundTripPage, SAVE_KEY);
-  assert.equal(importedState.resources.coins, 123456);
+  assert.equal(importedState.resources.coins, 123456, 'reload does not overwrite the imported save with newer live progress');
+  assert.equal(importedState.buildings.farm, undefined);
   assert.ok(importedState.timers.spells.callToArms.dueAt > importedState.stats.run.time);
+  const recoveryEnvelope = JSON.parse(exportedText);
+  recoveryEnvelope.payload.resources.coins = 654321;
+  const recoveryText = JSON.stringify(recoveryEnvelope);
+  await roundTripPage.locator('#moreTabButton').click();
+  await roundTripPage.locator('#exportText').fill(recoveryText);
+  await roundTripPage.locator('[data-action="import-text"]').click();
+  await roundTripPage.locator('.story-overlay[data-story-id="ui.save-recovery.confirm"]').waitFor();
+  await Promise.all([
+    roundTripPage.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    roundTripPage.locator('[data-choice-id="confirm"]').click(),
+  ]);
+  const recoveredState = await storedState(roundTripPage, SAVE_KEY);
+  assert.equal(recoveredState.resources.coins, 654321);
+  assert.equal(await roundTripPage.evaluate(key => localStorage.getItem(`${key}:corrupt`), SAVE_KEY), recoveryText);
   await roundTripContext.close();
 
   assert.deepEqual(missing, [], `404 responses: ${missing.join('\n')}`);

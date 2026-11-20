@@ -34,6 +34,13 @@ export function createSaveAdapter({ storage = globalThis.localStorage, key = SAV
       if (previous) storage.setItem(backupKey, previous);
       storage.setItem(key, raw);
     },
+    recover(raw) {
+      const { payload } = decodeSave(raw, { allowLegacy: false, allowIntegrityMismatch: true });
+      const previous = storage.getItem(key);
+      if (previous) storage.setItem(backupKey, previous);
+      storage.setItem(corruptKey, raw);
+      storage.setItem(key, encodeSave(payload));
+    },
     remove() { storage.removeItem(key); storage.removeItem(backupKey); storage.removeItem(corruptKey); },
     listSlots() { return { main: storage.getItem(key), backup: storage.getItem(backupKey), corrupt: storage.getItem(corruptKey) }; },
   });

@@ -112,6 +112,8 @@ let graph;
 let timeSource;
 let currentUserId = '';
 let resetting = false;
+let importingSave = false;
+let pendingSaveRecovery = null;
 let activeTab = 'work';
 let panelReturnFocus = null;
 let panelHistory = false;
@@ -670,10 +672,34 @@ function refresh(message = null) {
   syncStories();
 }
 let pendingAlignmentId = null;
+function reloadWithSave(raw, { recover = false } = {}) {
+  if (recover) saveAdapter.recover(raw); else saveAdapter.import(raw);
+  importingSave = true;
+  game.stop();
+  location.reload();
+}
+function importSave(raw, errorMessage) {
+  try { reloadWithSave(raw); }
+  catch (error) {
+    if (error.message === 'SAVE_INTEGRITY_MISMATCH') {
+      pendingSaveRecovery = raw;
+      modal.show({ story: {
+        id: 'ui.save-recovery.confirm',
+        title: '存档完整性校验失败',
+        paragraphs: ['这份存档的签名与内容不一致，可能已损坏或被修改。', '仅在确认来源可信时尝试恢复。原始文本会保留在本机的损坏存档槽位。'],
+        choices: [{ id: 'confirm', label: '仍要恢复并导入' }],
+        buttonLabel: '取消',
+      } });
+      return;
+    }
+    notify(errorMessage, true);
+  }
+}
 const modal = createStoryModal({
   document,
   onClose: ({ id, action, replay }) => {
     if (id === 'ui.alignment.confirm') { pendingAlignmentId = null; return; }
+    if (id === 'ui.save-recovery.confirm') { pendingSaveRecovery = null; return; }
     if (id === 'ui.hard-reset.confirm') return;
     if (!replay) game.dispatch({ type: 'story.close', id, skipped: action === 'skip' });
   },
@@ -683,6 +709,16 @@ const modal = createStoryModal({
       pendingAlignmentId = null;
       modal.close();
       if (choiceId === 'confirm') commandResult(game.dispatch({ type: 'purchase', id: selectedId, amount: state().settings.buyAmount }));
+      return;
+    }
+    if (id === 'ui.save-recovery.confirm') {
+      const raw = pendingSaveRecovery;
+      pendingSaveRecovery = null;
+      modal.close();
+      if (choiceId === 'confirm') {
+        try { reloadWithSave(raw, { recover: true }); }
+        catch { notify('恢复失败：存档内容无法读取', true); }
+      }
       return;
     }
     if (id === 'ui.hard-reset.confirm') {
@@ -700,7 +736,7 @@ const modal = createStoryModal({
   },
 });
 function syncStories() {
-  if (modal.current?.replay || ['ui.alignment.confirm', 'ui.hard-reset.confirm'].includes(modal.current?.story.id)) return;
+  if (modal.current?.replay || ['ui.alignment.confirm', 'ui.hard-reset.confirm', 'ui.save-recovery.confirm'].includes(modal.current?.story.id)) return;
   const next = game.select('storyQueue')[0];
   if (next && modal.current?.story.id !== next.id) modal.show({ story: next });
 }
@@ -1092,8 +1128,7 @@ document.addEventListener('click', event => {
   if (action === 'import-text') {
     const text = $('exportText').value;
     if (!text.trim()) { notify('请先粘贴存档文本', true); return; }
-    try { saveAdapter.import(text); location.reload(); }
-    catch { notify('导入失败：文本不是有效的游戏存档', true); }
+    importSave(text, '导入失败：文本不是有效的游戏存档');
     return;
   }
   if (action === 'hard-reset') {
@@ -1123,9 +1158,15 @@ document.addEventListener('submit', async event => {
 });
 $('importFile').addEventListener('change', async event => {
   const file = event.target.files?.[0]; if (!file) return;
-  try { saveAdapter.import(await file.text()); location.reload(); }
-  catch { notify('导入失败：文件不是有效的游戏存档', true); }
+  let raw;
+  try { raw = await file.text(); }
+  catch {
+    event.target.value = '';
+    notify('导入失败：无法读取所选文件', true);
+    return;
+  }
   event.target.value = '';
+  importSave(raw, '导入失败：文件不是有效的游戏存档');
 });
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
@@ -1162,12 +1203,12 @@ function settleBackgroundElapsed(force = false) {
   return true;
 }
 window.addEventListener('beforeunload', () => {
-  if (resetting) return;
+  if (resetting || importingSave) return;
   if (backgroundStartedAt !== null && !settleBackgroundElapsed(true)) return;
   game?.save();
 });
 document.addEventListener('visibilitychange', () => {
-  if (!graph || resetting) return;
+  if (!graph || resetting || importingSave) return;
   if (document.hidden) {
     if (backgroundStartedAt === null) { backgroundStartedAt = timeSource.now(); game.save(); }
   } else {
@@ -1245,7 +1286,7 @@ async function bootstrap() {
   setInterval(showAssistantIncome, 1000);
   setInterval(showAssistantFactionCoins, 1000);
   setInterval(() => timeSource.refresh(), 600000);
-  setInterval(() => { if (!resetting && !document.hidden && backgroundStartedAt === null && game.select('saveStatus').dirty) game.save(); }, 15000);
+  setInterval(() => { if (!resetting && !importingSave && !document.hidden && backgroundStartedAt === null && game.select('saveStatus').dirty) game.save(); }, 15000);
 }
 bootstrap().catch(error => {
   console.error(error);

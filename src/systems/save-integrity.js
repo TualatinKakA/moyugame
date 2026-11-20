@@ -34,7 +34,7 @@ export function encodeSave(payload) {
   });
 }
 
-export function decodeSave(raw, { allowLegacy = true } = {}) {
+export function decodeSave(raw, { allowLegacy = true, allowIntegrityMismatch = false } = {}) {
   const parsed = JSON.parse(raw);
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('INVALID_SAVE');
   if (parsed.format === undefined) {
@@ -46,6 +46,9 @@ export function decodeSave(raw, { allowLegacy = true } = {}) {
   const integrity = parsed.integrity;
   if (integrity?.algorithm !== 'HMAC-SHA-256' || integrity.keyId !== SAVE_KEY_ID || typeof integrity.value !== 'string') throw new Error('INVALID_SAVE_INTEGRITY');
   const expected = signature(parsed.payload);
-  if (integrity.value.length !== expected.length || integrity.value !== expected) throw new Error('SAVE_INTEGRITY_MISMATCH');
+  if (integrity.value.length !== expected.length || integrity.value !== expected) {
+    if (!allowIntegrityMismatch) throw new Error('SAVE_INTEGRITY_MISMATCH');
+    return { payload: parsed.payload, legacy: false, integrityMismatch: true };
+  }
   return { payload: parsed.payload, legacy: false };
 }

@@ -1493,6 +1493,20 @@ test('signed saves reject payload and trusted timestamp tampering but accept leg
   assert.equal(decodeSave(storage.getItem(SAVE_KEY)).payload.resources.coins, 500);
 });
 
+test('save recovery re-signs mismatched payloads only through the explicit recovery method', () => {
+  const state = createSaveState({ now: 1000 });
+  state.resources.coins = 500;
+  const envelope = JSON.parse(encodeSave(state));
+  envelope.payload.resources.coins = 501;
+  const damaged = JSON.stringify(envelope);
+  const adapter = createSaveAdapter({ storage: createMemoryStorage() });
+  assert.throws(() => adapter.import(damaged), /SAVE_INTEGRITY_MISMATCH/);
+  assert.equal(decodeSave(damaged, { allowIntegrityMismatch: true }).integrityMismatch, true);
+  adapter.recover(damaged);
+  assert.equal(decodeSave(adapter.listSlots().main).payload.resources.coins, 501);
+  assert.equal(adapter.listSlots().corrupt, damaged);
+});
+
 test('offline settlement caps unverified time at one day and verified time at seven days', async () => {
   const unverified = fixture(initial());
   await unverified.game.start();
