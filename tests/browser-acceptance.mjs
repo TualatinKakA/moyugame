@@ -54,7 +54,7 @@ try {
   await page.locator('.app-nav [data-tab="buildings"]').click();
   const unavailableFarm = page.locator('#mainPanel [data-building-card][data-id="farm"]');
   assert.equal(await unavailableFarm.getAttribute('aria-disabled'), 'true');
-  assert.equal(await unavailableFarm.isDisabled(), false, 'unavailable facilities still receive touch events');
+  assert.equal(await unavailableFarm.evaluate(button => button.disabled), false, 'unavailable facilities still receive touch events');
   await unavailableFarm.click();
   const unavailableBox = await unavailableFarm.boundingBox();
   const unavailablePoint = { clientX: unavailableBox.x + unavailableBox.width / 2, clientY: unavailableBox.y + unavailableBox.height / 2 };
