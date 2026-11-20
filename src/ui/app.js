@@ -165,6 +165,10 @@ const effectValue = effect => {
   const variables = Object.fromEntries(Object.entries(effect.value.variables || {}).map(([name, path]) => {
     if (path === 'buildings.total') return [name, Object.values(state().buildings).reduce((sum, count) => sum + count, 0)];
     if (path === 'buildings.low3') return [name, ['farm', 'inn', 'blacksmith'].reduce((sum, id) => sum + (state().buildings[id] || 0), 0)];
+    if (path.startsWith('buildings.alignment.')) {
+      const alignment = path.slice(20);
+      return [name, content('building').filter(item => item.alignment === alignment).reduce((sum, item) => sum + (state().buildings[item.id] || 0), 0)];
+    }
     if (path.startsWith('derived.')) return [name, derived()[path.slice(8)] || 0];
     return [name, pathValue(state(), path) || 0];
   }));
@@ -177,6 +181,12 @@ const description = item => {
     && (!candidate.when || evaluateCondition(graph, candidate.when, context))));
   if (text.includes('{activeProductionPercent}')) text = text.replaceAll('{activeProductionPercent}', formatNumber(activeEffect('building.production')));
   if (text.includes('{activeGlobalPercent}')) text = text.replaceAll('{activeGlobalPercent}', formatNumber(activeEffect('global.production')));
+  text = text.replace(/\{effect:([^}]+)\}/g, (_, group) => formatNumber(effectValue(item.effects.find(effect => effect.group === group))));
+  text = text.replace(/\{castAmount:(\d+)\}/g, (_, index) => {
+    const action = item.castActions?.[Number(index)];
+    return action ? formatNumber(Math.floor(effectValue({ value: action.amount }))) : '0';
+  });
+  if (text.includes('{maxManaTaxTimes}')) text = text.replaceAll('{maxManaTaxTimes}', formatNumber(1 + Math.floor(1.5 * Math.log(1 + derived().manaMax / 1000) ** 1.5)));
   return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
 };
 const formatCost = cost => {
@@ -259,9 +269,7 @@ function queueAssistantFactionCoin({ factionId, amount }) {
 }
 
 /**
- * 数字员工（Assistant）生成的部门影响力浮字：
- * 所有部门影响力均在同一个初始位置生成（不再设置递增的 style.top 偏移），
- * 同时保留每个部门之间 index * 100ms 的生成时间差。
+ * 共享缓存入账的部门影响力浮字：同批各部门使用同一初始位置，并错开生成时间。
  */
 function showAssistantFactionCoins() {
   const factionOrder = new Map(content('faction').map((item, idx) => [item.id, idx]));
@@ -276,7 +284,7 @@ function showAssistantFactionCoins() {
       if (!container.isConnected || document.hidden) return;
       const floater = document.createElement('span');
       floater.className = 'faction-coin-float assistant-faction-coin-floater';
-      floater.dataset.fcSource = 'assistant';
+      floater.dataset.fcSource = 'randomCache';
       floater.dataset.faction = factionId;
       floater.textContent = factionCoinGainText(factionId, amount);
       container.appendChild(floater);
@@ -357,7 +365,7 @@ function renderUpgradeRail() {
   if (now - lastUpgradeRailRender < 500) return;
   lastUpgradeRailRender = now;
   const candidates = visible('upgrade').filter(item => view(item.id).status === 'PURCHASABLE');
-  const signature = candidates.map(item => `${item.id}:${view(item.id).costs[0]?.value || 0}`).join('|');
+  const signature = candidates.map(item => `${item.id}:${view(item.id).costs[0]?.value || 0}:${description(item)}`).join('|');
   if (signature === upgradeRailStructure) return;
   upgradeRailStructure = signature;
   $('upgradeRail').innerHTML = candidates.length ? candidates.map(item => `<button class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" title="${item.name}：${description(item)}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(view(item.id).costs[0]?.value || 0)}</small></button>`).join('') : '<span class="rail-empty">暂无可购买升级</span>';
@@ -381,7 +389,7 @@ function skillButton(item) {
 function renderQuickSkills() {
   const available = visible('spell');
   const quick = quickSkillIds().map(definition);
-  const signature = `${quickLimit()}|${formatNumber(derived().taxSeconds)}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}`;
+  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}|${quick.map(description).join('|')}`;
   if (signature === quickStructure) return;
   quickStructure = signature;
   $('skillMount').innerHTML = available.length ? `<section class="skill-shortcuts" aria-label="快捷技能"><div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButton).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}</section>` : '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
@@ -394,9 +402,13 @@ function updateCastButtons() {
     button.classList.toggle('active', model.viewModel.active);
     button.classList.toggle('insufficient', button.disabled);
     const status = model.viewModel.active ? `生效中 ${formatNumber(model.viewModel.remaining)} 秒` : `${formatNumber(model.costs[0]?.value || 0)} 精力`;
+    const text = description(definition(button.dataset.id));
+    const small = button.querySelector('small'); if (small) small.textContent = text;
     const em = button.querySelector('em'); if (em) em.textContent = status;
-    const rowStatus = button.closest('[data-skill-row]')?.querySelector('[data-skill-status]'); if (rowStatus) rowStatus.textContent = status;
-    button.setAttribute('aria-label', `${model.viewModel.name}。${model.viewModel.description}，${status}`);
+    const row = button.closest('[data-skill-row]');
+    const rowStatus = row?.querySelector('[data-skill-status]'); if (rowStatus) rowStatus.textContent = status;
+    const rowDescription = row?.querySelector('.skill-copy p'); if (rowDescription) rowDescription.textContent = text;
+    button.setAttribute('aria-label', `${model.viewModel.name}。${text}，${status}`);
   });
 }
 function updateQuickSkill(id, mode) {
@@ -521,8 +533,11 @@ function updatePanel() {
       const item = definition(button.dataset.id);
       const cost = model.costs.map(formatCost).join(' + ');
       const hint = model.status === 'OWNED' ? '已生效' : model.status === 'NEED_RESOURCE' ? '资源不足' : model.status === 'LOCKED_REQUIREMENT' ? '尚未满足条件' : '点击购买';
+      const text = description(item);
       button.setAttribute('aria-disabled', String(unavailable));
-      button.setAttribute('aria-label', `${item.name}，价格 ${cost || '无'}。${description(item)}${hint}。`);
+      button.setAttribute('aria-label', `${item.name}，价格 ${cost || '无'}。${text}${hint}。`);
+      const descriptionElement = card.querySelector('.upgrade-tooltip-description');
+      if (descriptionElement) descriptionElement.textContent = text;
       card.classList.toggle('owned', model.status === 'OWNED');
       card.classList.toggle('insufficient', model.status === 'NEED_RESOURCE');
       card.classList.toggle('affordable', model.status === 'PURCHASABLE');
@@ -610,13 +625,15 @@ function renderTop() {
   const faction = state().selections.faction ? definition(state().selections.faction) : null;
   $('factionName').textContent = faction ? faction.name : '尚未选择部门';
   $('clickReward').textContent = money(d.clickReward); $('assistants').textContent = formatNumber(d.assistants);
+  const factionCoins = game.select('factionCoins');
+  $('assistantTooltip').textContent = `每名数字员工每秒产出当前搬砖收入 5% 的工资，当前合计 ${money(d.assistantProduction)} / 秒，不增加搬砖次数。影响力在线期望 ${formatNumber(factionCoins.assistant.expectedPerSecond)} / 秒，实际按随机结果逐枚入账；待领取 ${formatNumber(factionCoins.pending)}。`;
   $('runTime').textContent = formatTime(state().stats.run.time);
   const saveStatus = game.select('saveStatus'); $('saveStatus').textContent = saveStatus.error ? '未保存 · 将自动重试' : saveStatus.dirty ? '有未保存更改' : '本地存档已就绪';
   updateRetirement();
 }
 function factFeedback(facts) {
   for (const fact of facts) {
-    if (fact.type === 'factionCoins.found' && fact.payload.source === 'assistant' && fact.payload.mode === 'online') queueAssistantFactionCoin(fact.payload);
+    if (fact.type === 'factionCoins.found' && fact.payload.source === 'randomCache' && fact.payload.mode === 'online') queueAssistantFactionCoin(fact.payload);
     if (fact.type === 'building.purchased') {
       playPurchaseSound('building');
       notify(`设施采购完成：${definition(fact.payload.buildingId).name} +${fact.payload.quantity}`);
@@ -624,21 +641,29 @@ function factFeedback(facts) {
     else if (fact.type === 'upgrade.purchased') playPurchaseSound('upgrade');
     else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
     else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
-    else if (fact.type === 'spell.cast') notify(`已释放：${definition(fact.payload.spellId).name}`);
+    else if (fact.type === 'spell.cast') {
+      const name = definition(fact.payload.spellId).name;
+      notify(fact.payload.free ? `免费追加：${name} ×${formatNumber(fact.payload.times || 1)}` : `已释放：${name}`);
+    }
+    else if (fact.type === 'greenFingersDiscount.triggered') notify(`全绿预算折扣：${money(fact.payload.earned)}（${formatNumber(fact.payload.seconds)} 秒产出）`);
     else if (fact.type === 'trophy.unlocked') {
       playTrophySound();
       notify(`获得奖杯：${definition(fact.payload.trophyId).name}`, false, 'trophy');
     }
     else if (fact.type === 'abdication.completed') notify(`退休结算完成，获得 ${formatNumber(fact.payload.earned)} 期权`);
     else if (fact.type === 'reincarnation.completed') notify(`已进入 R${fact.payload.reincarnations}`);
-    else if (fact.type === 'offline.settled') notify(`离线 ${formatTime(fact.payload.seconds)}，结算 ${money(fact.payload.earned)}`);
+    else if (fact.type === 'offline.settled') {
+      const pending = fact.payload.factionCoinsPending > 0 ? `，待领取影响力 ${formatNumber(fact.payload.factionCoinsPending)}` : '';
+      const discount = fact.payload.greenFingersMultiplier !== 1 ? `，全绿预算折扣 ×${formatNumber(fact.payload.greenFingersMultiplier)}` : '';
+      notify(`离线 ${formatTime(fact.payload.seconds)}，结算 ${money(fact.payload.earned)}${discount}${pending}`);
+    }
   }
 }
 function refresh(message = null) {
   if (message?.commandType && message.commandType !== 'tick') lastUpgradeRailRender = 0;
-  renderTop(); renderUpgradeRail();
+  renderTop(); renderUpgradeRail(); renderQuickSkills();
   const inventoryChanged = !message || message.commandType !== 'tick' || message.changedPaths.some(path => /^(spellSources|selections|settings|buildings)/.test(path));
-  if (inventoryChanged) { renderQuickSkills(); renderFacilityRail(); }
+  if (inventoryChanged) renderFacilityRail();
   updateCastButtons();
   const structural = message?.commandType !== 'tick' || message?.changedPaths.some(path => /^(permanentUnlocks|story|owned|buildings|selections)/.test(path));
   if (activeTab !== 'work' && structural) renderPanel(); else updatePanel();

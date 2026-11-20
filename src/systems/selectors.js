@@ -19,7 +19,7 @@ export function buildingQuote(state, graph, derived, id, amount = 1) {
   const definition = graph.definitionsById.get(id);
   const count = state.buildings[id] || 0;
   const base = definition.purchase.costs[0].amount.constant;
-  const growth = derived.buildingCostMultiplier;
+  const growth = derived.buildingCostMultipliers?.[id] ?? derived.buildingCostMultiplier;
   const quantityFor = value => {
     if (value !== 'max') return Math.max(1, Number(value) || 1);
     if (state.resources.coins < base * growth ** count) return 0;

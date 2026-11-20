@@ -40,7 +40,7 @@ function percentFactor(operation, value) { return operation === 'multiplyPercent
 
 function createModifiers() {
   return {
-    globalAdd: 0, globalMult: 1, buildingAdd: {}, buildingMult: {}, buildingBaseAdd: {}, buildingCostAdd: 0,
+    globalAdd: 0, globalMult: 1, buildingAdd: {}, buildingMult: {}, buildingBaseAdd: {}, buildingCostAdd: 0, buildingCostAddById: {},
     assistantsAdd: 0, assistantsMult: 1, assistantProdAdd: 0, assistantProdMult: 1, assistantFcMult: 1,
     manaMaxAdd: 0, manaRegenAdd: 0, manaRegenMult: 1, clickBaseAdd: 0, clickAdd: 0, clickMult: 1,
     taxSecondsAdd: 0, gemPowerAdd: 0, gemPowerMult: 1, offlineAdd: 0, offlineMult: 1, fcChanceAdd: 0,
@@ -53,7 +53,9 @@ function applyEffect(mods, effect, amount, targetId) {
   } else if (effect.stat === 'building.production') {
     if (additive) add(mods.buildingAdd, targetId, amount); else multiply(mods.buildingMult, targetId, percentFactor(effect.operation, amount));
   } else if (effect.stat === 'building.baseProduction') add(mods.buildingBaseAdd, targetId, amount);
-  else if (effect.stat === 'building.costMultiplier') mods.buildingCostAdd += amount;
+  else if (effect.stat === 'building.costMultiplier') {
+    if (targetId) add(mods.buildingCostAddById, targetId, amount); else mods.buildingCostAdd += amount;
+  }
   else if (effect.stat === 'assistants.count') {
     if (effect.operation === 'add') mods.assistantsAdd += amount; else mods.assistantsMult *= percentFactor(effect.operation, amount);
   } else if (effect.stat === 'assistants.production') {
@@ -76,6 +78,14 @@ function applyEffect(mods, effect, amount, targetId) {
     else mods.offlineMult *= effect.operation === 'multiply' ? amount : percentFactor(effect.operation, amount);
   } else if (effect.stat === 'factionCoin.chance') mods.fcChanceAdd += amount;
   else throw new Error(`Unknown derived effect stat ${effect.stat}`);
+}
+
+export function getEffectiveGems(state) {
+  return state.resources.gems;
+}
+
+export function getGemBonus() {
+  return 0;
 }
 
 export function computeDerived(state, graph, groupCache = new Map(), buildingOverrides = {}) {
@@ -112,7 +122,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     if (phase === 'global') {
       const outputs = {};
       const unitOutputs = {};
-      const gemPowerMultiplier = (1 + state.resources.gems * mods.gemPowerAdd / 100) * mods.gemPowerMult;
+      const gemPowerMultiplier = (1 + getEffectiveGems(state) * mods.gemPowerAdd / 100) * mods.gemPowerMult;
       globalMult = (1 + mods.globalAdd / 100) * mods.globalMult * gemPowerMultiplier;
       let buildingProduction = 0;
       for (const definition of buildings(graph)) {
@@ -134,15 +144,18 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     * (1 + mods.assistantProdAdd / 100) * mods.assistantProdMult * globalMult);
   const production = buildingProduction + assistantProduction;
   const gemFactionCoinChance = mods.gemPowerAdd > 0
-    ? Math.floor(1.25 * Math.log(1 + state.resources.gems) ** 0.9 / Math.log(10))
+    ? Math.floor(0.5 * (1.25 + getGemBonus() / 4) * Math.log(1 + getEffectiveGems(state)) ** 0.9)
     : 0;
   return Object.freeze({
     outputs, unitOutputs, production, buildingProduction, assistantProduction, assistants, clickReward,
     manaMax: Math.max(1, 1000 + mods.manaMaxAdd), manaRegen: state.settings.manaRegenOverride ?? Math.max(0, (1 + mods.manaRegenAdd) * mods.manaRegenMult),
-    fcChance: 10 + power.factionCoinChanceAdd + gemFactionCoinChance + mods.fcChanceAdd, taxSeconds,
+    fcChance: 10 + gemFactionCoinChance + mods.fcChanceAdd, taxSeconds,
     assistantFactionCoinMultiplier: mods.assistantFcMult,
     offlineMultiplier: (power.offlineMultiplier * (1 + mods.offlineAdd / 100) * mods.offlineMult),
     buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
+    buildingCostMultipliers: Object.fromEntries(buildings(graph).map(definition => [definition.id,
+      Math.max(1.01, 1.15 + mods.buildingCostAdd + (mods.buildingCostAddById[definition.id] || 0)),
+    ])),
   });
 }
 

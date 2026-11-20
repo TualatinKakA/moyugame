@@ -162,6 +162,7 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
   const effectDependencies = new Map();
   const effectOrderByPhase = new Map([...PHASES].map(phase => [phase, []]));
   const effectEntriesByPhase = new Map([...PHASES].map(phase => [phase, []]));
+  const rngPersistence = { 'drops:factionCoin': 'transient' };
 
   const indexDependency = (index, path, id) => {
     if (!path) return;
@@ -184,6 +185,18 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
     for (const field of ['contentVersion', 'era', 'scope', 'ui']) if (!definition[field]) errors.push(`${definition.id}: missing ${field}`);
     if (!definition.ui?.kind || !definition.ui?.panel || !UI_KINDS.has(definition.ui.kind)) errors.push(`${definition.id}: UI kind/panel must be registered`);
     if ((definition.kind === 'trophy' || definition.kind === 'story') && !definition.rewardId) errors.push(`${definition.id}: permanent reward requires rewardId`);
+    if (['spell', 'upgrade'].includes(definition.kind)) {
+      const hasStream = definition.rngStream !== undefined;
+      const hasPersistence = definition.rngPersistence !== undefined;
+      if (hasStream && (typeof definition.rngStream !== 'string' || !definition.rngStream.trim())) errors.push(`${definition.id}: rngStream must be non-empty`);
+      if (hasPersistence && !['saved', 'transient'].includes(definition.rngPersistence)) errors.push(`${definition.id}: unknown rngPersistence ${definition.rngPersistence}`);
+      if (hasPersistence && !hasStream) errors.push(`${definition.id}: rngPersistence requires rngStream`);
+      if (hasStream && typeof definition.rngStream === 'string' && definition.rngStream.trim()) {
+        const strategy = definition.rngPersistence || 'saved';
+        if (rngPersistence[definition.rngStream] && rngPersistence[definition.rngStream] !== strategy) errors.push(`${definition.id}: conflicting rngPersistence for ${definition.rngStream}`);
+        else rngPersistence[definition.rngStream] = strategy;
+      }
+    } else if (definition.rngStream !== undefined || definition.rngPersistence !== undefined) errors.push(`${definition.id}: RNG metadata requires a spell or upgrade`);
     for (const [field, index] of [['visible', visibilityDependents], ['unlock', visibilityDependents]]) {
       const compiled = compile(definition[field], definition.id);
       for (const path of compiled.dependencies) indexDependency(index, path, definition.id);
@@ -290,6 +303,7 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
     effectDependencies: freezeIndex(effectDependencies),
     effectOrderByPhase: freezeIndex(effectOrderByPhase),
     effectEntriesByPhase: freezeIndex(effectEntriesByPhase),
+    rngPersistence: Object.freeze({ ...rngPersistence }),
     migrationAlias: Object.freeze({ ...aliases }),
     contentVersions: Object.freeze((content.packs || []).map(pack => pack.version)),
   };

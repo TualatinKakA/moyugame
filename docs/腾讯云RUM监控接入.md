@@ -30,7 +30,7 @@ Project Key 是浏览器端应用标识，不是 CAM 密钥。`kimi-scf-deploy-i
 window.tdem = new window.TDEM({
   id: 'bxN32phAGVf2',
   url: 'https://dem.rumt-zh.com',
-  version: '1.0.1',
+  version: '1.0.2',
   env: 'production',
   spa: false,
   api: true,

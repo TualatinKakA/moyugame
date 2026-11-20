@@ -2,12 +2,12 @@ import { compileContentGraph, evaluateCondition, pathValue, resourcePath } from 
 import { createSaveState, migrateAndNormalizeState, assertStateInvariants, stateHash } from './state.js';
 import { beginTransaction } from './transaction.js';
 import { processReactions } from './reactions.js';
-import { RuntimeCache } from './derived.js';
+import { RuntimeCache, getEffectiveGems } from './derived.js';
 import { SelectorCache, selectContent, buildingQuote } from './selectors.js';
 import { createScheduler } from './scheduler.js';
 import { createPersistence } from './persistence.js';
 import { systemClock } from '../core/clock.js';
-import { drawRandom } from '../core/rng.js';
+import { nextDouble, nextDoubleRange } from '../core/rng.js';
 import { evaluateFormula } from './formula.js';
 import { planOfflineSegments } from './offline.js';
 import { gemsForRunCoins, reincarnationRequirement, ascensionForReincarnation } from './progression.js';
@@ -25,7 +25,7 @@ const resettable = state => ({
 
 export function createGameRuntime({ content, saveAdapter, clock = systemClock, seed = 0x6d2b79f5, mode = 'development', isTimeVerified = () => false }) {
   const graph = compileContentGraph(content, { mode });
-  const persistence = createPersistence(saveAdapter, { wallNow: clock.wallNow });
+  const persistence = createPersistence(saveAdapter, { wallNow: clock.wallNow, rngPersistence: graph.rngPersistence });
   const scheduler = createScheduler();
   const listeners = new Set();
   let state = null;
@@ -35,6 +35,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   let activeTransaction = null;
   let stopped = false;
   let developerUnlocked = false;
+  let factionCoinCache = 0;
+  let assistantTickAccumulator = 0;
   const diagnostics = { lastTransaction: null, recoveredSave: false, migration: null, offlineTruncated: false, lastOfflineReport: null };
 
   function notify(type, transaction = null) {
@@ -71,17 +73,23 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (!started || stopped) return { ok: false, reason: 'RUNTIME_NOT_RUNNING' };
     if (activeTransaction) return { ok: false, reason: 'TRANSACTION_REENTRY' };
     const transaction = beginTransaction(state);
+    const transientSnapshot = { factionCoinCache, assistantTickAccumulator };
     transaction.commandType = type;
     const transactionDerived = cache.get();
     activeTransaction = transaction;
+    const rollback = () => {
+      transaction.rollback();
+      factionCoinCache = transientSnapshot.factionCoinCache;
+      assistantTickAccumulator = transientSnapshot.assistantTickAccumulator;
+    };
     try {
       const result = callback(transaction);
-      if (result?.rejected) { transaction.rollback(); return { ok: false, reason: result.reason }; }
+      if (result?.rejected) { rollback(); return { ok: false, reason: result.reason }; }
       processReactions(transaction, graph, { enqueueStory, awardTrophy, applyActions, completeChallenge }, { derived: transactionDerived });
       const committed = commitTransaction(transaction);
       return { ...committed, result };
     } catch (error) {
-      transaction.rollback();
+      rollback();
       cache.rebuild(); selectors.clear(); rebuildScheduler();
       return { ok: false, reason: error.code || 'TRANSACTION_FATAL', error };
     } finally { activeTransaction = null; }
@@ -91,6 +99,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (amount.constant !== undefined) return Number(amount.constant);
     const variables = Object.fromEntries(Object.entries(amount.variables || {}).map(([name, path]) => {
       if (path.startsWith('derived.')) return [name, cache.get()[path.slice(8)] || 0];
+      if (path === 'resources.gems') return [name, getEffectiveGems(tx.state)];
       if (path === 'factionCoins.total') return [name, Object.values(tx.state.resources.factionCoins).reduce((sum, value) => sum + value, 0)];
       return [name, pathValue(tx.state, path) || 0];
     }));
@@ -101,14 +110,20 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const definition = graph.definitionsById.get(factionId);
     if (definition?.kind !== 'faction' || definition.factionCoin?.enabled !== true) throw new Error(`Invalid faction coin target ${factionId}`);
     if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid faction coin amount for ${sourceId || source}`);
-    if (amount === 0) return false;
-    increment(tx, `resources.factionCoins.${factionId}`, amount);
+    const granted = Math.floor(amount);
+    if (granted === 0) return false;
+    increment(tx, `resources.factionCoins.${factionId}`, granted);
     for (const scope of ['run', 'r', 'ascension', 'total']) {
-      increment(tx, `stats.${scope}.factionCoins`, amount);
-      increment(tx, `stats.${scope}.factionCoinsByFaction.${factionId}`, amount);
+      increment(tx, `stats.${scope}.factionCoins`, granted);
+      increment(tx, `stats.${scope}.factionCoinsByFaction.${factionId}`, granted);
     }
-    tx.emit('factionCoins.found', { factionId, amount, source, sourceId, mode });
+    tx.emit('factionCoins.found', { factionId, amount: granted, source, sourceId, mode });
     return true;
+  }
+
+  function queueRandomFactionCoins(amount) {
+    if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid random faction coin amount ${amount}`);
+    if (amount > 0) factionCoinCache += amount;
   }
 
   function eligibleFactionCoins(currentState) {
@@ -118,10 +133,15 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
 
   function random(tx, stream) {
     if (!tx.oldValues.has('rng')) tx.write('rng', { seed: tx.state.rng.seed, streams: JSON.parse(JSON.stringify(tx.state.rng.streams)) });
-    return drawRandom(tx.state, stream);
+    return nextDouble(tx.state, stream);
   }
 
-  function chooseFactionCoin(tx, entries, stream) {
+  function randomRange(tx, stream, min, max) {
+    if (!tx.oldValues.has('rng')) tx.write('rng', { seed: tx.state.rng.seed, streams: JSON.parse(JSON.stringify(tx.state.rng.streams)) });
+    return nextDoubleRange(tx.state, stream, min, max);
+  }
+
+  function chooseFactionCoin(tx, entries, stream = 'drops:factionCoin') {
     if (!entries.length) return null;
     const totalWeight = entries.reduce((sum, definition) => sum + definition.factionCoin.baseWeight, 0);
     let roll = random(tx, stream) * totalWeight;
@@ -132,14 +152,49 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return entries.at(-1).id;
   }
 
-  function settleAssistantFactionCoins(tx, delta, offline, derived) {
+  function flushRandomFactionCoins(tx, mode = 'online') {
+    if (factionCoinCache <= 0) return;
     const entries = eligibleFactionCoins(tx.state);
-    const total = derived.assistants * 0.2 * (derived.fcChance / 100) * derived.assistantFactionCoinMultiplier * delta;
-    if (!entries.length || total <= 0) return;
-    const amount = total / entries.length;
-    for (const definition of entries) grantFactionCoins(tx, {
-      factionId: definition.id, amount, source: 'assistant', mode: offline ? 'offline' : 'online',
-    });
+    if (!entries.length) { factionCoinCache = 0; return; }
+    let remainingCache = factionCoinCache;
+    if (remainingCache > 100) {
+      const each = Math.floor((remainingCache - 100) / entries.length);
+      remainingCache -= each * entries.length;
+      for (const definition of entries) grantFactionCoins(tx, {
+        factionId: definition.id, amount: each, source: 'randomCache', mode,
+      });
+    }
+    let remaining = Math.floor(remainingCache);
+    while (remaining > 0) {
+      const factionId = chooseFactionCoin(tx, entries);
+      grantFactionCoins(tx, { factionId, amount: 1, source: 'randomCache', mode });
+      remaining--;
+    }
+    factionCoinCache = 0;
+  }
+
+  function settleOnlineAssistantFactionCoins(tx, delta, derived) {
+    assistantTickAccumulator += Math.min(delta, 1 / 3) * 30;
+    const seconds = Math.floor(assistantTickAccumulator / 30);
+    assistantTickAccumulator -= seconds * 30;
+    if (seconds <= 0) return;
+    const roll = random(tx, 'drops:factionCoin') * 100;
+    const p = derived.assistants * derived.fcChance * seconds;
+    let count = Math.floor(p / 100);
+    const remainder = p - count * 100;
+    if (roll <= remainder) count++;
+    if (count > 0) queueRandomFactionCoins(3 * count);
+    settleAutomaticClicks(tx, seconds);
+  }
+
+  function applyOfflineFactionCoinModifiers(amount) {
+    return amount;
+  }
+
+  function settleOfflineAssistantFactionCoins(seconds, derived) {
+    if (seconds <= 0 || derived.assistants <= 0) return;
+    const base = Math.round(derived.assistants * derived.fcChance * seconds / 100);
+    queueRandomFactionCoins(Math.round(applyOfflineFactionCoinModifiers(base)));
   }
 
   function awardTrophy(tx, definition) {
@@ -170,11 +225,15 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         if (amount === 0) continue;
         if (action.resource.startsWith('factionCoin.')) {
           const randomEligible = ['factionCoin.randomEligible', 'factionCoin.randomUnlocked'].includes(action.resource);
-          const factionId = randomEligible ? chooseFactionCoin(tx, eligibleFactionCoins(tx.state), `drops:${definition.id}`) : null;
-          const path = randomEligible ? null : resourcePath(tx.state, action.resource, definition.id);
-          const targetFaction = factionId || path?.slice('resources.factionCoins.'.length);
-          if (!targetFaction) throw new Error(`No eligible faction for ${action.resource}`);
-          grantFactionCoins(tx, { factionId: targetFaction, amount, source: definition.kind, sourceId: definition.id });
+          if (randomEligible) {
+            if (!eligibleFactionCoins(tx.state).length) throw new Error(`No eligible faction for ${definition.id}`);
+            queueRandomFactionCoins(amount);
+          } else {
+            const path = resourcePath(tx.state, action.resource, definition.id);
+            const targetFaction = path?.slice('resources.factionCoins.'.length);
+            if (!targetFaction) throw new Error(`No eligible faction for ${action.resource}`);
+            grantFactionCoins(tx, { factionId: targetFaction, amount, source: definition.kind, sourceId: definition.id });
+          }
         } else {
           increment(tx, `resources.${action.resource}`, amount);
         }
@@ -249,7 +308,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
           tx.emit(definition.kind === 'faction' ? 'faction.joined' : 'alignment.selected', { [`${definition.kind}Id`]: id });
         } else {
           tx.write(`owned.${definition.scope}.${id}`, true);
-          if (id === 'goblin-9') tx.write('timers.tasks.greenFingersDiscount', { dueAt: tx.state.stats.run.time + 600 });
+          if (id === 'goblin-9') tx.write('timers.tasks.greenFingersDiscount', { dueAt: tx.state.stats.run.time + greenFingersInterval() });
           if (definition.kind === 'upgrade') for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.upgradesBought`, 1);
           tx.emit('upgrade.purchased', { upgradeId: id });
         }
@@ -259,28 +318,53 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
 
-  function work() {
-    return runTransaction('work', tx => {
-      const reward = cache.get().clickReward;
-      increment(tx, 'resources.coins', reward);
-      for (const scope of ['run', 'r', 'ascension', 'total']) {
-        increment(tx, `stats.${scope}.clicks`, 1);
-        increment(tx, `stats.${scope}.coins`, reward);
-        increment(tx, `stats.${scope}.clickCoins`, reward);
-      }
-      const eligible = eligibleFactionCoins(tx.state);
-      if (eligible.length && random(tx, 'drops:manualClick') < cache.get().fcChance / 100) {
-        const factionId = chooseFactionCoin(tx, eligible, 'drops:manualClick');
-        grantFactionCoins(tx, { factionId, amount: 1, source: 'manualClick' });
-      }
-      tx.emit('work.clicked', { reward });
-    });
+  function performWork(tx, automatic = false) {
+    const reward = cache.get().clickReward;
+    increment(tx, 'resources.coins', reward);
+    for (const scope of ['run', 'r', 'ascension', 'total']) {
+      increment(tx, `stats.${scope}.clicks`, 1);
+      increment(tx, `stats.${scope}.coins`, reward);
+      increment(tx, `stats.${scope}.clickCoins`, reward);
+    }
+    const eligible = eligibleFactionCoins(tx.state);
+    if (eligible.length && random(tx, 'drops:factionCoin') < cache.get().fcChance / 100) {
+      const factionId = chooseFactionCoin(tx, eligible);
+      grantFactionCoins(tx, { factionId, amount: 1, source: automatic ? 'autoClick' : 'manualClick' });
+    }
+    tx.emit('work.clicked', { reward, automatic });
   }
 
-  function recordSpellCast(tx, id) {
+  function work() {
+    return runTransaction('work', tx => { performWork(tx); });
+  }
+
+  function settleAutomaticClicks(tx, seconds) {
+    if (!tx.state.owned.run['fairy-4'] || seconds <= 0) return;
+    const activeSpells = Object.keys(tx.state.timers.spells).filter(id => spellActive(tx.state, id)).length;
+    const clicks = Math.floor(activeSpells) * seconds;
+    for (let index = 0; index < clicks; index++) performWork(tx, true);
+  }
+
+  function recordSpellCast(tx, id, times = 1) {
     for (const scope of ['run', 'r', 'ascension', 'total']) {
-      increment(tx, `stats.${scope}.spellsCast`, 1);
-      increment(tx, `stats.${scope}.spellCasts.${id}`, 1);
+      increment(tx, `stats.${scope}.spellsCast`, times);
+      increment(tx, `stats.${scope}.spellCasts.${id}`, times);
+    }
+  }
+
+  function duplicateSpell(tx, id, times, { sourceId = null } = {}) {
+    const definition = graph.definitionsById.get(id);
+    if (!definition || definition.kind !== 'spell' || !Number.isSafeInteger(times) || times <= 0) return false;
+    const activeDuplicates = tx.duplicateSpells || (tx.duplicateSpells = new Set());
+    if (activeDuplicates.has(id)) return false;
+    activeDuplicates.add(id);
+    try {
+      recordSpellCast(tx, id, times);
+      for (let index = 0; index < times; index++) applyActions(tx, definition.castActions || [], definition);
+      tx.emit('spell.cast', { spellId: id, free: true, times, sourceId });
+      return true;
+    } finally {
+      activeDuplicates.delete(id);
     }
   }
 
@@ -296,10 +380,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       applyActions(tx, definition.castActions || [], definition);
       tx.emit('spell.cast', { spellId: id, free: false });
       if (id !== 'taxCollection' && tx.state.owned.run['goblin-7']) {
-        const taxCollection = graph.definitionsById.get('taxCollection');
-        applyActions(tx, taxCollection.castActions || [], taxCollection);
-        recordSpellCast(tx, 'taxCollection');
-        tx.emit('spell.cast', { spellId: 'taxCollection', free: true });
+        const times = 1 + Math.floor(1.5 * Math.log(1 + cache.get().manaMax / 1000) ** 1.5);
+        duplicateSpell(tx, 'taxCollection', times, { sourceId: 'goblin-7' });
       }
     });
   }
@@ -342,6 +424,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (includeR) tx.write('owned.r', {});
     tx.write('resources.coins', 0); tx.write('resources.mana', 0);
     tx.write('resources.factionCoins', {});
+    factionCoinCache = 0;
     cache.invalidate(tx.changedPaths);
   }
   function abdicate() {
@@ -380,33 +463,48 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
 
-  function triggerGreenFingersDiscount(tx, task, offline, derived) {
-    const count = Math.floor((tx.state.stats.run.time - task.dueAt) / 600) + 1;
-    let seconds = 0;
-    let earned = 0;
-    for (let index = 0; index < count; index++) {
-      const rollSeconds = 1 + Math.floor(random(tx, 'greenFingersDiscount') * 2500);
-      const reward = derived.production * rollSeconds;
-      seconds += rollSeconds;
-      earned += reward;
-      increment(tx, 'resources.coins', reward);
-      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, reward);
-    }
-    tx.write('timers.tasks.greenFingersDiscount', { dueAt: task.dueAt + count * 600 });
-    tx.emit('greenFingersDiscount.triggered', { count, seconds, earned, mode: offline ? 'offline' : 'online' });
+  function getTimeStat(tx, scope = 'run') {
+    return tx.state.stats[scope]?.time || 0;
   }
 
-  function tickSimulation(tx, delta, offline = false) {
+  function getGreenFingersCoinBonus(tx, derived) {
+    const timeFactor = 1 + 0.01 * getTimeStat(tx, 'r') ** 0.8;
+    return derived.buildingProduction + derived.assistantProduction * timeFactor;
+  }
+
+  function greenFingersInterval() {
+    return 120;
+  }
+
+  function triggerGreenFingersDiscount(tx, derived) {
+    const rollSeconds = randomRange(tx, 'greenFingersDiscount', 1, 1500);
+    const reward = getGreenFingersCoinBonus(tx, derived) * rollSeconds;
+    increment(tx, 'resources.coins', reward);
+    for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, reward);
+    tx.write('timers.tasks.greenFingersDiscount', { dueAt: tx.state.stats.run.time + greenFingersInterval() });
+    tx.emit('greenFingersDiscount.triggered', { count: 1, seconds: rollSeconds, earned: reward, mode: 'online' });
+  }
+
+  function advanceSpellActivity(tx, delta) {
+    for (const [id, timer] of Object.entries(tx.state.timers.spells)) {
+      const remaining = timer.dueAt !== undefined ? timer.dueAt - tx.state.stats.run.time : timer.remaining;
+      const activeSeconds = Math.min(delta, Math.max(0, remaining));
+      if (activeSeconds > 0) increment(tx, `stats.run.spellActivity.${id}`, activeSeconds);
+    }
+  }
+
+  function tickSimulation(tx, delta, offline = false, offlineGreenFingersMultiplier = 1) {
     const derived = cache.get();
-    const production = derived.production * (offline ? derived.offlineMultiplier : 1);
+    advanceSpellActivity(tx, delta);
+    const production = derived.production * (offline ? derived.offlineMultiplier * offlineGreenFingersMultiplier : 1);
     for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.time`, delta);
     increment(tx, 'resources.coins', production * delta);
     for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, production * delta);
     tx.write('resources.mana', Math.min(derived.manaMax, tx.state.resources.mana + derived.manaRegen * delta));
-    settleAssistantFactionCoins(tx, delta, offline, derived);
+    if (!offline) settleOnlineAssistantFactionCoins(tx, delta, derived);
     const greenFingersTimer = tx.state.timers.tasks.greenFingersDiscount;
-    if (tx.state.owned.run['goblin-9'] && greenFingersTimer && greenFingersTimer.dueAt <= tx.state.stats.run.time) {
-      triggerGreenFingersDiscount(tx, greenFingersTimer, offline, derived);
+    if (!offline && tx.state.owned.run['goblin-9'] && greenFingersTimer && greenFingersTimer.dueAt <= tx.state.stats.run.time) {
+      triggerGreenFingersDiscount(tx, derived);
     }
     const due = scheduler.due(tx.state.stats.run.time);
     for (const task of due) {
@@ -421,6 +519,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       }
     }
     if (due.length) { cache.invalidate(tx.changedPaths); cache.get(); }
+    if (!offline) flushRandomFactionCoins(tx);
   }
   function tick(deltaSeconds) {
     if (!Number.isFinite(deltaSeconds) || deltaSeconds <= 0) return { ok: false, reason: 'INVALID_DELTA' };
@@ -440,7 +539,17 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const result = runTransaction('offline', tx => {
       const before = tx.state.resources.coins;
       const beforeFactionFound = { ...tx.state.stats.run.factionCoinsByFaction };
-      for (const segment of plan.segments) tickSimulation(tx, segment, true);
+      const pendingBefore = factionCoinCache;
+      const settledSeconds = acceptedSeconds - plan.remaining;
+      const greenFingersMultiplier = tx.state.owned.run['goblin-9']
+        ? 1 + 0.01 * randomRange(tx, 'greenFingersDiscount', 2000, 10000)
+        : 1;
+      settleOfflineAssistantFactionCoins(settledSeconds, cache.get());
+      const factionCoinsPending = factionCoinCache - pendingBefore;
+      for (const segment of plan.segments) tickSimulation(tx, segment, true, greenFingersMultiplier);
+      if (tx.state.owned.run['goblin-9']) {
+        tx.write('timers.tasks.greenFingersDiscount', { dueAt: tx.state.stats.run.time + greenFingersInterval() });
+      }
       const earned = tx.state.resources.coins - before;
       const factionCoinsFound = {};
       for (const definition of graph.arraysByKind.get('faction') || []) {
@@ -448,8 +557,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         const amount = (tx.state.stats.run.factionCoinsByFaction[definition.id] || 0) - (beforeFactionFound[definition.id] || 0);
         if (amount > 0) factionCoinsFound[definition.id] = amount;
       }
-      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, acceptedSeconds - plan.remaining);
-      report = { seconds: acceptedSeconds, requestedSeconds: seconds, verified, capped: seconds > acceptedSeconds, earned, segments: plan.segments.length, truncated: plan.truncated, factionCoinsFound };
+      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, settledSeconds);
+      report = { seconds: acceptedSeconds, requestedSeconds: seconds, verified, capped: seconds > acceptedSeconds, earned, segments: plan.segments.length, truncated: plan.truncated, factionCoinsFound, factionCoinsPending, greenFingersMultiplier };
       tx.emit('offline.settled', report);
       tx.critical = true;
     });
@@ -478,6 +587,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const loaded = saveAdapter.load();
     const migrated = migrateAndNormalizeState(loaded.raw, graph, { now: clock.wallNow(), seed });
     state = migrated.state;
+    factionCoinCache = 0;
+    assistantTickAccumulator = 0;
     if (mode === 'production') state.settings.manaRegenOverride = null;
     diagnostics.recoveredSave = Boolean(loaded.recovered);
     diagnostics.migration = migrated.report;
@@ -488,7 +599,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       if (timer.dueAt === undefined) state.timers.tasks[id] = { dueAt: state.stats.run.time + (timer.remaining || 0) };
     }
     if (state.owned.run['goblin-9'] && !state.timers.tasks.greenFingersDiscount) {
-      state.timers.tasks.greenFingersDiscount = { dueAt: state.stats.run.time + 600 };
+      state.timers.tasks.greenFingersDiscount = { dueAt: state.stats.run.time + greenFingersInterval() };
     }
     if (!state.owned.run['goblin-9']) delete state.timers.tasks.greenFingersDiscount;
     cache = new RuntimeCache(state, graph);
@@ -506,10 +617,11 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const derived = cache.get();
       const factions = (graph.arraysByKind.get('faction') || []).filter(definition => definition.factionCoin?.enabled === true);
       const pool = eligibleFactionCoins(state).map(definition => ({ factionId: definition.id, weight: definition.factionCoin.baseWeight }));
-      const assistantPerSecond = pool.length ? derived.assistants * 0.2 * (derived.fcChance / 100) * derived.assistantFactionCoinMultiplier : 0;
-      const assistantShare = pool.length ? assistantPerSecond / pool.length : 0;
+      const expectedPerSecond = pool.length ? 3 * derived.assistants * (derived.fcChance / 100) : 0;
+      const expectedPerFaction = pool.length ? expectedPerSecond / pool.length : 0;
       return {
         chance: derived.fcChance,
+        pending: factionCoinCache,
         balances: Object.fromEntries(factions.map(definition => [definition.id, state.resources.factionCoins[definition.id] || 0])),
         found: Object.fromEntries(['run', 'r', 'ascension', 'total'].map(scope => [scope, state.stats[scope].factionCoins || 0])),
         foundByFaction: Object.fromEntries(['run', 'r', 'ascension', 'total'].map(scope => [scope,
@@ -517,8 +629,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         ])),
         pool,
         assistant: {
-          totalPerSecond: assistantPerSecond,
-          perFaction: Object.fromEntries(pool.map(entry => [entry.factionId, assistantShare])),
+          expectedPerSecond,
+          expectedPerFaction: Object.fromEntries(pool.map(entry => [entry.factionId, expectedPerFaction])),
         },
       };
     }

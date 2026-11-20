@@ -1,12 +1,11 @@
-import { createRngState } from '../core/rng.js';
+import { createRngState, filterTransientRngStreams } from '../core/rng.js';
 import { numeric } from './numeric.js';
 import { ascensionForReincarnation } from './progression.js';
 
 export const SCHEMA_VERSION = 5;
 const SCOPES = ['run', 'r', 'ascension', 'total'];
 const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'upgradesBought', 'abdications', 'reincarnations', 'offlineTime'];
-const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {}, spellCasts: {}, buildingMax: {} });
-const record = () => ({});
+const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {}, spellCasts: {}, spellActivity: {}, buildingMax: {} });
 
 export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = ['base-v1'] } = {}) {
   return {
@@ -37,7 +36,7 @@ function cleanNumberRecord(input, graph, kind, quarantine) {
       quarantine.unknownIds[id] = value; continue;
     }
     if (!numeric.isNonNegative(value)) { quarantine.invalidValues[id] = value; continue; }
-    if (Number(value) > 0) output[id] = kind === 'building' ? Math.floor(Number(value)) : Number(value);
+    if (Number(value) > 0) output[id] = ['building', 'faction'].includes(kind) ? Math.floor(Number(value)) : Number(value);
   }
   return output;
 }
@@ -54,7 +53,9 @@ function cleanStats(input = {}, graph, quarantine) {
   const output = emptyStats();
   for (const field of NUMBER_FIELDS) output[field] = Math.max(0, finite(input[field]));
   output.factionCoinsByFaction = cleanNumberRecord(input.factionCoinsByFaction, graph, 'faction', quarantine);
+  output.factionCoins = Object.values(output.factionCoinsByFaction).reduce((sum, value) => sum + value, 0);
   output.spellCasts = cleanNumberRecord(input.spellCasts, graph, 'spell', quarantine);
+  output.spellActivity = cleanNumberRecord(input.spellActivity, graph, 'spell', quarantine);
   output.buildingMax = cleanNumberRecord(input.buildingMax, graph, 'building', quarantine);
   return output;
 }
@@ -141,7 +142,7 @@ function normalizeCurrent(saved, state, graph) {
     const remaining = greenFingersTimer.remaining !== undefined
       ? finite(greenFingersTimer.remaining)
       : finite(greenFingersTimer.dueAt) - state.stats.run.time;
-    if (remaining >= 0) state.timers.tasks.greenFingersDiscount = { remaining };
+    if (remaining >= 0) state.timers.tasks.greenFingersDiscount = { remaining: Math.min(120, remaining) };
   }
   state.story.pending = (saved.story?.pending || []).filter(item => graph.definitionsById.get(item.id)?.kind === 'story').map(item => ({ id: item.id, at: finite(item.at) }));
   for (const field of ['completed', 'rewarded']) for (const [id, value] of Object.entries(saved.story?.[field] || {})) {
@@ -153,7 +154,11 @@ function normalizeCurrent(saved, state, graph) {
   state.settings.quickSkills = Array.isArray(saved.settings?.quickSkills) ? saved.settings.quickSkills.filter(id => graph.definitionsById.get(id)?.kind === 'spell') : null;
   state.settings.manaRegenOverride = saved.settings?.manaRegenOverride == null ? null : Math.max(0, finite(saved.settings.manaRegenOverride));
   if (saved.rng && Number.isFinite(saved.rng.seed)) {
-    state.rng = { seed: saved.rng.seed >>> 0, streams: JSON.parse(JSON.stringify(saved.rng.streams || {})) };
+    const rng = filterTransientRngStreams({ seed: saved.rng.seed >>> 0, streams: saved.rng.streams || {} }, graph.rngPersistence);
+    state.rng = {
+      seed: rng.seed,
+      streams: Object.fromEntries(Object.entries(rng.streams).filter(([, stream]) => stream && Number.isFinite(stream.calls) && stream.calls >= 0 && Number.isFinite(stream.value))),
+    };
   }
   state.quarantined = {
     unknownIds: { ...state.quarantined.unknownIds, ...(saved.quarantined?.unknownIds || {}) },

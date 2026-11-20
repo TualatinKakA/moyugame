@@ -1,4 +1,5 @@
 import { decodeSave, encodeSave } from './save-integrity.js';
+import { filterTransientRngStreams } from '../core/rng.js';
 
 export const SAVE_KEY = 'endless-shift-r0r3-v1';
 export const BACKUP_KEY = 'endless-shift-v4-backup';
@@ -48,14 +49,14 @@ export function createMemoryStorage(initial = {}) {
   };
 }
 
-export function createPersistence(adapter, { wallNow = () => Date.now() } = {}) {
+export function createPersistence(adapter, { wallNow = () => Date.now(), rngPersistence = {} } = {}) {
   let saveDirty = false;
   let lastSaveError = null;
   let retryDelay = 1000;
   let nextRetryAt = 0;
   function save(state) {
     try {
-      adapter.save(state);
+      adapter.save({ ...state, rng: filterTransientRngStreams(state.rng, rngPersistence) });
       saveDirty = false; lastSaveError = null; retryDelay = 1000; nextRetryAt = 0;
       return { ok: true };
     } catch (error) {

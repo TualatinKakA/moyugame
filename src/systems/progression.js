@@ -16,7 +16,6 @@ export function reincarnationPower(reincarnations) {
   return Object.freeze({
     productionPercent: 50 * r,
     offlineMultiplier: 0.5 + 5 * r,
-    factionCoinChanceAdd: 10 * r,
     manaRegenAdd: 2 * r,
   });
 }

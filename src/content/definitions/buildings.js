@@ -36,28 +36,31 @@ export const BUILDING_DEFINITIONS = [
   ]),
 ];
 
-const PRE_ASCENSION = { op: 'statEquals', path: 'progression.ascension', value: 0 };
-const POST_ASCENSION = { op: 'statAtLeast', path: 'progression.ascension', value: 1 };
+const ascensionIs = value => ({ op: 'statEquals', path: 'progression.ascension', value });
+const ASCENSION_ONE = ascensionIs(1);
+const ASCENSION_TWO_PLUS = { op: 'statAtLeast', path: 'progression.ascension', value: 2 };
 
-const upgradeCosts = data => data.postPercent === null ? [
-  { resource: 'coins', amount: { constant: data.cost } },
-] : [
-  { resource: 'coins', amount: { constant: data.cost }, when: PRE_ASCENSION },
-  { resource: 'coins', amount: { constant: 0 }, when: POST_ASCENSION },
-];
+const dynamicCost = (building, data, ascension) => ({
+  resource: 'coins',
+  amount: { formula: `round(${building.purchase.costs[0].amount.constant} * ${1 + 0.15 / (ascension * 5 || 1)} ^ ${data.requirement}) * ${10 * data.tier}` },
+  when: ascensionIs(ascension),
+});
+const upgradeCosts = (building, data) => {
+  if (building.id === 'farm' && data.tier === 1) return [{ resource: 'coins', amount: { constant: 0 } }];
+  const paid = [dynamicCost(building, data, 0), dynamicCost(building, data, 1)];
+  if (data.tier >= 23) paid.push(dynamicCost(building, data, 2));
+  if (data.tier <= 19) return [paid[0], { resource: 'coins', amount: { constant: 0 }, when: { op: 'statAtLeast', path: 'progression.ascension', value: 1 } }];
+  if (data.tier <= 22) paid.push({ resource: 'coins', amount: { constant: 0 }, when: ASCENSION_TWO_PLUS });
+  else paid[1].when = ASCENSION_ONE;
+  return paid;
+};
 
 const upgradeEffects = (id, buildingId, data) => {
-  const production = (suffix, value, when) => ({
-    group: `${id}-${suffix}`, phase: 'buildingLocal', stat: 'building.production',
+  const effects = [{
+    group: `${id}-production`, phase: 'buildingLocal', stat: 'building.production',
     target: { type: 'buildings', ids: [buildingId] }, operation: 'multiplyPercent',
-    value: { constant: value }, stacking: 'multiply', ...(when ? { when } : {}),
-  });
-  const effects = data.postPercent === null
-    ? [production('production', data.prePercent)]
-    : [
-      production('pre-production', data.prePercent, PRE_ASCENSION),
-      production('post-production', data.postPercent, POST_ASCENSION),
-    ];
+    value: { constant: data.prePercent }, stacking: 'multiply',
+  }];
   if (data.assistants) effects.push({
     group: `${id}-assistant`, phase: 'assistants', stat: 'assistants.count',
     target: { type: 'global' }, operation: 'add', value: { constant: data.assistants }, stacking: 'add',
@@ -81,7 +84,7 @@ export const BUILDING_UPGRADE_DEFINITIONS = BUILDING_DEFINITIONS.flatMap(buildin
       visible: { all: [building.visible, { op: 'buildingOwned', id: building.id, value: data.requirement }] },
       unlock: { op: 'always' },
       purchase: {
-        costs: upgradeCosts(data),
+        costs: upgradeCosts(building, data),
         requires: [{ op: 'notOwned', id }],
       },
       effects: upgradeEffects(id, building.id, data),

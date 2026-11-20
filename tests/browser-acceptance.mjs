@@ -179,7 +179,7 @@ try {
   await gamePage.locator('#workContent [data-tab="skills"]').click();
   assert.equal(await gamePage.locator('#mainPanel [data-skill-row]').count(), 4);
   assert.match(await gamePage.locator('[data-skill-row="callToArms"] p').textContent(), /^20 秒内全部设施产出提高 \S+%。$/);
-  assert.equal(await gamePage.locator('[data-skill-row="fairyChanting"] p').textContent(), '10 秒内使见习工位、茶水间与打印维修间产出提高 50000%。');
+  assert.match(await gamePage.locator('[data-skill-row="fairyChanting"] p').textContent(), /^10 秒内使见习工位、茶水间与打印维修间产出提高 \S+%。$/);
   await noOverflow(gamePage, 'skill library');
   await gamePage.locator('[data-skill-row="fairyChanting"] [data-action="prioritize-skill"]').click();
   assert.equal(await gamePage.locator('#workContent .skill-btn').first().getAttribute('data-id'), 'fairyChanting');
@@ -419,14 +419,15 @@ try {
   assert.ok(wages >= 216180 && wages < 217000, `one hidden hour settles offline wages once: ${wages}`);
   assert.ok(Math.abs(afterBackground.stats.total.offlineTime - beforeBackground.stats.total.offlineTime - 3600) < 1.5);
   assert.equal(afterBackground.resources.mana, 1000);
-  for (const faction of ['fairy', 'goblin', 'elven', 'angel', 'undead', 'demon']) {
-    assert.ok(afterBackground.resources.factionCoins[faction] >= 24 && afterBackground.resources.factionCoins[faction] < 25,
-      `${faction} assistant FC is included in hidden settlement`);
-  }
+  assert.equal(afterBackground.stats.total.factionCoins, beforeBackground.stats.total.factionCoins,
+    'offline assistant FC stays pending instead of entering found during background settlement');
   await backgroundPage.waitForTimeout(500);
   await backgroundPage.locator('.top-actions [data-action="save"]').click();
   await backgroundPage.waitForTimeout(50);
   const later = await storedState(backgroundPage, SAVE_KEY);
+  assert.equal(later.stats.total.factionCoins - afterBackground.stats.total.factionCoins, 720,
+    'the next online tick flushes the rounded offline expectation into integer FC');
+  assert.ok(Object.values(later.resources.factionCoins).every(Number.isInteger));
   assert.ok(later.stats.run.time - afterBackground.stats.run.time < 2, 'foreground ticks do not double-count hidden time');
   await backgroundContext.close();
 
