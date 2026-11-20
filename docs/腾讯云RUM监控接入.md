@@ -41,7 +41,7 @@ window.tdem.reportPageView();
 
 游戏是单页应用，但面板切换不改变浏览器路由，因此每次完整打开或刷新页面时显式调用一次 `reportPageView()`。此前仅依赖 SDK 自动 SPA 行为时，云端没有收到 `behavior` 类事件，故保留显式 PV 上报。
 
-SDK 默认采集 JS/Promise 错误、页面性能、Web Vitals、卡顿、白屏和内存等指标；当前额外开启 API 与静态资源测速。会话回放、点击行为和控制台日志采集未开启。未设置业务用户 ID，UV 使用 SDK 在浏览器中保存的设备标识计算。
+SDK 默认采集 JS/Promise 错误、页面性能、Web Vitals、卡顿、白屏和内存等指标；当前额外开启 API 与静态资源测速。会话回放、点击行为和控制台日志采集未开启。玩家首次进入必须设置 1～16 个字符的游戏 ID，ID 独立保存在 `endless-shift-user-id`，启动时通过 `setUser()` 关联 RUM 事件；退休、投胎和清除游戏进度不会删除该 ID。
 
 ## 验证与查看数据
 

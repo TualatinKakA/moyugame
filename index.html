@@ -16,7 +16,7 @@
         api: true,
         assets: true,
       });
-      window.tdem.reportPageView();
+
     }
   </script>
   <link rel="icon" type="image/png" href="assets/images/cash.png">
@@ -33,10 +33,24 @@
       <button class="primary" data-action="start">打卡入职</button>
     </section>
   </div>
+  <div class="intro user-id-gate" id="userIdGate" role="dialog" aria-modal="true" aria-labelledby="userIdTitle" hidden>
+    <section class="intro-card">
+      <div class="eyebrow">PLAYER IDENTIFICATION</div>
+      <h1 id="userIdTitle">设置游戏 ID</h1>
+      <p>首次进入需要设置你的游戏 ID，设置后无需再次填写。</p>
+      <form class="user-id-form" id="userIdForm">
+        <label for="userIdInput">游戏 ID</label>
+        <input id="userIdInput" name="userId" type="text" maxlength="16" autocomplete="off" required>
+        <small>1～16 个字符，可使用中文、字母、数字、下划线或短横线。</small>
+        <small class="error" id="userIdFeedback" role="status"></small>
+        <button class="primary" type="submit">保存并进入游戏</button>
+      </form>
+    </section>
+  </div>
 
   <header class="topbar">
     <div class="brand"><img src="assets/images/cash.png" alt=""><div><h1>无限工时</h1><small>ENDLESS SHIFT</small></div><span class="brand-version">v1.0.1</span></div>
-    <div class="rank" id="rankText">R0 · 地球试用期</div>
+    <div class="rank"><span id="rankText">R0 · 地球试用期</span><span class="player-identity" id="playerIdentity"></span></div>
     <div class="top-actions"><span id="saveStatus">本地存档已就绪</span><button data-action="save">保存</button><button data-tab="more" id="moreTabButton">更多</button></div>
   </header>
 
@@ -73,7 +87,7 @@
     </aside>
 
     <main class="work-area" id="workArea">
-      <div class="work-context"><small id="chapterName">地方分公司</small><span id="factionName">尚未选择部门</span></div>
+      <div class="work-context"><small id="chapterName">地方分公司</small><span class="work-player-identity" id="workPlayerIdentity"></span><span id="factionName">尚未选择部门</span></div>
       <div id="retirementPanel"></div>
       <section class="work-summary" aria-label="本轮简要统计">
         <div><small>每次搬砖</small><strong id="clickReward">¥ 0</strong></div>

@@ -33,6 +33,10 @@ button.danger { color: var(--red); }
 .brand small { display: block; color: var(--muted); font-size: 9px; letter-spacing: 2px; }
 .brand-version { color: var(--muted); font-size: 10px; letter-spacing: 1px; white-space: nowrap; }
 .rank { min-width: 0; color: var(--green); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-identity, .work-context .work-player-identity { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border: 1px solid #526048; border-radius: 999px; background: #20261d; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.player-identity::before, .work-player-identity::before { content: ""; width: 5px; height: 5px; margin-right: 3px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.player-identity strong, .work-player-identity strong { color: var(--green); font-weight: 700; }
+.player-identity { margin-left: 12px; color: var(--text); }
 .top-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .top-actions span { color: var(--muted); font-size: 11px; }
 .top-actions button { min-height: 38px; padding: 7px 12px; font-size: 11px; }
@@ -63,6 +67,7 @@ button.danger { color: var(--red); }
 .work-context { min-height: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .work-context small { color: var(--green); letter-spacing: 1px; }
 .work-context span { color: var(--muted); font-size: 11px; text-align: right; }
+.work-context .work-player-identity { min-width: 0; margin-right: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
 .retirement-card { position: relative; flex-shrink: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(170px, 210px); align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid var(--line); background: linear-gradient(105deg, #20251e, #191c19); }
 .retirement-card.ready { border-color: #789b53; }
 .retirement-title { display: flex; align-items: baseline; gap: 12px; }
@@ -254,6 +259,13 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
 .intro-card .quote { color: var(--red); }
 .intro-card small { display: block; margin-top: 12px; color: var(--muted); text-align: center; }
 .intro-card .primary { width: 100%; min-height: 48px; margin-top: 12px; }
+.user-id-gate[hidden] { display: none; }
+.user-id-form { display: grid; gap: 12px; margin-top: 20px; }
+.user-id-form label { color: var(--text); font-size: 14px; }
+.user-id-form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); background: #0f120f; color: var(--text); font: 16px Consolas, "Microsoft YaHei", monospace; }
+.user-id-form input:focus { border-color: var(--green); outline: none; }
+.user-id-form small { margin: 0; text-align: left; line-height: 1.6; }
+.user-id-form .error { color: var(--red); }
 .eyebrow { color: var(--green); font: 10px Consolas, monospace; letter-spacing: 2px; }
 .toast { position: fixed; left: 50%; bottom: 25px; z-index: 120; transform: translate(-50%, 15px); max-width: calc(100% - 30px); padding: 10px 16px; background: #2a3027; border: 1px solid #65775a; opacity: 0; pointer-events: none; transition: opacity .2s ease-out, transform .2s ease-out; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }

@@ -110,6 +110,7 @@ const saveAdapter = createSaveAdapter();
 let game;
 let graph;
 let timeSource;
+let currentUserId = '';
 let resetting = false;
 let activeTab = 'work';
 let panelReturnFocus = null;
@@ -156,6 +157,7 @@ function playPurchaseSound(kind) {
 }
 const state = () => game.select('state');
 const derived = () => game.select('derived');
+const playerRole = () => '员工';
 const definition = id => graph.definitionsById.get(id);
 const effectValue = effect => {
   if (!effect) return 0;
@@ -602,6 +604,9 @@ function renderTop() {
   }
   for (const item of coinFactions) $(`${item.id}FactionCoins`).textContent = formatNumber(state().resources.factionCoins[item.id] || 0);
   $('rankText').textContent = `R${state().progression.reincarnations} · 地方分公司`;
+  const playerIdentity = `${playerRole()}:<strong>${currentUserId}</strong>`;
+  $('playerIdentity').innerHTML = playerIdentity;
+  $('workPlayerIdentity').innerHTML = playerIdentity;
   const faction = state().selections.faction ? definition(state().selections.faction) : null;
   $('factionName').textContent = faction ? faction.name : '尚未选择部门';
   $('clickReward').textContent = money(d.clickReward); $('assistants').textContent = formatNumber(d.assistants);
@@ -1133,7 +1138,43 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+const USER_ID_STORAGE_KEY = 'endless-shift-user-id';
+const validUserId = value => {
+  const id = String(value ?? '').trim();
+  return Array.from(id).length >= 1 && Array.from(id).length <= 16 && /^[\p{L}\p{N}_-]+$/u.test(id);
+};
+async function requireUserId() {
+  const cached = String(localStorage.getItem(USER_ID_STORAGE_KEY) ?? '').trim();
+  if (validUserId(cached)) return cached;
+  const gate = $('userIdGate');
+  const form = $('userIdForm');
+  const input = $('userIdInput');
+  const feedback = $('userIdFeedback');
+  gate.hidden = false;
+  input.focus();
+  return new Promise(resolve => {
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const userId = input.value.trim();
+      if (!validUserId(userId)) {
+        feedback.textContent = '请输入 1～16 个有效字符，不要包含空格或其他符号。';
+        return;
+      }
+      try { localStorage.setItem(USER_ID_STORAGE_KEY, userId); }
+      catch {
+        feedback.textContent = '浏览器未能保存游戏 ID，请检查存储权限后重试。';
+        return;
+      }
+      gate.hidden = true;
+      resolve(userId);
+    });
+  });
+}
+
 async function bootstrap() {
+  currentUserId = await requireUserId();
+  window.tdem?.setUser(currentUserId);
+  window.tdem?.reportPageView();
   timeSource = await createTrustedTime();
   game = createGameRuntime({
     content: CONTENT,

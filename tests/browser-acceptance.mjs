@@ -27,6 +27,12 @@ const closeStory = async (page, id) => {
 try {
   for (let index = 0; index < 30; index++) { try { await fetch(origin); break; } catch { await new Promise(resolve => setTimeout(resolve, 100)); } }
   browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || undefined });
+  const newContext = browser.newContext.bind(browser);
+  browser.newContext = async options => {
+    const context = await newContext(options);
+    await context.addInitScript(() => localStorage.setItem('endless-shift-user-id', '验收员'));
+    return context;
+  };
   const errors = [], missing = [];
   const watch = page => {
     page.on('pageerror', error => errors.push(error.message));
@@ -81,6 +87,8 @@ try {
   await gamePage.goto(origin, { waitUntil: 'domcontentloaded' });
   await gamePage.locator('#retirementPanel .retirement-card').waitFor();
   const playerCopy = await gamePage.locator('body').textContent();
+  assert.equal(await gamePage.locator('#playerIdentity').textContent(), '员工:验收员');
+  assert.equal(await gamePage.locator('#workPlayerIdentity').textContent(), '员工:验收员');
   assert.doesNotMatch(playerCopy, /本地自动存档|数值规则独立配置|无外部运行依赖|内容包|schema|运行时|当前版本|本次更新|手机显示|桌面最多/);
   assert.equal(await gamePage.locator('#facilityRail [data-building-card]').count(), 3);
   assert.equal(await gamePage.locator('#factionCoinList [data-faction]').count(), 6);
