@@ -1,6 +1,6 @@
 # 无限工时 · 序章
 
-《无限工时》的内容驱动重构版本。当前内容包开放基础设施、上进／狼性立场、Fairy（产品部）与 Goblin（财务部）的签约升级、六个 Vanilla 部门的影响力，以及剧情序章；底层保留后续内容包、法术、升级、奖杯、剧情、重置和迁移所需的通用框架。
+《无限工时》的内容驱动重构版本。当前已完成六 Vanilla 派系的阶段二基础闭环，包括加入、法术、三层强化、Royal Exchange、Champion／Heritage 与法术 Trophy／同名 Upgrade；更长期的 Trophy、Misc 和 R Power 范围按更新计划进入阶段三。
 
 ## 本地运行
 
@@ -14,16 +14,17 @@ npm run serve
 
 ## 当前内容
 
-- 三类基础设施及进取／强压阵营设施；
-- 17 个设施各自完整的 23 档升级（共 391 项），含独立数量／R 门槛、跨 A 阶段一致的效果、动态价格、前两档数字员工奖励及 A3 隐藏规则；
-- Fairy／Goblin 首批派系升级；
+- 18 种设施及 414 项编号强化，包含 Hall of Legends 的双目标强化与 6 项 Hall Bonus；
+- Fairy／Elven／Angel／Goblin／Undead／Demon 六派系完整的三层协议与 54 项普通强化；
+- 六个派系法术、六个 Champion Trophy、六套 Heritage，以及六个法术 Trophy／同名 Upgrade；
+- 六派系 Royal Exchange 逐枚价格、批量事务、统一 B／E／A 倍率与退休重置；
 - Fairy／Goblin／Elven／Angel／Undead／Demon 六种部门影响力：加入部门前即可随机发现，立场与当前部门不缩窄掉落池；数字员工按 30-tick 累计器产生影响力，离线收益先进入共享缓存；
-- 工资结算、全员冲刺、两个立场技能及两个派系技能；
+- 工资结算、全员冲刺、两个立场技能及六个派系技能；
 - 序章：入职、第一笔工资、加入部门、退休指引与第一次退休；
 - 通用 Trophy 触发、永久解锁、幂等奖励和关联剧情回看；
 - 退休、投胎、离线结算、本地存档、导入导出和备份恢复。
 
-仅 Fairy／Goblin 开放签约与升级，Elven／Angel／Undead／Demon 当前仅参与影响力产出和统计。未开放 Neutral、其他派系、佣兵、Research、后期挑战和 Ascension 内容。框架允许后续通过新内容包加入，不需要恢复旧硬编码分支。
+阶段二不包含完整设施 Trophy、Secret、Misc 和完整 R1–R5；这些范围按 `docs/1.1.0版本更新计划.md` 留到阶段三。Neutral、佣兵、Research、Challenge 和后续系统不在本阶段开放。
 
 ## 数值成长基准
 
@@ -70,7 +71,7 @@ Content Definitions → ContentGraph → GameRuntime → Selector / ViewModel �
 2. 新内容包放入 `src/content/packs/`，只修改 `src/content/index.js` 的 manifest。
 3. 使用已注册条件、效果、Action、事件和 UI Kind；新基础机制先注册为通用原语。
 4. 启动期自动完成 Schema、引用、公式、依赖和幂等奖励校验。
-5. 运行引擎测试、迁移测试、完整浏览器验收和性能检查。
+5. 运行引擎测试、迁移测试和性能检查。
 
 新增普通条目不需要修改 Tick、购买 Command、State 字段或 UI 分支。条目改名通过 `src/content/migrations/content-aliases.js` 显式迁移。
 
@@ -98,12 +99,9 @@ Content Definitions → ContentGraph → GameRuntime → Selector / ViewModel �
 
 ```bash
 npm test
-CHROMIUM_PATH=/usr/bin/chromium npm run test:browser
 ```
 
 引擎测试覆盖启动校验、Command 原子性、Reaction 幂等、关键保存失败回滚、派系与法术、Tick 到期边界、RNG 确定性重放、旧档迁移、主备恢复、离线和重置。
-
-浏览器验收覆盖序章直出、剧情关闭与回看、Fairy／Goblin 范围、采购、施法、技能快捷栏、实时记录退出、奖杯面板、退休、320～1440px 布局、23 档升级实际购买，以及全部 408 张设施／升级 SVG 的大图与 32px 加载检查。
 
 ## 目录
 

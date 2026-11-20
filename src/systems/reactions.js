@@ -7,13 +7,27 @@ const triggered = (state, id, kind) => kind === 'story'
 
 export function processReactions(tx, graph, handlers, { derived = null } = {}) {
   const queue = [];
+  const eventEntries = new WeakMap();
+  const statEntries = new WeakSet();
   let sequence = 0;
-  const enqueue = (entry, event = null) => queue.push({ ...entry, event, sequence: sequence++ });
+  const enqueue = (entry, event = null) => {
+    if (event) {
+      let entries = eventEntries.get(event);
+      if (!entries) { entries = new Set(); eventEntries.set(event, entries); }
+      if (entries.has(entry.id)) return;
+      entries.add(entry.id);
+    } else {
+      if (statEntries.has(entry)) return;
+      statEntries.add(entry);
+    }
+    queue.push({ ...entry, event, sequence: sequence++ });
+  };
   for (const fact of tx.facts) for (const entry of graph.eventSubscribers.get(fact.type) || []) enqueue(entry, fact);
   for (const path of tx.changedPaths) for (const entry of graph.statSubscribers.get(path) || []) enqueue(entry);
   let batches = 0;
+  const maxBatches = Math.max(100, graph.definitions.length * Math.max(1, tx.facts.length));
   while (queue.length) {
-    if (++batches > 100) throw new Error('Reaction queue exceeded 100 batches; possible content cycle');
+    if (++batches > maxBatches) throw new Error('Reaction queue exceeded its content-scaled limit; possible content cycle');
     queue.sort((a, b) => (a.reaction.priority || 0) - (b.reaction.priority || 0)
       || graph.integerIdByString.get(a.id) - graph.integerIdByString.get(b.id) || a.sequence - b.sequence);
     const current = queue.shift();

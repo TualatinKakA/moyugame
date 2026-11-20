@@ -3,6 +3,7 @@ import { createSaveState, migrateAndNormalizeState, assertStateInvariants, state
 import { beginTransaction } from './transaction.js';
 import { processReactions } from './reactions.js';
 import { RuntimeCache, getEffectiveGems } from './derived.js';
+import { spellDuration } from './effective.js';
 import { SelectorCache, selectContent, buildingQuote } from './selectors.js';
 import { createScheduler } from './scheduler.js';
 import { createPersistence } from './persistence.js';
@@ -75,7 +76,6 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const transaction = beginTransaction(state);
     const transientSnapshot = { factionCoinCache, assistantTickAccumulator };
     transaction.commandType = type;
-    const transactionDerived = cache.get();
     activeTransaction = transaction;
     const rollback = () => {
       transaction.rollback();
@@ -85,11 +85,13 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     try {
       const result = callback(transaction);
       if (result?.rejected) { rollback(); return { ok: false, reason: result.reason }; }
-      processReactions(transaction, graph, { enqueueStory, awardTrophy, applyActions, completeChallenge }, { derived: transactionDerived });
+      cache.invalidate(transaction.changedPaths);
+      processReactions(transaction, graph, { enqueueStory, awardTrophy, applyActions, completeChallenge }, { derived: cache.get() });
       const committed = commitTransaction(transaction);
       return { ...committed, result };
     } catch (error) {
       rollback();
+      diagnostics.lastError = error;
       cache.rebuild(); selectors.clear(); rebuildScheduler();
       return { ok: false, reason: error.code || 'TRANSACTION_FATAL', error };
     } finally { activeTransaction = null; }
@@ -185,10 +187,14 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (roll <= remainder) count++;
     if (count > 0) queueRandomFactionCoins(3 * count);
     settleAutomaticClicks(tx, seconds);
+    if (tx.state.owned.run['elven-8']) {
+      const events = Math.floor(derived.realAssistants || 0) * seconds;
+      for (let index = 0; index < events; index++) triggerElvenLuck(tx, 'assistant');
+    }
   }
 
   function applyOfflineFactionCoinModifiers(amount) {
-    return amount;
+    return amount * cache.get().offlineFactionCoinMultiplier;
   }
 
   function settleOfflineAssistantFactionCoins(seconds, derived) {
@@ -291,6 +297,15 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const selected = selectContent(tx.state, graph, cache.get(), id, { amount });
       if (['HIDDEN_SYSTEM', 'LOCKED_REQUIREMENT', 'OWNED', 'SELECTED'].includes(selected.status)) return { rejected: true, reason: selected.status };
       if (selected.status === 'NEED_RESOURCE') return { rejected: true, reason: 'NEED_RESOURCE' };
+      if (definition.kind === 'exchange') {
+        for (const price of selected.prices) {
+          if (!payCosts(tx, definition, [{ resource: `factionCoin.${definition.factionId}`, value: price }])) return { rejected: true, reason: 'NEED_RESOURCE' };
+          increment(tx, `royalExchange.${definition.factionId}`, 1);
+          for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.exchangesBought`, 1);
+          tx.emit('exchange.purchased', { exchangeId: id, factionId: definition.factionId, price });
+        }
+        return { id, quantity: selected.quantity, total: selected.costs[0]?.value || 0 };
+      }
       if (!payCosts(tx, definition, selected.costs)) return { rejected: true, reason: 'NEED_RESOURCE' };
       if (definition.kind === 'building') {
         const quantity = selected.quantity;
@@ -319,7 +334,25 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     });
   }
 
-  function performWork(tx, automatic = false) {
+  function triggerElvenLuck(tx, source) {
+    if (!tx.state.owned.run['elven-8'] || random(tx, 'drops:factionCoin') >= 0.01) return;
+    const current = cache.get();
+    const singleAssistant = current.assistants > 0 ? current.assistantProduction / current.assistants : 0;
+    const production = source === 'manualClick' || source === 'assistant'
+      ? current.production
+      : current.buildingProduction + singleAssistant;
+    const earned = 10000 * production;
+    const factionCoins = (tx.state.progression.reincarnations + 1) * current.fcChance;
+    increment(tx, 'resources.coins', earned);
+    for (const scope of ['run', 'r', 'ascension', 'total']) {
+      increment(tx, `stats.${scope}.coins`, earned);
+      increment(tx, `stats.${scope}.elvenLuck`, 1);
+    }
+    queueRandomFactionCoins(factionCoins);
+    tx.emit('elvenLuck.triggered', { source, earned, factionCoins });
+  }
+
+  function performWork(tx, automatic = false, source = automatic ? 'autoClick' : 'manualClick') {
     const reward = cache.get().clickReward;
     increment(tx, 'resources.coins', reward);
     for (const scope of ['run', 'r', 'ascension', 'total']) {
@@ -332,7 +365,8 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const factionId = chooseFactionCoin(tx, eligible);
       grantFactionCoins(tx, { factionId, amount: 1, source: automatic ? 'autoClick' : 'manualClick' });
     }
-    tx.emit('work.clicked', { reward, automatic });
+    triggerElvenLuck(tx, source);
+    tx.emit('work.clicked', { reward, automatic, source });
   }
 
   function work() {
@@ -340,10 +374,17 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   }
 
   function settleAutomaticClicks(tx, seconds) {
-    if (!tx.state.owned.run['fairy-4'] || seconds <= 0) return;
+    if (seconds <= 0) return;
+    const sources = [];
     const activeSpells = Object.keys(tx.state.timers.spells).filter(id => spellActive(tx.state, id)).length;
-    const clicks = Math.floor(activeSpells) * seconds;
-    for (let index = 0; index < clicks; index++) performWork(tx, true);
+    if (tx.state.owned.run['fairy-4'] && activeSpells > 0) sources.push({ id: 'fairy-4', rate: activeSpells });
+    if (tx.state.owned.run['elven-1']) sources.push({ id: 'elven-1', rate: 3 });
+    if (tx.state.owned.run.elvenHeritage) sources.push({ id: 'elvenHeritage', rate: 1 });
+    if (tx.state.owned.run.sunBlessingUpgrade && spellActive(tx.state, 'moonBlessing')) sources.push({ id: 'sunBlessingUpgrade', rate: 15 });
+    for (const source of sources) {
+      const clicks = Math.floor(source.rate * seconds);
+      for (let index = 0; index < clicks; index++) performWork(tx, true, source.id);
+    }
   }
 
   function recordSpellCast(tx, id, times = 1) {
@@ -377,9 +418,15 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const selected = selectContent(tx.state, graph, cache.get(), id);
       if (!payCosts(tx, definition, selected.costs)) return { rejected: true, reason: 'NEED_RESOURCE' };
       recordSpellCast(tx, id);
-      if (definition.duration > 0) tx.write(`timers.spells.${id}`, { dueAt: tx.state.stats.run.time + definition.duration });
+      if (definition.duration > 0) tx.write(`timers.spells.${id}`, { dueAt: tx.state.stats.run.time + spellDuration(tx.state, graph, definition, cache.get()) });
       applyActions(tx, definition.castActions || [], definition);
       tx.emit('spell.cast', { spellId: id, free: false });
+      if (id !== 'godsHand' && tx.state.owned.run.godsRestUpgrade && spellActive(tx.state, 'godsHand')) {
+        const eligible = eligibleFactionCoins(tx.state);
+        const factionId = chooseFactionCoin(tx, eligible);
+        const amount = Math.floor(cache.get().fcChance ** 1.1);
+        if (factionId && amount > 0) grantFactionCoins(tx, { factionId, amount, source: 'godsRest', sourceId: 'godsRestUpgrade' });
+      }
       if (id !== 'taxCollection' && tx.state.owned.run['goblin-7']) {
         const times = 1 + Math.floor(1.5 * Math.log(1 + cache.get().manaMax / 1000) ** 1.5);
         duplicateSpell(tx, 'taxCollection', times, { sourceId: 'goblin-7' });
@@ -425,6 +472,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (includeR) tx.write('owned.r', {});
     tx.write('resources.coins', 0); tx.write('resources.mana', 0);
     tx.write('resources.factionCoins', {});
+    tx.write('royalExchange', {});
     factionCoinCache = 0;
     cache.invalidate(tx.changedPaths);
   }
@@ -490,8 +538,12 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     for (const [id, timer] of Object.entries(tx.state.timers.spells)) {
       const remaining = timer.dueAt !== undefined ? timer.dueAt - tx.state.stats.run.time : timer.remaining;
       const activeSeconds = Math.min(delta, Math.max(0, remaining));
-      if (activeSeconds > 0) increment(tx, `stats.run.spellActivity.${id}`, activeSeconds);
+      if (activeSeconds > 0) {
+        for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.spellActivity.${id}`, activeSeconds);
+      }
     }
+    const alignment = tx.state.selections.alignment;
+    if (alignment) for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.alignmentTime.${alignment}`, delta);
   }
 
   function tickSimulation(tx, delta, offline = false, offlineGreenFingersMultiplier = 1) {
@@ -503,6 +555,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, production * delta);
     tx.write('resources.mana', Math.min(derived.manaMax, tx.state.resources.mana + derived.manaRegen * delta));
     if (!offline) settleOnlineAssistantFactionCoins(tx, delta, derived);
+    else settleAutomaticClicks(tx, delta);
     const greenFingersTimer = tx.state.timers.tasks.greenFingersDiscount;
     if (!offline && tx.state.owned.run['goblin-9'] && greenFingersTimer && greenFingersTimer.dueAt <= tx.state.stats.run.time) {
       triggerGreenFingersDiscount(tx, derived);
@@ -532,7 +585,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   function settleOffline(seconds) {
     if (!Number.isFinite(seconds) || seconds <= 0) return null;
     const verified = isTimeVerified();
-    const limit = verified ? 7 * 86400 : 86400;
+    const limit = 30 * 86400;
     const acceptedSeconds = Math.min(seconds, limit);
     const plan = planOfflineSegments(acceptedSeconds, state, scheduler);
     diagnostics.offlineTruncated = plan.truncated;
@@ -558,7 +611,10 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
         const amount = (tx.state.stats.run.factionCoinsByFaction[definition.id] || 0) - (beforeFactionFound[definition.id] || 0);
         if (amount > 0) factionCoinsFound[definition.id] = amount;
       }
-      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.offlineTime`, settledSeconds);
+      for (const scope of ['run', 'r', 'ascension', 'total']) {
+        increment(tx, `stats.${scope}.offlineTime`, settledSeconds);
+        if (settledSeconds > tx.state.stats[scope].offlineTimeMax) tx.write(`stats.${scope}.offlineTimeMax`, settledSeconds);
+      }
       report = { seconds: acceptedSeconds, requestedSeconds: seconds, verified, capped: seconds > acceptedSeconds, earned, segments: plan.segments.length, truncated: plan.truncated, factionCoinsFound, factionCoinsPending, greenFingersMultiplier };
       tx.emit('offline.settled', report);
       tx.critical = true;
@@ -570,7 +626,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (!Number.isFinite(seconds) || seconds < 0) return { ok: false, reason: 'INVALID_DELTA' };
     if (seconds === 0) return { ok: true, report: null };
     const report = settleOffline(seconds);
-    return report ? { ok: true, report } : { ok: false, reason: 'BACKGROUND_SETTLE_FAILED' };
+    return report ? { ok: true, report } : { ok: false, reason: 'BACKGROUND_SETTLE_FAILED', error: diagnostics.lastError || null };
   }
   function updateSetting(key, value) {
     if (!['buyAmount', 'quickSkills', 'manaRegenOverride'].includes(key)) return { ok: false, reason: 'UNKNOWN_SETTING' };

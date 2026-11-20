@@ -1,12 +1,12 @@
 import { validateFormula } from './formula.js';
 
-const KINDS = new Set(['building', 'upgrade', 'alignment', 'faction', 'spell', 'trophy', 'story', 'challenge', 'research']);
+const KINDS = new Set(['building', 'upgrade', 'alignment', 'faction', 'spell', 'trophy', 'story', 'challenge', 'research', 'exchange']);
 const PHASES = new Set(['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'tax', 'global', 'factionCoin', 'click', 'utility']);
-const OPERATORS = new Set(['always', 'selected', 'notSelected', 'buildingOwned', 'owned', 'notOwned', 'resourceAtLeast', 'statAtLeast', 'statEquals', 'eventDataEquals', 'newSave', 'spellSource']);
+const OPERATORS = new Set(['always', 'selected', 'notSelected', 'buildingOwned', 'owned', 'notOwned', 'resourceAtLeast', 'statAtLeast', 'statLessThan', 'statEquals', 'eventDataEquals', 'newSave', 'spellSource', 'spellActive']);
 const ACTIONS = new Set(['grantResource', 'grantUnlock', 'grantOwned', 'grantSpellSource', 'removeSpellSource', 'select', 'clearSelection', 'startTimer', 'cancelTimer', 'enqueueStory', 'markStoryCompleted', 'awardTrophy', 'completeStoryGroup', 'emitFact', 'scheduleTask']);
 const EFFECT_OPERATIONS = new Set(['add', 'addPercent', 'multiply', 'multiplyPercent', 'max', 'min', 'override']);
 const CONDITION_OPERATORS = new Set([...OPERATORS]);
-const UI_KINDS = new Set(['buildingCard', 'upgradeCard', 'choiceCard', 'spellCard', 'trophyCard', 'storyModal', 'challengeCard', 'researchCard']);
+const UI_KINDS = new Set(['buildingCard', 'upgradeCard', 'choiceCard', 'spellCard', 'trophyCard', 'storyModal', 'challengeCard', 'researchCard', 'exchangeCard']);
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
@@ -14,8 +14,9 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 function validValuePath(path, definitionsById) {
-  if (['target.count', 'factionCoins.total', 'buildings.total', 'buildings.low3'].includes(path)) return true;
-  if (/^(derived|resources|stats)\./.test(path)) return true;
+  if (['target.count', 'factionCoins.total', 'buildings.total', 'buildings.low3', 'trophies.original', 'effective.r.clicks'].includes(path)) return true;
+  if (/^(derived|resources|stats|rawStats)\./.test(path)) return true;
+  if (/^buildings\.tier\d+$/.test(path)) return true;
   if (/^buildings\.alignment\.[^.]+$/.test(path)) return true;
   if (path.startsWith('buildings.')) return definitionsById.get(path.slice(10))?.kind === 'building';
   return false;
@@ -23,8 +24,11 @@ function validValuePath(path, definitionsById) {
 function validDerivedEffectPath(path, phase) {
   const order = [...PHASES];
   const availableAt = path === 'derived.assistants' ? 'mana'
+    : ['derived.manaMax', 'derived.manaRegen'].includes(path) ? 'buildingBase'
+    : ['derived.activeSpells', 'derived.longestSpellDuration', 'derived.nightTimeActivity'].includes(path) ? 'raw'
     : path === 'derived.taxSeconds' ? 'global'
     : path === 'derived.buildingProduction' || path.startsWith('derived.outputs.') ? 'factionCoin'
+    : path === 'derived.fcChance' ? 'click'
       : path === 'derived.clickReward' ? 'utility' : null;
   return availableAt !== null && order.indexOf(phase) >= order.indexOf(availableAt);
 }
@@ -100,8 +104,9 @@ function dependenciesFor(condition) {
     case 'buildingOwned': return [`buildings.${condition.id}`];
     case 'owned': case 'notOwned': return ['owned', 'permanentUnlocks'];
     case 'resourceAtLeast': return [condition.resource.startsWith('factionCoin.') ? `resources.factionCoins.${condition.resource.slice(12)}` : `resources.${condition.resource}`];
-    case 'statAtLeast': case 'statEquals': return [condition.path];
+    case 'statAtLeast': case 'statLessThan': case 'statEquals': return [condition.path];
     case 'spellSource': return [`spellSources.${condition.id}`];
+    case 'spellActive': return ['timers.spells', 'stats.run.time'];
     case 'newSave': return ['stats.total.clicks', 'buildings', 'selections.faction'];
     default: return [];
   }
@@ -128,10 +133,15 @@ function compileCondition(condition, sourceId, errors) {
       case 'notOwned': return ({ state }) => !state.permanentUnlocks[node.id] && !Object.values(state.owned).some(scope => scope[node.id]);
       case 'resourceAtLeast': return ({ state }) => (node.resource.startsWith('factionCoin.') ? state.resources.factionCoins[node.resource.slice(12)] : state.resources[node.resource]) >= node.value;
       case 'statAtLeast': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) >= node.value;
+      case 'statLessThan': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) < node.value;
       case 'statEquals': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) === node.value;
       case 'eventDataEquals': return ({ event }) => event?.payload?.[node.path] === node.value;
       case 'newSave': return ({ state }) => state.stats.total.clicks === 0 && Object.keys(state.buildings).length === 0 && !state.selections.faction;
       case 'spellSource': return ({ state }) => Boolean(state.spellSources[node.id] && Object.keys(state.spellSources[node.id]).length);
+      case 'spellActive': return ({ state }) => {
+        const timer = state.timers.spells[node.id];
+        return Boolean(timer && (timer.dueAt !== undefined ? timer.dueAt > state.stats.run.time : timer.remaining > 0));
+      };
       default: return () => false;
     }
   };
@@ -201,7 +211,7 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
       const compiled = compile(definition[field], definition.id);
       for (const path of compiled.dependencies) indexDependency(index, path, definition.id);
     }
-    for (const condition of definition.purchase?.requires || []) {
+    for (const condition of definition.purchase?.requires || definition.cast?.requires || []) {
       for (const path of compile(condition, definition.id).dependencies) indexDependency(purchaseDependents, path, definition.id);
     }
     for (const cost of definition.purchase?.costs || definition.cast?.costs || []) {
@@ -230,6 +240,17 @@ export function compileContentGraph(content, { aliases = {}, mode = 'development
         indexDependency(effectDependencies, path, effect.group);
         if (path.startsWith('buildings.')) indexDependency(effectDependencies, 'buildings', effect.group);
         if (path === 'factionCoins.total') indexDependency(effectDependencies, 'resources.factionCoins', effect.group);
+        if (path === 'trophies.original') indexDependency(effectDependencies, 'permanentUnlocks', effect.group);
+        if (path === 'effective.r.clicks') indexDependency(effectDependencies, 'stats.r.clicks', effect.group);
+        if (path.startsWith('rawStats.')) indexDependency(effectDependencies, `stats.${path.slice(9)}`, effect.group);
+        if (['derived.activeSpells', 'derived.longestSpellDuration'].includes(path)) indexDependency(effectDependencies, 'timers.spells', effect.group);
+        if (path === 'derived.nightTimeActivity') {
+          indexDependency(effectDependencies, 'stats.r.spellActivity.nightTime', effect.group);
+          indexDependency(effectDependencies, 'stats.ascension.offlineTime', effect.group);
+        }
+        if (path === 'stats.r.evilSpellsCast') indexDependency(effectDependencies, 'stats.r.spellCasts', effect.group);
+        const maximumActivity = path.match(/^stats\.(run|r|ascension|total)\.maxSpellActivity$/);
+        if (maximumActivity) indexDependency(effectDependencies, `stats.${maximumActivity[1]}.spellActivity`, effect.group);
       }
       for (const id of effect.target.ids || []) indexDependency(effectDependencies, `buildings.${id}`, effect.group);
       indexDependency(effectDependencies, definition.kind === 'spell' ? 'timers.spells' : definition.kind === 'trophy' ? 'permanentUnlocks' : 'owned', effect.group);

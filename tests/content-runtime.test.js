@@ -44,11 +44,11 @@ test('number formatting switches to four-decimal scientific notation at 1000T', 
   assert.equal(formatNumber(-1.23456789e20), '-1.2346e20');
 });
 
-test('content graph contains two playable and four influence-only factions', async () => {
+test('content graph contains six playable factions', async () => {
   const { game } = fixture();
   const factions = game.graph.arraysByKind.get('faction');
   assert.deepEqual(factions.map(item => item.id), ['fairy', 'goblin', 'elven', 'angel', 'undead', 'demon']);
-  assert.deepEqual(factions.filter(item => item.purchase === null).map(item => item.id), ['elven', 'angel', 'undead', 'demon']);
+  assert.deepEqual(factions.filter(item => item.purchase === null).map(item => item.id), []);
   assert.ok(factions.every(item => item.factionCoin?.enabled));
   assert.equal(game.graph.arraysByKind.get('story').length, 8);
   assert.ok(game.graph.arraysByKind.get('trophy').length >= 8);
@@ -57,8 +57,8 @@ test('content graph contains two playable and four influence-only factions', asy
 });
 
 test('facility artwork resolves to 17 bodies and 391 numbered upgrades with identical bodies and gold-to-purple tiers', async () => {
-  const buildings = CONTENT.definitions.filter(item => item.kind === 'building');
-  const upgrades = CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.ui.category === 'building');
+  const buildings = CONTENT.definitions.filter(item => item.kind === 'building' && item.id !== 'hallOfLegends');
+  const upgrades = CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.ui.category === 'building' && item.buildingId !== 'hallOfLegends');
   assert.equal(buildings.length, 17);
   assert.equal(upgrades.length, 391);
   const bodyOf = svg => svg.match(/  <g id="[^"]+-body">[\s\S]*?  <\/g>/)?.[0];
@@ -465,7 +465,7 @@ test('alignment commitment stays selected until retirement and awards its story 
 
 test('the first two upgrade tiers of every ordinary building grant exactly one assistant', () => {
   const graph = compileContentGraph(CONTENT);
-  for (const building of graph.arraysByKind.get('building')) {
+  for (const building of graph.arraysByKind.get('building').filter(item => item.id !== 'hallOfLegends')) {
     for (const tier of [1, 2, 3]) {
       const upgrade = graph.definitionsById.get(`${building.id}-tier${tier}`);
       const granted = upgrade.effects
@@ -533,9 +533,9 @@ test('click skills, global skills, Gem Power and spell expiry propagate to assis
   assertClose(derived.assistantProduction, 0.1575, 'permanent click reward upgrade propagates');
 });
 
-test('Goblin assistant count recalculates only when queued Greed coins enter run found', async () => {
+test('Goblin assistant count recalculates only when queued Greed coins enter era found', async () => {
   const seeded = initial();
-  seeded.stats.run.factionCoinsByFaction.fairy = 16;
+  seeded.stats.ascension.factionCoinsByFaction.fairy = 16;
   seeded.spellSources.goblinsGreed = { goblin: true };
   const { game } = fixture(seeded);
   await game.start();
@@ -549,11 +549,11 @@ test('Goblin assistant count recalculates only when queued Greed coins enter run
   assert.equal(cast.ok, true);
   assert.equal(game.select('state').resources.mana, 9600, 'Greed costs 400 mana');
   assert.equal(game.select('state').timers.spells.goblinsGreed.dueAt, 8);
-  assert.equal(game.select('state').stats.run.factionCoins, 16, 'cast does not immediately enter found');
+  assert.equal(game.select('state').stats.ascension.factionCoins, 16, 'cast does not immediately enter found');
   assert.equal(game.select('factionCoins').pending, quantity);
   assert.equal(game.select('derived').assistants, expected(16));
   game.tick(0.2);
-  assert.equal(game.select('state').stats.run.factionCoins, 16 + Math.floor(quantity));
+  assert.equal(game.select('state').stats.ascension.factionCoins, 16 + Math.floor(quantity));
   assert.equal(game.select('factionCoins').pending, 0);
   assert.equal(game.select('derived').assistants, expected(16 + Math.floor(quantity)));
 });
@@ -591,14 +591,14 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
 test('spell descriptions resolve effect targets through current building names', () => {
   const spell = CONTENT.definitions.find(item => item.id === 'fairyChanting');
   const graph = compileContentGraph(CONTENT);
-  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出提高 {effect:fairyChanting}%。');
+  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出 ×{effect:fairyChanting}。');
   const renamed = {
     packs: CONTENT.packs,
     definitions: CONTENT.definitions.map(item => item.id === 'farm' ? { ...item, name: '附魔工位' } : item),
   };
   const renamedGraph = compileContentGraph(renamed);
   const renamedSpell = renamedGraph.definitionsById.get('fairyChanting');
-  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出提高 {effect:fairyChanting}%。');
+  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出 ×{effect:fairyChanting}。');
 });
 
 test('assistant count and production modifiers compose through generic additive and multiplicative channels', async () => {
@@ -1007,7 +1007,7 @@ test('Goblin economy upgrades use natural logs, era casts and Black Market gem/o
   seeded.selections.alignment = 'evil'; seeded.selections.faction = 'goblin';
   seeded.buildings = { farm: 10, witchConclave: 20 };
   seeded.stats.run.spellCasts.taxCollection = 99;
-  seeded.stats.r.spellCasts.taxCollection = 9;
+  seeded.stats.ascension.spellCasts.taxCollection = 9;
   for (const id of ['gemPower', 'goblin-3', 'goblin-4', 'goblin-5', 'goblin-6', 'goblin-8']) seeded.owned.run[id] = true;
   const { game } = fixture(seeded);
   await game.start();
@@ -1023,7 +1023,7 @@ test('Goblin economy upgrades use natural logs, era casts and Black Market gem/o
   const before = derived;
   assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
   assert.equal(game.select('state').stats.run.spellCasts.taxCollection, 100);
-  assert.equal(game.select('state').stats.r.spellCasts.taxCollection, 10);
+  assert.equal(game.select('state').stats.ascension.spellCasts.taxCollection, 10);
   derived = game.select('derived');
   assertClose(derived.offlineMultiplier, 0.5 * (1 + Math.log(11) ** 2 / 100), 'GB8 reads era rather than run casts');
   assert.ok(derived.manaRegen > before.manaRegen, 'coin gain refreshes Goblin Economists');
@@ -1253,12 +1253,13 @@ test('Fairy Chanting costs 800, scales at two building counts and records FR7 ac
     assert.equal(game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
     assert.equal(game.select('state').resources.mana, 9200);
     const active = game.select('derived');
-    const chantingMultiplier = 1 + 20000 ** (1 + 0.02 * low3 ** 0.2) / 100;
+    const chantingMultiplier = 20000 ** (1 + 0.02 * low3 ** 0.2);
     for (const id of Object.keys(buildings)) assertClose(active.outputs[id] / before.outputs[id], chantingMultiplier, `${id} at ${low3} low-tier buildings`);
     game.tick(2);
     assert.equal(game.select('state').stats.run.spellActivity.fairyChanting, 2);
+    assert.equal(game.select('state').stats.ascension.spellActivity.fairyChanting, 2);
     const activityProduction = 1 + 0.35 * 2 ** 0.65;
-    assertClose(game.select('derived').outputs.farm / active.outputs.farm, activityProduction, 'FR7 reads active time this run');
+    assertClose(game.select('derived').outputs.farm / active.outputs.farm, activityProduction, 'FR7 reads active time this era');
     game.tick(8);
     assert.equal(game.select('state').stats.run.spellActivity.fairyChanting, 10);
     assert.equal(game.select('state').timers.spells.fairyChanting, undefined);
@@ -1404,7 +1405,7 @@ test('building upgrade era gates and dynamic ascension purchase values work at r
 
 test('all 323 early building upgrades keep identical actual multipliers across A0 A1 A2', () => {
   const graph = compileContentGraph(CONTENT);
-  for (const building of graph.arraysByKind.get('building')) {
+  for (const building of graph.arraysByKind.get('building').filter(item => item.id !== 'hallOfLegends')) {
     for (let tier = 1; tier <= 19; tier++) {
       const id = `${building.id}-tier${tier}`;
       const expected = 1 + graph.definitionsById.get(id).effects.find(effect => effect.stat === 'building.production').value.constant / 100;
@@ -1432,7 +1433,7 @@ test('numbered upgrades, Fairy faction bonuses and Fairy Chanting compose in sep
   const expectedBase = 25 * 602 * 2 * 3 * (1 + fairyTwo / 100);
   assertClose(game.select('derived').outputs.farm, expectedBase);
   assert.equal(game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
-  const chanting = 1 + 20000 ** (1 + 0.02 * 25 ** 0.2) / 100;
+  const chanting = 20000 ** (1 + 0.02 * 25 ** 0.2);
   assertClose(game.select('derived').outputs.farm, expectedBase * chanting);
 });
 
@@ -1525,15 +1526,16 @@ test('save recovery re-signs mismatched payloads only through the explicit recov
   assert.equal(adapter.listSlots().corrupt, damaged);
 });
 
-test('offline settlement caps unverified time at one day and verified time at seven days', async () => {
+test('offline settlement caps all time at thirty days and tracks cumulative and maximum offline time', async () => {
   const unverified = fixture(initial());
   await unverified.game.start();
-  const localReport = unverified.game.dispatch({ type: 'background.settle', seconds: 30 * 86400 }).report;
-  assert.equal(localReport.seconds, 86400);
-  assert.equal(localReport.requestedSeconds, 30 * 86400);
+  const localReport = unverified.game.dispatch({ type: 'background.settle', seconds: 31 * 86400 }).report;
+  assert.equal(localReport.seconds, 30 * 86400);
+  assert.equal(localReport.requestedSeconds, 31 * 86400);
   assert.equal(localReport.verified, false);
   assert.equal(localReport.capped, true);
-  assert.equal(unverified.game.select('state').stats.total.offlineTime, 86400);
+  assert.equal(unverified.game.select('state').stats.total.offlineTime, 30 * 86400);
+  assert.equal(unverified.game.select('state').stats.total.offlineTimeMax, 30 * 86400);
 
   const seeded = initial();
   seeded.owned.run['goblin-9'] = true;
@@ -1541,13 +1543,16 @@ test('offline settlement caps unverified time at one day and verified time at se
   const facts = [];
   verified.game.subscribe(message => facts.push(...message.facts));
   await verified.game.start();
-  const report = verified.game.dispatch({ type: 'background.settle', seconds: 30 * 86400 }).report;
-  assert.equal(report.seconds, 7 * 86400);
+  const report = verified.game.dispatch({ type: 'background.settle', seconds: 31 * 86400 }).report;
+  assert.equal(report.seconds, 30 * 86400);
   assert.equal(report.verified, true);
   assert.equal(report.capped, true);
   assert.equal(facts.some(fact => fact.type === 'greenFingersDiscount.triggered'), false);
   assert.ok(report.greenFingersMultiplier > 21 && report.greenFingersMultiplier < 101);
   assert.equal(verified.game.select('state').rng.streams.greenFingersDiscount.calls, 1);
+  verified.game.dispatch({ type: 'background.settle', seconds: 60 });
+  assert.equal(verified.game.select('state').stats.total.offlineTime, 30 * 86400 + 60);
+  assert.equal(verified.game.select('state').stats.total.offlineTimeMax, 30 * 86400);
 });
 
 test('production clears saved mana override and rejects direct setting while developer mode remains available', async () => {
@@ -1667,17 +1672,19 @@ test('shared random cache allocates small amounts individually and large amounts
   assert.ok(Object.values(large).some(value => value > 150));
 });
 
-test('Greed uses effective gems for Q and run found for its production buff', async () => {
+test('Greed uses effective gems for Q and era found for its production buff', async () => {
   const seeded = initial();
   seeded.resources.gems = 100;
   seeded.buildings.farm = 10;
+  seeded.stats.run.factionCoinsByFaction.goblin = 100;
+  seeded.stats.ascension.factionCoinsByFaction.goblin = 1000;
   seeded.spellSources.goblinsGreed = { goblin: true };
   const { game } = fixture(seeded);
   await game.start();
   const cast = game.dispatch({ type: 'cast', id: 'goblinsGreed' });
   assert.equal(cast.ok, true);
   assertClose(game.select('factionCoins').pending, 80 + 2.25 * Math.log(110) ** 2.25);
-  const buff = 1 + (30 + 3 * Math.log(1) ** 3) / 100;
+  const buff = 1 + (30 + 3 * Math.log(1001) ** 3) / 100;
   assertClose(game.select('derived').outputs.farm, 20 * buff);
 });
 

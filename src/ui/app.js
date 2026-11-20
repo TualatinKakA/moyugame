@@ -5,6 +5,7 @@ import { formatNumber, formatTime } from '../core/number.js';
 import { createStoryModal } from './story/story-modal.js';
 import { evaluateCondition, formatDescription, pathValue } from '../systems/content-registry.js';
 import { evaluateFormula } from '../systems/formula.js';
+import { resolveValuePath } from '../systems/derived.js';
 import { createTrustedTime } from '../core/trusted-time.js';
 
 const $ = id => document.getElementById(id);
@@ -164,16 +165,12 @@ const definition = id => graph.definitionsById.get(id);
 const effectValue = effect => {
   if (!effect) return 0;
   if (effect.value.constant !== undefined) return Number(effect.value.constant);
-  const variables = Object.fromEntries(Object.entries(effect.value.variables || {}).map(([name, path]) => {
-    if (path === 'buildings.total') return [name, Object.values(state().buildings).reduce((sum, count) => sum + count, 0)];
-    if (path === 'buildings.low3') return [name, ['farm', 'inn', 'blacksmith'].reduce((sum, id) => sum + (state().buildings[id] || 0), 0)];
-    if (path.startsWith('buildings.alignment.')) {
-      const alignment = path.slice(20);
-      return [name, content('building').filter(item => item.alignment === alignment).reduce((sum, item) => sum + (state().buildings[item.id] || 0), 0)];
-    }
-    if (path.startsWith('derived.')) return [name, derived()[path.slice(8)] || 0];
-    return [name, pathValue(state(), path) || 0];
-  }));
+  const targetId = effect.target?.type === 'buildings' ? effect.target.ids[0]
+    : effect.target?.type === 'tier' ? content('building').find(item => item.tier === effect.target.id && (item.alignment === 'any' || item.alignment === state().selections.alignment))?.id : null;
+  const target = targetId ? definition(targetId) : null;
+  const variables = Object.fromEntries(Object.entries(effect.value.variables || {}).map(([name, path]) => [
+    name, resolveValuePath(path, { state: state(), graph, target, derived: derived() }),
+  ]));
   return evaluateFormula(effect.value.formula, variables);
 };
 const description = item => {
@@ -326,7 +323,7 @@ function buildingCard(item, location) {
     <img class="building-icon" src="${item.ui.icon}" alt=""><span class="building-name"><b>${item.name}</b><small data-field="count">× 0</small></span>
     <span class="building-output" data-field="output">本次 +¥ 0 / 秒</span><span class="building-price" data-field="cost"></span>
     <span class="building-buy"><b data-field="quantity"></b><small>点击采购</small></span>
-    <span class="building-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><small data-field="tooltip-count">当前 0 个</small><span class="building-tooltip-row"><span>单个产出</span><strong data-field="unit-output">¥ 0 / 秒</strong></span><span class="building-tooltip-row"><span>当前总产出</span><strong data-field="total-output">¥ 0 / 秒</strong></span></span></button>`;
+    <span class="building-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><small data-field="tooltip-count">当前 0 个</small><span class="building-tooltip-row"><span>单个产出</span><strong data-field="unit-output">¥ 0 / 秒</strong></span><span class="building-tooltip-row"><span>当前总产出</span><strong data-field="total-output">¥ 0 / 秒</strong></span>${item.ui.metric === 'hallOfLegends' ? '<span class="building-tooltip-row hall-metrics" data-field="hall-metrics"></span>' : ''}</span></button>`;
 }
 function updateBuildingCards() {
   document.querySelectorAll('[data-building-card]').forEach(card => {
@@ -342,6 +339,14 @@ function updateBuildingCards() {
     card.querySelector('[data-field="tooltip-count"]').textContent = `当前 ${formatNumber(count)} 个`;
     card.querySelector('[data-field="unit-output"]').textContent = `${money(unitOutput)} / 秒`;
     card.querySelector('[data-field="total-output"]').textContent = `${money(totalOutput)} / 秒`;
+    const hallMetrics = card.querySelector('[data-field="hall-metrics"]');
+    if (hallMetrics) {
+      const current = derived();
+      const otherMultiplier = content('upgrade').filter(item => item.buildingId === 'hallOfLegends' && item.trophyCoefficient && state().owned.run[item.id])
+        .reduce((multiplier, item) => multiplier * (1 + item.trophyCoefficient * current.originalTrophies), 1);
+      const selfMultiplier = current.hallBaseProduction > 0 ? unitOutput / (current.hallBaseProduction * current.globalMult) : 0;
+      hallMetrics.textContent = `原版奖杯 ${formatNumber(current.originalTrophies)} · 每座基础 ${money(current.hallBaseProduction)} · 自身倍率 ×${formatNumber(selfMultiplier)} · 其他设施倍率 ×${formatNumber(otherMultiplier)}`;
+    }
     const unavailable = model.status === 'NEED_RESOURCE';
     card.setAttribute('aria-disabled', String(unavailable));
     card.classList.toggle('insufficient', unavailable);
@@ -362,15 +367,23 @@ function renderFacilityRail() {
   }
   updateBuildingCards();
 }
+function quickUpgradeCard(item) {
+  const model = view(item.id);
+  const tooltipId = `upgrade-tooltip-rail-${item.id}`;
+  const text = description(item);
+  const cost = model.costs.map(formatCost).join(' + ') || '无需工资';
+  return `<article class="upgrade-entry quick-upgrade-entry" data-upgrade-card="${item.id}"><button type="button" class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" aria-describedby="${tooltipId}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(model.costs[0]?.value || 0)}</small></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost">${cost}</span><span class="upgrade-tooltip-description">${text}</span><small data-field="hint">点击购买</small></span></article>`;
+}
 function renderUpgradeRail() {
   const now = performance.now();
   if (now - lastUpgradeRailRender < 500) return;
+  if (activeUpgradeTooltip?.closest('#upgradeRail') || upgradeLongPress?.button.closest('#upgradeRail')) return;
   lastUpgradeRailRender = now;
   const candidates = visible('upgrade').filter(item => view(item.id).status === 'PURCHASABLE');
   const signature = candidates.map(item => `${item.id}:${view(item.id).costs[0]?.value || 0}:${description(item)}`).join('|');
   if (signature === upgradeRailStructure) return;
   upgradeRailStructure = signature;
-  $('upgradeRail').innerHTML = candidates.length ? candidates.map(item => `<button class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" title="${item.name}：${description(item)}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(view(item.id).costs[0]?.value || 0)}</small></button>`).join('') : '<span class="rail-empty">暂无可购买升级</span>';
+  $('upgradeRail').innerHTML = candidates.length ? candidates.map(quickUpgradeCard).join('') : '<span class="rail-empty">暂无可购买升级</span>';
 }
 function workView() {
   return `<div id="skillMount"></div><section class="work-zone">
@@ -439,18 +452,26 @@ function collectionEffect(building, items) {
   const context = { state: state(), derived: derived() };
   let productionMultiplier = 1;
   let assistants = 0;
-  for (const item of items) for (const effect of item.effects) {
-    if (effect.when && !evaluateCondition(graph, effect.when, context)) continue;
-    if (effect.stat === 'building.production' && effect.operation === 'multiplyPercent') productionMultiplier *= 1 + effect.value.constant / 100;
-    if (effect.stat === 'assistants.count' && effect.operation === 'add') assistants += effect.value.constant;
+  let baseAdd = 0;
+  let prestigePercent = 0;
+  for (const item of items) {
+    baseAdd += item.baseAdd || 0;
+    prestigePercent += item.prestigePercent || 0;
+    for (const effect of item.effects) {
+      if (effect.when && !evaluateCondition(graph, effect.when, context)) continue;
+      if (effect.stat === 'building.production' && effect.operation === 'multiplyPercent') productionMultiplier *= 1 + effect.value.constant / 100;
+      if (effect.stat === 'building.production' && effect.operation === 'multiply') productionMultiplier *= effect.value.constant ?? 1;
+      if (effect.stat === 'assistants.count' && effect.operation === 'add') assistants += effect.value.constant;
+    }
   }
-  return `${building.name}产出提高 ${formatNumber((productionMultiplier - 1) * 100)}%${assistants ? `，数字员工 +${formatNumber(assistants)}` : ''}。`;
+  return `${building.name}产出提高 ${formatNumber((productionMultiplier - 1) * 100)}%${assistants ? `，数字员工 +${formatNumber(assistants)}` : ''}${baseAdd ? `，每座基础 +${formatNumber(baseAdd)}` : ''}${prestigePercent ? `，其他设施协同 +${formatNumber(prestigePercent)}%` : ''}。`;
 }
 function upgradeCollectionCard(building, items) {
   const expanded = expandedUpgradeCollections.has(building.id);
   const tooltipId = `upgrade-tooltip-collection-${building.id}`;
   const effect = collectionEffect(building, items);
-  const card = `<article class="upgrade-entry owned upgrade-collection" data-upgrade-card="collection-${building.id}"><button type="button" class="upgrade-entry-button" data-action="toggle-upgrade-collection" data-building-id="${building.id}" aria-describedby="${tooltipId}" aria-expanded="${expanded}" aria-label="${building.name}已购升级合集，共 ${items.length} 项。${effect}"><img class="upgrade-entry-icon" src="assets/images/content-icons/upgrades/${building.id}-collection.svg" alt=""></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${building.name} · 已购升级合集</b><span class="upgrade-tooltip-cost">${items.length} 项已购升级</span><span class="upgrade-tooltip-description">${effect}</span><small data-field="hint">点击查看全部已购升级</small></span></article>`;
+  const icon = building.ui.collectionIcon || `assets/images/content-icons/upgrades/${building.id}-collection.svg`;
+  const card = `<article class="upgrade-entry owned upgrade-collection" data-upgrade-card="collection-${building.id}"><button type="button" class="upgrade-entry-button" data-action="toggle-upgrade-collection" data-building-id="${building.id}" aria-describedby="${tooltipId}" aria-expanded="${expanded}" aria-label="${building.name}已购升级合集，共 ${items.length} 项。${effect}"><img class="upgrade-entry-icon" src="${icon}" alt=""></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${building.name} · 已购升级合集</b><span class="upgrade-tooltip-cost">${items.length} 项已购升级</span><span class="upgrade-tooltip-description">${effect}</span><small data-field="hint">点击查看全部已购升级</small></span></article>`;
   if (!expanded) return card;
   return `${card}<section class="upgrade-collection-detail" aria-label="${building.name}全部已购升级"><h4>${building.name} · ${items.length} 项</h4><div class="upgrade-entry-grid">${items.map(upgradeCard).join('')}</div></section>`;
 }
@@ -464,7 +485,7 @@ function upgradeSections(items) {
   return `${section('未购买升级', unpurchased.map(upgradeCard))}${section('已购买升级', cards, true, purchased.length)}`;
 }
 function upgradesPanel(category = null) {
-  const items = visible('upgrade').filter(item => !category || item.ui.category === category);
+  const items = visible('upgrade').filter(item => !category || item.ui.category === category || (category === 'building' && item.ui.category === 'hallBonus'));
   const title = category === 'building' ? '设施升级' : category === 'general' ? '通用升级' : '升级';
   return `<div class="panel-head"><div><h2>${title}</h2><p>点击购买，悬停或长按查看名称、价格与效果。</p></div></div>${upgradeSections(items)}`;
 }
@@ -478,15 +499,21 @@ function choiceCard(item) {
   const price = `<small class="choice-price">${priceText}</small>`;
   return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3 class="choice-heading"><span>${item.name}</span>${price}</h3><p>${description(item)}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
 }
+function exchangeCard(item) {
+  const model = view(item.id);
+  return `<article class="card" data-exchange-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>已交换 ${formatNumber(model.viewModel.count)} 次</p><p>${description(item)}</p><button data-action="purchase" data-id="${item.id}">交换 ${model.quantity || 0} 次 · ${model.costs.map(formatCost).join(' + ')}</button></article>`;
+}
 function factionsPanel() {
   const factionUpgrades = visible('upgrade').filter(item => item.ui.category === 'faction');
   const header = '<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div>';
   const alignmentSection = `<section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section>`;
   const treatySection = `<section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
   const upgradesSection = `<section class="subsection"><h3>部门升级</h3>${upgradeSections(factionUpgrades)}</section>`;
+  const market = derived();
+  const exchangeSection = `<section class="subsection"><div class="panel-head"><div><h3>皇家交换</h3><p>交换总数 ${formatNumber(market.exchangeCount)} · 加成池 ${formatNumber(market.exchangeBonus)} · 设施倍率 ×${formatNumber(market.exchangeMultiplier)}</p></div>${buyControls()}</div><div class="card-grid">${visible('exchange').map(exchangeCard).join('')}</div></section>`;
   const sections = state().selections.alignment
-    ? `${treatySection}${upgradesSection}${alignmentSection}`
-    : `${alignmentSection}${treatySection}${upgradesSection}`;
+    ? `${treatySection}${upgradesSection}${exchangeSection}${alignmentSection}`
+    : `${alignmentSection}${treatySection}${upgradesSection}${exchangeSection}`;
   return `${header}${sections}`;
 }
 function skillsPanel() {
@@ -527,7 +554,7 @@ function syncManaEditor() {
 }
 function updatePanel() {
   updateBuildingCards(); updateCastButtons();
-  document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card])').forEach(button => {
+  document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card]), #upgradeRail [data-action="purchase"]').forEach(button => {
     const model = view(button.dataset.id);
     const unavailable = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
     const card = button.closest(tooltipEntrySelector);
@@ -805,7 +832,7 @@ let suppressedUpgradeClick = null;
 const upgradeLongPressDelay = 200;
 const upgradeLongPressMoveLimit = 12;
 const tooltipEntrySelector = '[data-upgrade-card], [data-building-card]';
-const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card]';
+const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card], #upgradeRail .upgrade-icon';
 const tooltipElement = entry => entry?.querySelector('.upgrade-tooltip, .building-tooltip');
 function positionUpgradeTooltip(entry) {
   const rect = entry.getBoundingClientRect();
@@ -1001,7 +1028,7 @@ document.addEventListener('contextmenu', event => {
   if (button && (upgradeLongPress?.button === button || touchUpgradeTooltip?.contains(button))) event.preventDefault();
 });
 document.addEventListener('scroll', event => {
-  if (!(event.target instanceof Element) || !event.target.matches('#mainPanel, .facility-scroll')) return;
+  if (!(event.target instanceof Element) || !event.target.matches('#mainPanel, .facility-scroll, .rail-shortcuts')) return;
   cancelUpgradeLongPress();
   closeUpgradeTooltip();
 }, { passive: true, capture: true });

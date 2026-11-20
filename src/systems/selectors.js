@@ -1,6 +1,8 @@
 import { evaluateCondition, formatDescription, pathValue, resourcePath } from './content-registry.js';
 import { evaluateFormula } from './formula.js';
 import { computeDerived } from './derived.js';
+import { exchangeQuote } from './royal-market.js';
+import { spellCost } from './effective.js';
 
 function amountValue(state, derived, amount) {
   if (amount.constant !== undefined) return Number(amount.constant);
@@ -50,8 +52,12 @@ function contentDependencies(definition) {
     collect(cost.when);
   }
   paths.add('timers.spells'); paths.add('permanentUnlocks'); paths.add('progression');
-  if (definition.kind === 'spell') paths.add('stats.run.time');
+  if (definition.kind === 'spell') { paths.add('stats.run.time'); paths.add('owned'); }
   if (definition.kind === 'building') paths.add('resources.gems');
+  if (definition.kind === 'exchange') {
+    paths.add('royalExchange');
+    paths.add(`resources.factionCoins.${definition.factionId}`);
+  }
   paths.delete('revision');
   return [...paths];
 }
@@ -69,8 +75,10 @@ export function selectContent(state, graph, derived, id, args = {}) {
   let costs = (definition.purchase?.costs || definition.cast?.costs || [])
     .filter(cost => evaluateCondition(graph, cost.when, context))
     .map(cost => ({ ...cost, value: amountValue(state, derived, cost.amount) }));
+  if (definition.kind === 'spell') costs = costs.map(cost => ({ ...cost, value: spellCost(state, definition, cost.value) }));
   let quantity = null;
   let purchaseProduction = 0;
+  let prices = [];
   if (definition.kind === 'building') {
     const quote = buildingQuote(state, graph, derived, id, args.amount ?? state.settings.buyAmount);
     quantity = quote.quantity;
@@ -79,6 +87,11 @@ export function selectContent(state, graph, derived, id, args = {}) {
       const preview = computeDerived(state, graph, new Map(), { [id]: (state.buildings[id] || 0) + quantity });
       purchaseProduction = Math.max(0, preview.production - derived.production);
     }
+  } else if (definition.kind === 'exchange') {
+    const quote = exchangeQuote(state, definition.factionId, args.amount ?? state.settings.buyAmount);
+    quantity = quote.quantity;
+    prices = quote.prices;
+    costs = [{ resource: `factionCoin.${definition.factionId}`, value: quote.total }];
   }
   const affordable = costs.every(cost => {
     const path = resourcePath(state, cost.resource, definition.id);
@@ -86,18 +99,18 @@ export function selectContent(state, graph, derived, id, args = {}) {
   });
   let status = 'AVAILABLE_UNAFFORDABLE';
   if (selected) status = 'SELECTED';
-  else if (isOwned && definition.kind !== 'building') status = 'OWNED';
+  else if (isOwned && !['building', 'exchange'].includes(definition.kind)) status = 'OWNED';
   else if (!unlocked) status = 'LOCKED_REQUIREMENT';
   else if (!affordable || quantity === 0) status = 'NEED_RESOURCE';
   else status = 'PURCHASABLE';
   return {
-    id, status, reasons: [], costs, quantity,
+    id, status, reasons: [], costs, quantity, prices,
     viewModel: {
       id, kind: definition.kind, uiKind: definition.ui.kind, name: definition.name,
       description: formatDescription(definition, graph), quantity,
       active: Boolean(state.timers.spells[id] && (state.timers.spells[id].dueAt !== undefined ? state.timers.spells[id].dueAt > state.stats.run.time : state.timers.spells[id].remaining > 0)),
       remaining: state.timers.spells[id] ? Math.max(0, (state.timers.spells[id].dueAt ?? state.stats.run.time + state.timers.spells[id].remaining) - state.stats.run.time) : 0,
-      count: state.buildings[id] || 0,
+      count: definition.kind === 'exchange' ? state.royalExchange[definition.factionId] || 0 : state.buildings[id] || 0,
       output: derived.outputs[id] || 0,
       purchaseProduction,
       status,
@@ -124,7 +137,7 @@ export class SelectorCache {
   invalidate(changedPaths) {
     for (const path of changedPaths) {
       const keys = new Set(this.keysByDependency.get(path) || []);
-      for (const dependency of ['owned', 'permanentUnlocks', 'timers.spells', 'spellSources', 'selections', 'buildings', 'resources.factionCoins', 'progression']) {
+      for (const dependency of ['owned', 'permanentUnlocks', 'timers.spells', 'spellSources', 'selections', 'buildings', 'royalExchange', 'resources.factionCoins', 'progression']) {
         if (path.startsWith(`${dependency}.`)) for (const key of this.keysByDependency.get(dependency) || []) keys.add(key);
       }
       for (const key of keys) this.entries.delete(key);

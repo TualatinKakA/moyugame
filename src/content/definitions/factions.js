@@ -48,8 +48,15 @@ const upgradeIcon = (faction, id) => {
   const variant = (number - 1) % 3 + 1;
   return `assets/images/content-icons/factions/${faction}-upgrade-t${tier}-${variant}.svg`;
 };
+const originalNames = {
+  fairy: ['Pixie Dust Fertilizer', 'Fairy Workers', 'Spellsmith', 'Starmetal Alloys', 'Golden Pots', 'Swarm of Fairies', 'Fairy Cuisine', 'Rainbow Link', 'Kind Hearts'],
+  goblin: ['Strong Currency', 'Slave Trading', 'Cheap Materials', "Fool's Gold", 'Goblin Economists', 'Hobgoblin Gladiators', 'Goblin Central Bank', 'Black Market', 'Green Fingers Discount'],
+};
 const upgrade = ({ id, name, description, faction, cost, effects, gate = null, rngStream, rngPersistence }) => ({
   id, kind: 'upgrade', contentVersion: 'base-v1', name, description,
+  sourceId: `${faction === 'fairy' ? 'FR' : 'GB'}${Number(id.split('-').at(-1))}`,
+  sourceName: originalNames[faction][Number(id.split('-').at(-1)) - 1],
+  sourceVersion: '4.3.24 build 26618872', verificationStatus: 'source-confirmed',
   ...(rngStream !== undefined ? { rngStream, rngPersistence } : {}),
   era: { minR: 0 },
   visible: gate ? { all: [selectedFaction(faction), gate] } : selectedFaction(faction), unlock: { op: 'always' },
@@ -98,7 +105,7 @@ export const FACTION_UPGRADE_DEFINITIONS = [
   ] }),
   agreement({ id: 'fairy-alliance', name: '产品部战略协议', description: '消耗 500 产品部影响力，解锁 Tier 3 部门强化。', faction: 'fairy', cost: 500, tier: 3, prerequisite: { all: [owned('fairy-pact'), tierComplete('fairy', [4, 5, 6])] } }),
   upgrade({ id: 'fairy-7', name: '星屑组件库', description: '按本轮头脑风暴活动时间，每份期权产出加成 +{effect:fairy-7}%。', faction: 'fairy', cost: 5e15, gate: owned('fairy-alliance'), effects: [
-    effect('fairy-7', 'global', 'gem.power', { type: 'global' }, 'add', { formula: '0.35 * x ^ 0.65', variables: { x: 'stats.run.spellActivity.fairyChanting' } }),
+    effect('fairy-7', 'global', 'gem.power', { type: 'global' }, 'add', { formula: '0.35 * x ^ 0.65', variables: { x: 'stats.ascension.spellActivity.fairyChanting' } }),
   ] }),
   upgrade({ id: 'fairy-8', name: '全端需求联动', description: '按低阶三设施总数使全部设施产出提高 {effect:fairy-8}%。', faction: 'fairy', cost: 5e16, gate: owned('fairy-alliance'), effects: [
     effect('fairy-8', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '1.25 * x ^ 0.75', variables: { x: 'buildings.low3' } }),
@@ -106,8 +113,8 @@ export const FACTION_UPGRADE_DEFINITIONS = [
   upgrade({ id: 'fairy-9', name: '群脑评审', description: '按理想设施总数增加 {effect:fairy-9} 点最大精力。', faction: 'fairy', cost: 5e17, gate: owned('fairy-alliance'), effects: [
     effect('fairy-9', 'mana', 'mana.max', { type: 'global' }, 'add', { formula: '1.3 * x ^ 0.7', variables: { x: 'buildings.alignment.good' } }),
   ] }),
-  upgrade({ id: 'goblin-1', name: '强势现金流', description: '按本轮部门影响力增加 {effect:goblin-1} 名数字员工。', faction: 'goblin', cost: 5e7, effects: [
-    effect('goblin-1', 'assistants', 'assistants.count', { type: 'global' }, 'add', { formula: '1.25 * ln(1 + x) ^ 1.5', variables: { x: 'stats.run.factionCoins' } }),
+  upgrade({ id: 'goblin-1', name: '强势现金流', description: '按本 Era 部门影响力增加 {effect:goblin-1} 名数字员工。', faction: 'goblin', cost: 5e7, effects: [
+    effect('goblin-1', 'assistants', 'assistants.count', { type: 'global' }, 'add', { formula: '1.25 * ln(1 + x) ^ 1.5', variables: { x: 'stats.ascension.factionCoins' } }),
   ] }),
   upgrade({ id: 'goblin-2', name: '外包交易', description: '按务实设施数量使全部设施产出提高 {effect:goblin-2}%。', faction: 'goblin', cost: 5e8, effects: [
     effect('goblin-2', 'global', 'global.production', { type: 'global' }, 'addPercent', { formula: '3 * x ^ 0.7', variables: { x: 'buildings.alignment.evil' } }),
@@ -129,7 +136,7 @@ export const FACTION_UPGRADE_DEFINITIONS = [
   upgrade({ id: 'goblin-7', name: '集团资金池', description: '每次施放其他技能时，按最大精力免费追加 {maxManaTaxTimes} 次工资结算。', faction: 'goblin', cost: 5e15, gate: owned('goblin-alliance'), effects: [] }),
   upgrade({ id: 'goblin-8', name: '账面富贵', description: '期权产出倍率提高 {effect:goblin-8-gems}%，离线产出提高 {effect:goblin-8-offline}%。', faction: 'goblin', cost: 5e16, gate: owned('goblin-alliance'), effects: [
     effect('goblin-8-gems', 'global', 'gem.power', { type: 'global' }, 'multiplyPercent', { formula: '100 + 2 * ln(1 + x)', variables: { x: 'resources.gems' } }),
-    effect('goblin-8-offline', 'utility', 'offline.production', { type: 'global' }, 'addPercent', { formula: 'ln(1 + x) ^ 2', variables: { x: 'stats.r.spellCasts.taxCollection' } }),
+    effect('goblin-8-offline', 'utility', 'offline.production', { type: 'global' }, 'addPercent', { formula: 'ln(1 + x) ^ 2', variables: { x: 'stats.ascension.spellCasts.taxCollection' } }),
   ] }),
   upgrade({ id: 'goblin-9', name: '全绿预算折扣', description: '每 120 秒随机获得 1–1500 秒复合产出快照奖励；离线结算只抽取一次 21–101 倍产出倍率。', faction: 'goblin', cost: 5e17, gate: owned('goblin-alliance'), effects: [], rngStream: 'greenFingersDiscount', rngPersistence: 'saved' }),
 ];

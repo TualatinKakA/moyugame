@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">红色大叉</title>
+  <desc id="desc">两条粗红色斜线交叉。</desc>
+  <path d="M12 12 52 52M52 12 12 52" fill="none" stroke="#E53935" stroke-width="12" stroke-linecap="square"/>
+</svg>

@@ -4,8 +4,8 @@ import { ascensionForReincarnation } from './progression.js';
 
 export const SCHEMA_VERSION = 5;
 const SCOPES = ['run', 'r', 'ascension', 'total'];
-const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'upgradesBought', 'abdications', 'reincarnations', 'offlineTime'];
-const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {}, spellCasts: {}, spellActivity: {}, buildingMax: {} });
+const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'upgradesBought', 'exchangesBought', 'abdications', 'reincarnations', 'offlineTime', 'offlineTimeMax', 'elvenLuck'];
+const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {}, spellCasts: {}, spellActivity: {}, buildingMax: {}, alignmentTime: {} });
 
 export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = ['base-v1'] } = {}) {
   return {
@@ -14,7 +14,7 @@ export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = 
     revision: 0, createdAt: now, lastSave: now, lastWallClock: now,
     progression: { reincarnations: 0, ascension: 0, ascensionStartR: 0, ascensionHistory: [] },
     resources: { coins: 0, gems: 0, mana: 0, factionCoins: {} },
-    buildings: {},
+    buildings: {}, royalExchange: {},
     stats: { run: emptyStats(), r: emptyStats(), ascension: emptyStats(), total: emptyStats() },
     permanentUnlocks: {}, owned: { run: {}, r: {}, ascension: {} }, spellSources: {},
     selections: { alignment: null, faction: null, bloodline: null, lineage: null, artifactSet: null },
@@ -57,6 +57,10 @@ function cleanStats(input = {}, graph, quarantine) {
   output.spellCasts = cleanNumberRecord(input.spellCasts, graph, 'spell', quarantine);
   output.spellActivity = cleanNumberRecord(input.spellActivity, graph, 'spell', quarantine);
   output.buildingMax = cleanNumberRecord(input.buildingMax, graph, 'building', quarantine);
+  for (const alignment of ['good', 'evil']) {
+    const value = Math.max(0, finite(input.alignmentTime?.[alignment]));
+    if (value > 0) output.alignmentTime[alignment] = value;
+  }
   return output;
 }
 function aliasId(id, graph) { return graph.migrationAlias[id] || id; }
@@ -118,6 +122,11 @@ function normalizeCurrent(saved, state, graph) {
   for (const resource of ['coins', 'gems', 'mana']) state.resources[resource] = Math.max(0, finite(saved.resources?.[resource]));
   state.resources.factionCoins = cleanNumberRecord(saved.resources?.factionCoins, graph, 'faction', state.quarantined);
   state.buildings = cleanNumberRecord(saved.buildings, graph, 'building', state.quarantined);
+  for (const [factionId, value] of Object.entries(saved.royalExchange || {})) {
+    if (graph.definitionsById.get(`${factionId}Exchange`)?.kind !== 'exchange') { state.quarantined.unknownIds[factionId] = value; continue; }
+    if (!numeric.isNonNegative(value)) { state.quarantined.invalidValues[factionId] = value; continue; }
+    if (Number(value) > 0) state.royalExchange[factionId] = Math.floor(Number(value));
+  }
   for (const scope of SCOPES) state.stats[scope] = cleanStats(saved.stats?.[scope], graph, state.quarantined);
   for (const scope of ['run', 'r', 'ascension']) state.owned[scope] = cleanBooleanRecord(saved.owned?.[scope], graph, ['upgrade', 'challenge', 'research'], state.quarantined);
   state.permanentUnlocks = cleanBooleanRecord(saved.permanentUnlocks, graph, ['trophy'], state.quarantined);
@@ -188,6 +197,9 @@ export function assertStateInvariants(state, graph) {
   }
   for (const [id, count] of Object.entries(state.buildings)) {
     if (graph.definitionsById.get(id)?.kind !== 'building' || !Number.isSafeInteger(count) || count < 0) throw new Error(`Invariant: invalid building ${id}`);
+  }
+  for (const [factionId, count] of Object.entries(state.royalExchange)) {
+    if (graph.definitionsById.get(`${factionId}Exchange`)?.kind !== 'exchange' || !Number.isSafeInteger(count) || count < 0) throw new Error(`Invariant: invalid Royal Exchange ${factionId}`);
   }
   const validFactionCoin = id => graph.definitionsById.get(id)?.factionCoin?.enabled === true;
   for (const [id, value] of Object.entries(state.resources.factionCoins)) {
