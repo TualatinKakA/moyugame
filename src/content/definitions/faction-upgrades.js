@@ -1,3 +1,5 @@
+import { factionAgreementCosts, factionUpgradeCosts } from './ascension-costs.js';
+
 const selectedFaction = faction => ({ op: 'selected', key: 'faction', value: faction });
 const owned = id => ({ op: 'owned', id });
 const globalTarget = { type: 'global' };
@@ -20,7 +22,7 @@ function upgrade({ faction, number, sourceId, sourceName, name, description, eff
     visible: gate ? { all: [selectedFaction(faction), gate] } : selectedFaction(faction),
     unlock: { op: 'always' },
     purchase: {
-      costs: [{ resource: 'coins', amount: { constant: cost } }],
+      costs: factionUpgradeCosts(cost, number),
       requires: [{ op: 'notOwned', id }, selectedFaction(faction), ...(gate ? [gate] : [])],
     },
     effects, grants: [], reactions: [], scope: 'run',
@@ -146,9 +148,9 @@ export const ADDITIONAL_FACTION_AGREEMENT_DEFINITIONS = ['elven', 'angel', 'unde
     return {
       id, kind: 'upgrade', contentVersion: 'base-v1', name: `${names[0]}${tier === 2 ? '协作' : '战略'}协议`,
       sourceName: `${names[1]} ${tier === 2 ? 'Pact' : 'Alliance'}`, sourceVersion: '4.3.24 build 26618872', verificationStatus: 'source-confirmed',
-      description: `消耗 ${cost} ${names[0]}影响力，解锁 Tier ${tier} 部门强化。`,
+      description: `消耗${names[0]}影响力，解锁 Tier ${tier} 部门强化。`,
       era: { minR: 0 }, visible: { all: [selectedFaction(faction), prerequisite] }, unlock: { op: 'always' },
-      purchase: { costs: [{ resource: `factionCoin.${faction}`, amount: { constant: cost } }], requires: [{ op: 'notOwned', id }, selectedFaction(faction), prerequisite] },
+      purchase: { costs: factionAgreementCosts(faction, cost), requires: [{ op: 'notOwned', id }, selectedFaction(faction), prerequisite] },
       effects: [], grants: [], reactions: [], scope: 'run',
       ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: 'assets/images/content-icons/red-cross.svg' },
     };

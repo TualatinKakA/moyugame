@@ -2,9 +2,9 @@ import { createRngState, filterTransientRngStreams } from '../core/rng.js';
 import { numeric } from './numeric.js';
 import { ascensionForReincarnation } from './progression.js';
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 const SCOPES = ['run', 'r', 'ascension', 'total'];
-const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'upgradesBought', 'exchangesBought', 'abdications', 'reincarnations', 'offlineTime', 'offlineTimeMax', 'elvenLuck'];
+const NUMBER_FIELDS = ['time', 'coins', 'clickCoins', 'clicks', 'spellsCast', 'factionCoins', 'buildingsMax', 'buildingsBuilt', 'upgradesBought', 'exchangesBought', 'abdications', 'reincarnations', 'offlineTime', 'offlineTimeMax', 'elvenLuck'];
 const emptyStats = () => ({ ...Object.fromEntries(NUMBER_FIELDS.map(field => [field, 0])), factionCoinsByFaction: {}, spellCasts: {}, spellActivity: {}, buildingMax: {}, alignmentTime: {} });
 
 export function createSaveState({ seed = 0x6d2b79f5, now = 0, contentVersions = ['base-v1'] } = {}) {
@@ -114,11 +114,8 @@ function normalizeCurrent(saved, state, graph) {
   state.lastWallClock = finite(saved.lastWallClock, state.lastSave);
   state.revision = Math.max(0, Math.floor(finite(saved.revision)));
   state.progression.reincarnations = Math.max(0, Math.floor(finite(saved.progression?.reincarnations)));
-  state.progression.ascension = Math.max(
-    ascensionForReincarnation(state.progression.reincarnations),
-    Math.max(0, Math.floor(finite(saved.progression?.ascension))),
-  );
-  state.progression.ascensionStartR = [0, 1, 100, 160, 220][state.progression.ascension] ?? 220;
+  state.progression.ascension = ascensionForReincarnation(state.progression.reincarnations);
+  state.progression.ascensionStartR = [0, 40, 100, 160, 220][state.progression.ascension] ?? 220;
   for (const resource of ['coins', 'gems', 'mana']) state.resources[resource] = Math.max(0, finite(saved.resources?.[resource]));
   state.resources.factionCoins = cleanNumberRecord(saved.resources?.factionCoins, graph, 'faction', state.quarantined);
   state.buildings = cleanNumberRecord(saved.buildings, graph, 'building', state.quarantined);
@@ -187,8 +184,13 @@ export function migrateAndNormalizeState(input, graph, { now = 0, seed = 0x6d2b7
   const from = Math.floor(finite(saved.schemaVersion, 1));
   if (from < 4) migrateLegacy(saved, state, graph);
   else normalizeCurrent(saved, state, graph);
+  state.progression.ascension = ascensionForReincarnation(state.progression.reincarnations);
+  state.progression.ascensionStartR = [0, 40, 100, 160, 220][state.progression.ascension] ?? 220;
   state.contentVersions = [...graph.contentVersions];
-  return { state, report: { from, to: SCHEMA_VERSION, migrated: from !== SCHEMA_VERSION } };
+  const migrationNotes = from < 6
+    ? ['buildingsBuilt starts at zero in each scope; current buildings are not treated as historical purchases.']
+    : [];
+  return { state, report: { from, to: SCHEMA_VERSION, migrated: from !== SCHEMA_VERSION, migrationNotes } };
 }
 
 export function assertStateInvariants(state, graph) {

@@ -1,22 +1,19 @@
+import { factionAgreementCosts, factionTreatyCosts, factionUpgradeCosts } from './ascension-costs.js';
+
 const selectionCost = [{ resource: 'coins', amount: { constant: 25000 } }];
-const treatyCost = [{
-  resource: 'factionCoin.target', amount: { constant: 20 },
-  when: {
-    any: [
-      { op: 'statAtLeast', path: 'resources.gems', value: 1 },
-      { op: 'statAtLeast', path: 'progression.reincarnations', value: 1 },
-    ],
-  },
-}];
+const treatyCost = factionTreatyCosts(true);
 export const ALIGNMENT_DEFINITIONS = [
   { id: 'good', name: '理想', description: '主动点击、技能与快速扩张。' },
   { id: 'evil', name: '务实', description: '稳定产出、离线收益与高阶设施。' },
 ].map(item => ({
   ...item, kind: 'alignment', contentVersion: 'base-v1', era: { minR: 0 },
+  miscId: item.id === 'good' ? 'proofOfGood' : 'proofOfEvil', miscStatus: 'complete',
+  sourceName: item.id === 'good' ? 'Proof of Good Deed' : 'Proof of Evil Deed',
+  sourceVersion: '4.3.24 build 26618872', verificationStatus: 'source-confirmed',
   visible: { op: 'always' }, unlock: { op: 'always' },
   purchase: { costs: selectionCost, requires: [{ op: 'notSelected', key: 'alignment' }] },
   effects: [], grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/${item.id === 'good' ? 'id-card' : 'cash'}.png` },
+  ui: { kind: 'choiceCard', panel: 'factions', icon: 'assets/images/content-icons/red-cross.svg' },
 }));
 
 export const FACTION_DEFINITIONS = [
@@ -61,17 +58,17 @@ const upgrade = ({ id, name, description, faction, cost, effects, gate = null, r
   era: { minR: 0 },
   visible: gate ? { all: [selectedFaction(faction), gate] } : selectedFaction(faction), unlock: { op: 'always' },
   purchase: {
-    costs: [{ resource: 'coins', amount: { constant: cost } }],
+    costs: factionUpgradeCosts(cost, Number(id.split('-').at(-1))),
     requires: [{ op: 'notOwned', id }, selectedFaction(faction), ...(gate ? [gate] : [])],
   },
   effects, grants: [], reactions: [], scope: 'run',
   ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: upgradeIcon(faction, id) },
 });
-const agreement = ({ id, name, description, faction, cost, prerequisite, tier }) => ({
-  id, kind: 'upgrade', contentVersion: 'base-v1', name, description,
+const agreement = ({ id, name, faction, cost, prerequisite, tier }) => ({
+  id, kind: 'upgrade', contentVersion: 'base-v1', name, description: `消耗对应部门影响力，解锁 Tier ${tier} 部门强化。`,
   era: { minR: 0 }, visible: { all: [selectedFaction(faction), prerequisite] }, unlock: { op: 'always' },
   purchase: {
-    costs: [{ resource: `factionCoin.${faction}`, amount: { constant: cost } }],
+    costs: factionAgreementCosts(faction, cost),
     requires: [{ op: 'notOwned', id }, selectedFaction(faction), prerequisite],
   },
   effects: [], grants: [], reactions: [], scope: 'run',

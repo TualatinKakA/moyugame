@@ -123,6 +123,7 @@ let facilityStructure = '';
 let lastUpgradeRailRender = 0;
 let upgradeRailStructure = '';
 const expandedUpgradeCollections = new Set();
+const expandedTrophyGroups = new Set();
 let manaEditorUnlocked = false;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
@@ -526,24 +527,51 @@ function skillsPanel() {
 }
 const statRow = (label, path, format = 'number') => `<tr><td>${label}</td><td data-stat="${path}" data-format="${format}">0</td></tr>`;
 function statsPanel() {
-  const rows = scope => `${statRow('时间', `stats.${scope}.time`, 'time')}${statRow('账面产值', `stats.${scope}.coins`, 'money')}${statRow('点击次数', `stats.${scope}.clicks`)}${statRow('施法次数', `stats.${scope}.spellsCast`)}${statRow('部门影响力', `stats.${scope}.factionCoins`)}`;
-  return `<div class="panel-head"><div><h2>职业统计</h2><p>分别查看本轮、本次职业与全部历史数据。</p></div></div><section class="subsection"><h3>本轮</h3><table class="stat-table">${rows('run')}</table><h3>本次职业</h3><table class="stat-table">${rows('r')}</table><h3>全部历史</h3><table class="stat-table">${rows('total')}</table></section>`;
+  const rows = scope => `${statRow('时间', `stats.${scope}.time`, 'time')}${statRow('账面产值', `stats.${scope}.coins`, 'money')}${statRow('点击次数', `stats.${scope}.clicks`)}${statRow('施法次数', `stats.${scope}.spellsCast`)}${statRow('部门影响力', `stats.${scope}.factionCoins`)}${statRow('累计建造', `stats.${scope}.buildingsBuilt`)}${statRow('累计离线', `stats.${scope}.offlineTime`, 'time')}${statRow('最长单次离线', `stats.${scope}.offlineTimeMax`, 'time')}`;
+  return `<div class="panel-head"><div><h2>职业统计</h2><p>分别查看本轮、本次职业、本次重述与全部历史数据。</p></div></div><section class="subsection"><h3>本轮</h3><table class="stat-table">${rows('run')}</table><h3>本次职业</h3><table class="stat-table">${rows('r')}</table><h3>本次重述</h3><table class="stat-table">${rows('ascension')}</table><h3>全部历史</h3><table class="stat-table">${rows('total')}</table></section>`;
 }
 function storyForTrophy(trophyId) {
   return content('story').find(story => story.grants.some(action => action.type === 'awardTrophy' && action.id === trophyId));
+}
+function trophyCard(trophy) {
+  const unlocked = Boolean(state().permanentUnlocks[trophy.id]);
+  const story = storyForTrophy(trophy.id);
+  return `<article class="card ${unlocked ? 'owned' : ''}" data-trophy-id="${trophy.id}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? description(trophy) : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
+}
+function trophyGroup(trophy) {
+  return trophy.ui.trophyGroup || (trophy.originalTrophy ? 'factions' : 'records');
+}
+function trophyGroupName(id) {
+  if (id.startsWith('facility:')) return `${definition(id.slice(9)).name}规模`;
+  return { records: '员工记录', factions: '部门荣誉', facilities: '设施累计', secrets: '隐秘记录', assistants: '数字员工' }[id] || id;
+}
+function reincarnationPowerCard() {
+  const power = derived().rPower;
+  return `<article class="card"><h3>R${state().progression.reincarnations} 职业增益</h3><p>全局产出 +${formatNumber(power.productionPercent)}% · 时间产出 +${formatNumber(power.timeProductionPercent)}% · 每份期权 +${formatNumber(power.gemPowerAdd)}%</p><p>最大精力 +${formatNumber(power.manaMaxAdd)} · 每秒恢复 +${formatNumber(power.manaRegenAdd)} · 恢复倍率 ×${formatNumber(power.manaRegenMultiplier)}</p><p>数字员工 +${formatNumber(power.assistantsAdd)} · 数字员工产出 +${formatNumber(power.assistantProductionPercent)}% · 离线基础倍率 ×${formatNumber(power.offlineMultiplier)}</p><p>影响力发现率 +${formatNumber(power.fcChanceAdd)} 个百分点 · 概率倍率 ×${formatNumber(power.fcChanceMultiplier)} · 获取倍率 ×${formatNumber(power.factionCoinGainMultiplier)} · 交换加成 +${formatNumber(power.exchangeBonus)}</p>${power.r2 > 0 ? `<p>每秒自动点击 ${formatNumber(power.autoClickRate)} 次。</p>` : ''}</article>`;
 }
 function morePanel() {
   const trophies = content('trophy');
   const completed = Object.keys(state().story.completed).map(definition).filter(Boolean);
   const reincarnation = game.select('reincarnation');
+  const groups = new Map();
+  for (const trophy of trophies) {
+    const id = trophyGroup(trophy);
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(trophy);
+  }
+  const original = trophies.filter(trophy => trophy.originalTrophy);
+  const originalUnlocked = original.filter(trophy => state().permanentUnlocks[trophy.id]).length;
+  const trophySections = [...groups].map(([id, items]) => {
+    const expanded = expandedTrophyGroups.has(id);
+    const unlocked = items.filter(trophy => state().permanentUnlocks[trophy.id]).length;
+    return `<section class="subsection" data-trophy-group="${id}"><button data-action="toggle-trophy-group" data-group="${id}" aria-expanded="${expanded}">${trophyGroupName(id)} · ${unlocked}/${items.length}</button>${expanded ? `<div class="card-grid">${items.map(trophyCard).join('')}</div>` : ''}</section>`;
+  }).join('');
   return `<div class="panel-head"><div><h2>职业与存档</h2><p>管理本地档案，并查看已解锁的奖杯与剧情。</p></div></div>
+    ${reincarnationPowerCard()}
     ${reincarnation.visible ? `<article class="card"><h3>投胎进入 R${reincarnation.nextR}</h3><p>消耗当前全部期权，保留奖杯与历史记录，开启更深层的组织周期。</p><button data-action="reincarnate">投胎</button></article>` : ''}
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="edit-user-id">修改游戏 ID</button><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入文件</button><button data-action="import-text">从文本导入</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="导出后在此显示 JSON；也可直接粘贴存档文本，然后点击“从文本导入”。"></textarea></section>
     <section class="subsection"><h3>精力恢复</h3><form id="manaPasswordForm" class="action-row" autocomplete="off"><label for="manaPassword">密码</label><input id="manaPassword" type="password" inputmode="numeric" autocomplete="off" placeholder="输入密码" required><button type="submit">确认</button></form><p id="manaPasswordFeedback" role="status"></p><div id="manaRegenEditor" hidden><div class="action-row"><label for="manaRegenInput">每秒恢复</label><input id="manaRegenInput" type="number" min="0" step="0.1" required><button data-action="apply-mana-regen">应用</button></div></div></section>
-    <section class="subsection"><h3>奖杯</h3><div class="card-grid">${trophies.map(trophy => {
-      const unlocked = Boolean(state().permanentUnlocks[trophy.id]); const story = storyForTrophy(trophy.id);
-      return `<article class="card ${unlocked ? 'owned' : ''}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? description(trophy) : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
-    }).join('')}</div></section>
+    <section class="subsection"><h3>奖杯 · 原版 ${originalUnlocked}/${original.length}</h3>${trophySections}</section>
     <section class="subsection"><h3>剧情回看</h3><div class="action-row">${completed.map(story => `<button data-action="replay-story" data-id="${story.id}">${story.title}</button>`).join('') || '<p class="notice">暂无可回看的剧情。</p>'}</div></section>`;
 }
 function syncManaEditor() {
@@ -1097,6 +1125,13 @@ document.addEventListener('click', event => {
     const buildingId = button.dataset.buildingId;
     if (expandedUpgradeCollections.has(buildingId)) expandedUpgradeCollections.delete(buildingId);
     else expandedUpgradeCollections.add(buildingId);
+    renderPanel();
+    return;
+  }
+  if (action === 'toggle-trophy-group') {
+    const group = button.dataset.group;
+    if (expandedTrophyGroups.has(group)) expandedTrophyGroups.delete(group);
+    else expandedTrophyGroups.add(group);
     renderPanel();
     return;
   }

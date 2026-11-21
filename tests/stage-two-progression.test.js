@@ -35,11 +35,11 @@ function luckStreamValue() {
   throw new Error('No controlled luck stream found');
 }
 
-test('stage two defines exactly six Champion and six spell trophies as original trophies', async () => {
+test('stages two and three define 430 original trophies and nine linked upgrades', async () => {
   assert.equal(CONTENT.definitions.filter(item => item.kind === 'trophy' && item.id.endsWith('Champion')).length, 6);
-  assert.equal(CONTENT.definitions.filter(item => item.kind === 'trophy' && item.originalTrophy === true).length, 12);
+  assert.equal(CONTENT.definitions.filter(item => item.kind === 'trophy' && item.originalTrophy === true).length, 430);
   assert.equal(CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.id.endsWith('Heritage')).length, 6);
-  assert.equal(CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.trophyId).length, 6);
+  assert.equal(CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.trophyId).length, 9);
   const rows = parseCsv(await readFile(new URL('../original_verification/remaining_1.1.0/data/spells-and-trophies.csv', import.meta.url), 'utf8'));
   for (const row of rows.filter(item => item['类型'] === 'spell')) assert.ok(graph.definitionsById.get(row['内容ID'])?.kind === 'spell', row['内容ID']);
   for (const row of rows.filter(item => item['类型'] === 'trophy+upgrade' && item['内容ID'] !== 'spellfury')) {
@@ -221,10 +221,12 @@ test('Hell Rush accepts 59.999 and rejects 60 seconds while purchased upgrade ex
   assert.equal(game.select('state').permanentUnlocks.hellRush, true);
   close(game.select('derived').outputs.hellPortal, 1200000);
   assert.ok(game.dispatch({ type: 'purchase', id: 'hellRushUpgrade' }).ok);
-  const hellfireMultiplier = 1 + 120 * 2 ** 0.8 / 100;
+  const originalTrophies = game.select('derived').originalTrophies;
+  assert.equal(originalTrophies, 5);
+  const hellfireMultiplier = 1 + 120 * originalTrophies ** 0.8 / 100;
   close(game.select('derived').outputs.evilFortress, 100000 * hellfireMultiplier);
   close(game.select('derived').outputs.hellPortal, 1200000 * hellfireMultiplier);
-  close(game.select('derived').outputs.hallOfLegends, 500000 * hellfireMultiplier);
+  close(game.select('derived').outputs.hallOfLegends, 250000 * originalTrophies * hellfireMultiplier);
 
   const lateState = createSaveState({ now: 1000 });
   lateState.spellSources.hellfireBlast = { demon: true };

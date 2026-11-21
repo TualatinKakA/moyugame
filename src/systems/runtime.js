@@ -11,7 +11,7 @@ import { systemClock } from '../core/clock.js';
 import { nextDouble, nextDoubleRange } from '../core/rng.js';
 import { evaluateFormula } from './formula.js';
 import { planOfflineSegments } from './offline.js';
-import { gemsForRunCoins, reincarnationRequirement, ascensionForReincarnation } from './progression.js';
+import { gemsForRunCoins, reincarnationRequirement, ascensionForReincarnation, reincarnationPower } from './progression.js';
 import { verifyDeveloperPassword } from './developer-access.js';
 
 const increment = (tx, path, amount) => tx.write(path, (pathValue(tx.state, path) || 0) + amount);
@@ -112,7 +112,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const definition = graph.definitionsById.get(factionId);
     if (definition?.kind !== 'faction' || definition.factionCoin?.enabled !== true) throw new Error(`Invalid faction coin target ${factionId}`);
     if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid faction coin amount for ${sourceId || source}`);
-    const granted = Math.floor(amount);
+    const granted = Math.floor(amount * reincarnationPower(tx.state.progression.reincarnations).factionCoinGainMultiplier);
     if (granted === 0) return false;
     increment(tx, `resources.factionCoins.${factionId}`, granted);
     for (const scope of ['run', 'r', 'ascension', 'total']) {
@@ -317,6 +317,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
           const buildingMax = tx.state.stats[scope].buildingMax[id] || 0;
           if (tx.state.buildings[id] > buildingMax) tx.write(`stats.${scope}.buildingMax.${id}`, tx.state.buildings[id]);
         }
+        for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.buildingsBuilt`, quantity);
         tx.emit('building.purchased', { buildingId: id, quantity });
       } else {
         if (definition.kind === 'alignment' || definition.kind === 'faction') {
@@ -381,6 +382,12 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (tx.state.owned.run['elven-1']) sources.push({ id: 'elven-1', rate: 3 });
     if (tx.state.owned.run.elvenHeritage) sources.push({ id: 'elvenHeritage', rate: 1 });
     if (tx.state.owned.run.sunBlessingUpgrade && spellActive(tx.state, 'moonBlessing')) sources.push({ id: 'sunBlessingUpgrade', rate: 15 });
+    const r2Rate = reincarnationPower(tx.state.progression.reincarnations).autoClickRate;
+    if (r2Rate > 0) sources.push({ id: 'reincarnation2', rate: r2Rate });
+    for (let index = 1; index <= 6; index++) {
+      const id = `clickingBase${index}`;
+      if (tx.state.owned.run[id]) sources.push({ id, rate: 1 });
+    }
     for (const source of sources) {
       const clicks = Math.floor(source.rate * seconds);
       for (let index = 0; index < clicks; index++) performWork(tx, true, source.id);
@@ -498,15 +505,20 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       tx.write('resources.gems', 0);
       tx.write('resources.factionCoins', {});
       const nextReincarnation = (tx.state.progression?.reincarnations || 0) + 1;
+      const nextAscension = ascensionForReincarnation(nextReincarnation);
       increment(tx, 'stats.total.reincarnations', 1);
       resetRun(tx, { includeR: true, preserveAllChallenges: true });
+      if (nextAscension > tx.state.progression.ascension) {
+        const fresh = createSaveState({ seed: tx.state.rng.seed, now: clock.wallNow(), contentVersions: graph.contentVersions });
+        tx.write('stats.ascension', fresh.stats.ascension);
+        tx.write('owned.ascension', {});
+      }
       tx.write('progression', {
         reincarnations: nextReincarnation,
-        ascension: ascensionForReincarnation(nextReincarnation),
-        ascensionStartR: [0, 1, 100, 160, 220][ascensionForReincarnation(nextReincarnation)],
-        ascensionHistory: [],
+        ascension: nextAscension,
+        ascensionStartR: [0, 40, 100, 160, 220][nextAscension],
+        ascensionHistory: tx.state.progression.ascensionHistory || [],
       });
-      // progression is runtime metadata, kept sparse outside the content-owned maps.
       tx.critical = true;
       tx.emit('reincarnation.completed', { reincarnations: tx.state.progression.reincarnations });
     });
@@ -663,6 +675,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     cache.rebuild(); rebuildScheduler(); started = true; stopped = false;
     const away = Math.max(0, (clock.wallNow() - state.lastWallClock) / 1000);
     if (away > 0) settleOffline(away);
+    runTransaction('reconcile', tx => tx.emit('game.reconcile', {}));
     notify('start');
     return { ok: true, migration: migrated.report, recovered: diagnostics.recoveredSave, offlineReport: diagnostics.lastOfflineReport };
   }

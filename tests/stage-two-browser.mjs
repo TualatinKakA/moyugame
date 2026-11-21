@@ -144,7 +144,7 @@ try {
   await hallCard.click();
   assert.equal(await hallCard.locator('[data-field="count"]').textContent(), '× 1');
   await hallCard.hover();
-  assert.match(await hallCard.locator('[data-field="hall-metrics"]').textContent(), /原版奖杯 1/);
+  assert.match(await hallCard.locator('[data-field="hall-metrics"]').textContent(), /原版奖杯 2/);
   await openTab(market.page, 'factions');
   await market.page.locator('#mainPanel [data-action="buy-amount"][data-value="10"]').click();
   await market.page.locator('[data-exchange-card="fairyExchange"] [data-action="purchase"]').click();
@@ -167,6 +167,7 @@ try {
   const bonus = await makePage(bonusState);
   await openTab(bonus.page, 'building-upgrades');
   await buyUpgrade(bonus.page, 'hallBonus1');
+  await closeStories(bonus.page);
   const bonusSaved = await storedState(bonus.page);
   assert.equal(bonusSaved.owned.run.hallBonus1, true);
   await imagesLoaded(bonus.page);

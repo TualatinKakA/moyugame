@@ -1,3 +1,5 @@
+import { legacyCoinCosts } from './ascension-costs.js';
+
 const redCross = 'assets/images/content-icons/red-cross.svg';
 const sourceVersion = '4.3.24 build 26618872';
 const verificationStatus = 'source-confirmed';
@@ -130,7 +132,7 @@ export const SPELL_UPGRADE_DEFINITIONS = spellUpgrades.map(([trophyId, faction, 
     id, kind: 'upgrade', contentVersion: 'base-v1', name, sourceName, sourceVersion, verificationStatus,
     trophyId, faction, mechanics, description, era: { minR: 0 },
     visible: { all: [owned(trophyId), selected(faction)] }, unlock: { op: 'always' },
-    purchase: { costs: [{ resource: 'coins', amount: { constant: 1e6 } }], requires: [{ op: 'notOwned', id }, owned(trophyId), selected(faction)] },
+    purchase: { costs: legacyCoinCosts(1e6), requires: [{ op: 'notOwned', id }, owned(trophyId), selected(faction)] },
     effects, grants: [], reactions: [], scope: 'run',
     ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: redCross },
   };

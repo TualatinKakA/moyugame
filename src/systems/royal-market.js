@@ -1,3 +1,5 @@
+import { reincarnationPower } from './progression.js';
+
 export function exchangePrice(owned, offset = 1) {
   const cumulative = q => Math.floor(20 * (1 - 1.1 ** (q + owned)) / (1 - 1.1));
   return Math.round(cumulative(offset) - cumulative(offset - 1));
@@ -35,7 +37,7 @@ export function royalExchangeBonus(state) {
   const elvenBonus = state.owned.run['elven-5']
     ? 1.75 * Math.log(1 + (state.stats.ascension.factionCoins || 0)) ** 1.75
     : 0;
-  return 10 + elvenBonus;
+  return 10 + elvenBonus + reincarnationPower(state.progression.reincarnations).exchangeBonus;
 }
 
 export function royalExchangeMultiplier(state) {

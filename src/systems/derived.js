@@ -1,6 +1,6 @@
 import { evaluateFormula } from './formula.js';
 import { evaluateCondition, pathValue } from './content-registry.js';
-import { reincarnationPower } from './progression.js';
+import { buildingGrowthForAscension, reincarnationPower } from './progression.js';
 import { royalExchangeBonus, royalExchangeCount, royalExchangeMultiplier } from './royal-market.js';
 import {
   currentTierBuildingId, effectiveAssistants, effectiveBuildingCount, effectiveClicksR,
@@ -18,6 +18,7 @@ const owned = (state, definition) => definition.kind === 'trophy' ? state.perman
 export function resolveValuePath(path, { state, graph, target = null, derived = {}, buildingOverrides = {} }) {
   const count = id => effectiveBuildingCount(state, graph, id, buildingOverrides[id] ?? state.buildings[id] ?? 0);
   if (path === 'target.count') return target ? count(target.id) : 0;
+  if (path === 'target.tier') return target?.tier || 0;
   if (path === 'buildings.total') return buildings(graph).reduce((sum, item) => sum + count(item.id), 0);
   if (path === 'buildings.low3') return ['farm', 'inn', 'blacksmith'].reduce((sum, id) => sum + count(id), 0);
   if (path === 'trophies.original') return originalTrophyCount(state, graph);
@@ -129,15 +130,24 @@ export function getEffectiveGems(state) {
   return state.resources.gems;
 }
 
-export function getGemBonus() {
-  return 0;
+export function getGemUpgradeCount(state) {
+  return ['gemUpgrade1', 'gemUpgrade2', 'gemUpgrade3'].filter(id => state.owned.run[id]).length;
 }
 
 export function computeDerived(state, graph, groupCache = new Map(), buildingOverrides = {}) {
   const mods = createModifiers();
-  const power = reincarnationPower(state.progression.reincarnations);
-  mods.globalAdd += power.productionPercent;
+  const rawAlignmentBuildings = alignment => buildings(graph).filter(item => item.alignment === alignment)
+    .reduce((sum, item) => sum + (buildingOverrides[item.id] ?? state.buildings[item.id] ?? 0), 0);
+  const power = reincarnationPower(state.progression.reincarnations, { rTime: state.stats.r.time });
+  mods.globalAdd += power.productionPercent + power.timeProductionPercent;
+  mods.manaMaxAdd += power.manaMaxAdd;
   mods.manaRegenAdd += power.manaRegenAdd;
+  mods.manaRegenMult *= power.manaRegenMultiplier;
+  mods.assistantsAdd += power.assistantsAdd;
+  mods.assistantProdAdd += power.assistantProductionPercent;
+  mods.fcChanceAdd += power.fcChanceAdd;
+  mods.fcChanceMult *= power.fcChanceMultiplier;
+  mods.gemPowerAdd += power.gemPowerAdd;
   const context = {};
   let globalMult = 1;
   for (const phase of PHASES) {
@@ -176,7 +186,8 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     if (phase === 'global') {
       const outputs = {};
       const unitOutputs = {};
-      const gemPowerMultiplier = (1 + getEffectiveGems(state) * mods.gemPowerAdd / 100) * mods.gemPowerMult;
+      const gemPowerPerGem = mods.gemPowerAdd * mods.gemPowerMult;
+      const gemPowerMultiplier = 1 + getEffectiveGems(state) * gemPowerPerGem / 100;
       globalMult = (1 + mods.globalAdd / 100) * mods.globalMult * gemPowerMultiplier * royalExchangeMultiplier(state);
       let buildingProduction = 0;
       const rawBuildingTotal = buildings(graph).reduce((sum, item) => sum + (buildingOverrides[item.id] ?? state.buildings[item.id] ?? 0), 0);
@@ -200,7 +211,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     }
     if (phase === 'factionCoin') {
       const gemChance = mods.gemPowerAdd > 0
-        ? Math.floor(0.5 * (1.25 + getGemBonus() / 4) * Math.log(1 + getEffectiveGems(state)) ** 0.9)
+        ? Math.floor(0.5 * (1.25 + getGemUpgradeCount(state) / 4) * Math.log(1 + getEffectiveGems(state)) ** 0.9)
         : 0;
       context.fcChance = (10 + gemChance + mods.fcChanceAdd) * mods.fcChanceMult;
     }
@@ -217,13 +228,18 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
     assistantFactionCoinMultiplier: mods.assistantFcMult,
     offlineFactionCoinMultiplier: mods.offlineFcMult,
     originalTrophies: originalTrophyCount(state, graph),
+    activeSpells: (graph.arraysByKind.get('spell') || []).filter(item => isSpellActive(state, item.id)).length,
+    rawGoodBuildings: rawAlignmentBuildings('good'), rawEvilBuildings: rawAlignmentBuildings('evil'),
+    offlineTimeTotal: state.stats.run.offlineTime + state.stats.r.offlineTime + state.stats.total.offlineTime,
     exchangeCount: royalExchangeCount(state), exchangeBonus: royalExchangeBonus(state), exchangeMultiplier: royalExchangeMultiplier(state),
     hallBaseProduction: context.hallBaseProduction || 0, hallPrestigeMultiplier: context.hallPrestigeMultiplier || 1,
     globalMult: context.globalMult || 1,
+    gemPowerPerGem: mods.gemPowerAdd * mods.gemPowerMult,
+    rPower: power,
     offlineMultiplier: power.offlineMultiplier * (1 + mods.offlineAdd / 100) * mods.offlineMult,
-    buildingCostMultiplier: Math.max(1.01, 1.15 + mods.buildingCostAdd),
+    buildingCostMultiplier: Math.max(1.01, buildingGrowthForAscension(state.progression.ascension) + mods.buildingCostAdd),
     buildingCostMultipliers: Object.fromEntries(buildings(graph).map(definition => [definition.id,
-      Math.max(1.01, 1.15 + mods.buildingCostAdd + (mods.buildingCostAddById[definition.id] || 0)),
+      Math.max(1.01, buildingGrowthForAscension(state.progression.ascension) + mods.buildingCostAdd + (mods.buildingCostAddById[definition.id] || 0)),
     ])),
   });
 }
@@ -238,6 +254,7 @@ export class RuntimeCache {
     const groups = new Set();
     for (const path of changedPaths) {
       if (/^(buildings|royalExchange|owned|permanentUnlocks|timers\.spells|selections|resources\.(factionCoins|gems)|progression|settings\.manaRegenOverride)/.test(path)) dirty = true;
+      if (path === 'stats.r.time' && this.state.progression.reincarnations > 0) dirty = true;
       const parents = [];
       let parentPath = path;
       while (parentPath.includes('.')) { parentPath = parentPath.slice(0, parentPath.lastIndexOf('.')); parents.push(parentPath); }

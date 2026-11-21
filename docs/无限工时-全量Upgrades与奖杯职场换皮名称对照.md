@@ -3009,3 +3009,14 @@ R150 以后每 50R 扩展一次“第 N 重组织域”，但不在原清单中�
 | 奖杯 | trophy:Master Grinder | — | Master Grinder | 工作大师 |
 | 奖杯 | trophy:Grandmaster Grinder | — | Grandmaster Grinder | 工作宗师 |
 | 奖杯 | trophy:The Architect | — | The Architect | 组织架构师 |
+
+## 5. 阶段三运行时补充映射
+
+本节只补充当前实现实际使用的生成规则；第 4 节已有 Misc、Secret、Assistant 与聚合奖杯名称继续沿用，不改变稳定 ID。
+
+- 单设施 Trophy 使用 `${buildingId}-building-trophy-${1–22}`，共 18×22＝396 项。显示名统一为“设施职场名 · 规模奖杯 N”，开发元数据 `sourceName` 为“设施原版名 Building Trophy N”。这些条目没有同名购买 Upgrade 或直接 Buff。
+- `buildBuildingTrophy1–15` 使用上表 Village Grinder 至 Grandmaster Grinder 的既有职场名，读取 Era 累计建造统计。
+- `theArchitect` 使用“组织架构师”，读取任意设施当前真实数量 100,000，不附挖掘效果。
+- `unitaryTrophy／mathematicianTrophy／spellfuryTrophy` 及各自 `*Upgrade` 使用上表“全设施各一／组织数学家／多线并发”。
+- `assistantGroup／assistantSquad／assistantLegion` 分别使用“数字员工小组／数字员工班组／数字员工编队”，原版门槛为 20／100／300 名真实数字员工。
+- 阶段三新增 Trophy、Secret Upgrade 与 Misc 的图标统一复用 `assets/images/content-icons/red-cross.svg`；显示名与机制不由图片决定。

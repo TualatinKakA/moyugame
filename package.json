@@ -6,6 +6,8 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "test:browser:stage2": "node tests/stage-two-browser.mjs",
+    "test:browser:stage3": "node tests/stage-three-browser.mjs",
+    "test:browser": "node tests/stage-two-browser.mjs && node tests/stage-three-browser.mjs",
     "serve": "python3 -m http.server 4173 --bind 127.0.0.1"
   },
   "devDependencies": {

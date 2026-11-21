@@ -2,7 +2,7 @@ import { validateFormula } from './formula.js';
 
 const KINDS = new Set(['building', 'upgrade', 'alignment', 'faction', 'spell', 'trophy', 'story', 'challenge', 'research', 'exchange']);
 const PHASES = new Set(['raw', 'assistants', 'mana', 'buildingBase', 'buildingLocal', 'tax', 'global', 'factionCoin', 'click', 'utility']);
-const OPERATORS = new Set(['always', 'selected', 'notSelected', 'buildingOwned', 'owned', 'notOwned', 'resourceAtLeast', 'statAtLeast', 'statLessThan', 'statEquals', 'eventDataEquals', 'newSave', 'spellSource', 'spellActive']);
+const OPERATORS = new Set(['always', 'selected', 'notSelected', 'buildingOwned', 'owned', 'notOwned', 'resourceAtLeast', 'statAtLeast', 'statLessThan', 'statEquals', 'offlineTimeAtLeast', 'eventDataEquals', 'newSave', 'spellSource', 'spellActive']);
 const ACTIONS = new Set(['grantResource', 'grantUnlock', 'grantOwned', 'grantSpellSource', 'removeSpellSource', 'select', 'clearSelection', 'startTimer', 'cancelTimer', 'enqueueStory', 'markStoryCompleted', 'awardTrophy', 'completeStoryGroup', 'emitFact', 'scheduleTask']);
 const EFFECT_OPERATIONS = new Set(['add', 'addPercent', 'multiply', 'multiplyPercent', 'max', 'min', 'override']);
 const CONDITION_OPERATORS = new Set([...OPERATORS]);
@@ -14,7 +14,7 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 function validValuePath(path, definitionsById) {
-  if (['target.count', 'factionCoins.total', 'buildings.total', 'buildings.low3', 'trophies.original', 'effective.r.clicks'].includes(path)) return true;
+  if (['target.count', 'target.tier', 'factionCoins.total', 'buildings.total', 'buildings.low3', 'trophies.original', 'effective.r.clicks'].includes(path)) return true;
   if (/^(derived|resources|stats|rawStats)\./.test(path)) return true;
   if (/^buildings\.tier\d+$/.test(path)) return true;
   if (/^buildings\.alignment\.[^.]+$/.test(path)) return true;
@@ -105,6 +105,7 @@ function dependenciesFor(condition) {
     case 'owned': case 'notOwned': return ['owned', 'permanentUnlocks'];
     case 'resourceAtLeast': return [condition.resource.startsWith('factionCoin.') ? `resources.factionCoins.${condition.resource.slice(12)}` : `resources.${condition.resource}`];
     case 'statAtLeast': case 'statLessThan': case 'statEquals': return [condition.path];
+    case 'offlineTimeAtLeast': return ['stats.run.offlineTime', 'stats.r.offlineTime', 'stats.total.offlineTime'];
     case 'spellSource': return [`spellSources.${condition.id}`];
     case 'spellActive': return ['timers.spells', 'stats.run.time'];
     case 'newSave': return ['stats.total.clicks', 'buildings', 'selections.faction'];
@@ -135,6 +136,7 @@ function compileCondition(condition, sourceId, errors) {
       case 'statAtLeast': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) >= node.value;
       case 'statLessThan': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) < node.value;
       case 'statEquals': return ({ state, derived }) => ((node.path.startsWith('derived.') ? pathValue(derived, node.path.slice(8)) : pathValue(state, node.path)) || 0) === node.value;
+      case 'offlineTimeAtLeast': return ({ state }) => (state.stats.run.offlineTime + state.stats.r.offlineTime + state.stats.total.offlineTime) >= node.value;
       case 'eventDataEquals': return ({ event }) => event?.payload?.[node.path] === node.value;
       case 'newSave': return ({ state }) => state.stats.total.clicks === 0 && Object.keys(state.buildings).length === 0 && !state.selections.faction;
       case 'spellSource': return ({ state }) => Boolean(state.spellSources[node.id] && Object.keys(state.spellSources[node.id]).length);

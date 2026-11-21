@@ -1,4 +1,6 @@
-const treatyCost = [{ resource: 'factionCoin.target', amount: { constant: 20 } }];
+import { factionTreatyCosts } from './ascension-costs.js';
+
+const treatyCost = factionTreatyCosts();
 
 export const INFLUENCE_FACTION_DEFINITIONS = [
   { id: 'elven', name: '技术部', sourceName: 'Elven', alignment: 'good', spellId: 'moonBlessing', description: '通过点击、技术幸运与部门交换扩大收益。' },

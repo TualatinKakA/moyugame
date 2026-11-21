@@ -188,7 +188,7 @@ test('schema 3 migration preserves supported progress and quarantines removed co
     stats: { total: { clicks: 10 }, run: { coins: 1000 } },
   };
   const { state, report } = migrateAndNormalizeState(old, graph);
-  assert.equal(report.from, 3); assert.equal(report.to, 5);
+  assert.equal(report.from, 3); assert.equal(report.to, 6);
   assert.equal(state.resources.coins, 1000); assert.equal(state.buildings.farm, 5);
   assert.equal(state.owned.run['fairy-1'], true);
   assert.equal(state.spellSources.fairyChanting.fairy, true);
@@ -305,11 +305,11 @@ test('original reincarnation threshold, reset and R1 power apply together', asyn
   assert.equal(game.select('reincarnation').visible, true);
   assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
   assert.equal(game.select('state').progression.reincarnations, 1);
-  assert.equal(game.select('state').progression.ascension, 1);
+  assert.equal(game.select('state').progression.ascension, 0);
   assert.equal(game.select('state').resources.gems, 0);
   assert.equal(game.select('reincarnation').visible, false);
   assert.equal(game.select('derived').manaRegen, 3);
-  assert.equal(game.select('derived').fcChance, 10, 'R itself no longer grants generic FC chance');
+  assert.equal(game.select('derived').fcChance, 20, 'R1 grants ten FC chance percentage points');
   assert.equal(game.select('derived').offlineMultiplier, 5.5);
   assert.equal(game.select('reincarnation').requirement, 1e30);
 });
@@ -583,9 +583,9 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
   await game.start();
   assert.equal(game.select('derived').assistants, 2);
   assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
-  assert.equal(game.select('derived').assistants, 0);
-  assert.equal(game.select('derived').assistantProduction, 0);
-  assert.equal(game.select('derived').production, 0);
+  assert.equal(game.select('derived').assistants, 1);
+  assertClose(game.select('derived').assistantProduction, 0.05 * 1.5 * 1.02);
+  assertClose(game.select('derived').production, 0.05 * 1.5 * 1.02);
 });
 
 test('spell descriptions resolve effect targets through current building names', () => {
@@ -846,7 +846,7 @@ test('Greed flushes random-cache facts into every scoped per-faction ledger on t
   }
 });
 
-test('schema 4 upgrades to schema 5 without inventing historical faction breakdown or losing current state', () => {
+test('schema 4 upgrades to schema 6 without inventing historical ledgers or build history', () => {
   const graph = compileContentGraph(CONTENT);
   const old = createSaveState({ now: 1000 });
   old.schemaVersion = 4;
@@ -856,7 +856,8 @@ test('schema 4 upgrades to schema 5 without inventing historical faction breakdo
   old.rng.streams['drops:manualClick'] = { calls: 2, value: 123 };
   for (const scope of ['run', 'r', 'ascension', 'total']) delete old.stats[scope].factionCoinsByFaction;
   const { state, report } = migrateAndNormalizeState(old, graph);
-  assert.deepEqual(report, { from: 4, to: 5, migrated: true });
+  assert.deepEqual(report, { from: 4, to: 6, migrated: true, migrationNotes: ['buildingsBuilt starts at zero in each scope; current buildings are not treated as historical purchases.'] });
+  assert.ok(Object.values(state.stats).every(scope => scope.buildingsBuilt === 0));
   assert.equal(state.resources.factionCoins.fairy, 9);
   assert.equal(state.stats.run.factionCoins, 0, 'aggregate is recomputed from the available per-faction ledger');
   assert.deepEqual(state.stats.run.factionCoinsByFaction, {});
@@ -864,7 +865,7 @@ test('schema 4 upgrades to schema 5 without inventing historical faction breakdo
   assert.deepEqual(state.rng.streams['drops:manualClick'], { calls: 2, value: 123 });
 });
 
-test('schema 5 normalization floors FC, rebuilds totals and filters timers activity and RNG', () => {
+test('schema 6 normalization floors FC, rebuilds totals and filters timers activity and RNG', () => {
   const graph = compileContentGraph(CONTENT);
   const saved = createSaveState();
   saved.resources.factionCoins = { fairy: 9.9, goblin: 3.2 };
@@ -1019,7 +1020,7 @@ test('Goblin economy upgrades use natural logs, era casts and Black Market gem/o
   assertClose(derived.taxSeconds, taxSeconds);
   assertClose(derived.manaRegen, manaMultiplier);
   assertClose(derived.offlineMultiplier, 0.5 * (1 + Math.log(10) ** 2 / 100));
-  assertClose(derived.outputs.farm, 20 * (1 + globalPercent / 100) * 1.2 * blackMarketMultiplier);
+  assertClose(derived.outputs.farm, 20 * (1 + globalPercent / 100) * (1 + 10 * 2 * blackMarketMultiplier / 100));
   const before = derived;
   assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
   assert.equal(game.select('state').stats.run.spellCasts.taxCollection, 100);
@@ -1377,12 +1378,12 @@ test('building upgrade era gates and dynamic ascension purchase values work at r
   assertClose(pre.game.select('derived').outputs.farm, 20);
   assert.equal(pre.game.select('derived').assistants, 1);
 
-  const post = fixture(make(1, 1));
+  const post = fixture(make(40, 1));
   await post.game.start();
   assert.equal(post.game.select('content', { id: 'farm-tier1' }).costs[0].value, 0);
   assert.equal(post.game.dispatch({ type: 'purchase', id: 'farm-tier1' }).ok, true);
-  assertClose(post.game.select('derived').outputs.farm, 5 * 2 * 2 * 1.5);
-  assert.equal(post.game.select('derived').assistants, 1);
+  assertClose(post.game.select('derived').outputs.farm, 5 * 2 * 2 * 21.1);
+  assert.equal(post.game.select('derived').assistants, 45);
 
   const r39 = fixture(make(39, 1, 3500));
   await r39.game.start();
