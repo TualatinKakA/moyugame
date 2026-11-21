@@ -6,6 +6,7 @@ import { createStoryModal } from './story/story-modal.js';
 import { evaluateCondition, formatDescription, pathValue } from '../systems/content-registry.js';
 import { evaluateFormula } from '../systems/formula.js';
 import { resolveValuePath } from '../systems/derived.js';
+import { spellDuration } from '../systems/effective.js';
 import { createTrustedTime } from '../core/trusted-time.js';
 
 const $ = id => document.getElementById(id);
@@ -187,6 +188,7 @@ const description = item => {
     return action ? formatNumber(Math.floor(effectValue({ value: action.amount }))) : '0';
   });
   if (text.includes('{maxManaTaxTimes}')) text = text.replaceAll('{maxManaTaxTimes}', formatNumber(1 + Math.floor(1.5 * Math.log(1 + derived().manaMax / 1000) ** 1.5)));
+  if (text.includes('{spellDuration}')) text = text.replaceAll('{spellDuration}', formatNumber(spellDuration(state(), graph, item, derived())));
   return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
 };
 const formatCost = cost => {
