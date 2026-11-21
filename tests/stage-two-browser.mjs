@@ -111,8 +111,7 @@ try {
     seeded.permanentUnlocks[trophy] = true;
     const { context, page } = await makePage(seeded);
     await openTab(page, 'factions');
-    assert.equal(await page.locator('#mainPanel [data-choice-card]').count(), 5, `${faction}: three same-alignment factions plus two alignment cards`);
-    await page.locator(`#mainPanel [data-choice-card="${faction}"] [data-action="purchase"]`).click();
+    await page.locator(`#mainPanel [data-upgrade-card="${faction}"] [data-action="purchase"]`).click();
     await closeStories(page);
     for (const id of [`${faction}-1`, `${faction}-2`, `${faction}-3`, `${faction}-pact`, `${faction}-4`, `${faction}-5`, `${faction}-6`, `${faction}-alliance`, `${faction}-7`, `${faction}-8`, `${faction}-9`]) {
       await buyUpgrade(page, id);
@@ -144,20 +143,23 @@ try {
   await hallCard.click();
   assert.equal(await hallCard.locator('[data-field="count"]').textContent(), '× 1');
   await hallCard.hover();
-  assert.match(await hallCard.locator('[data-field="hall-metrics"]').textContent(), /原版奖杯 2/);
-  await openTab(market.page, 'factions');
-  await market.page.locator('#mainPanel [data-action="buy-amount"][data-value="10"]').click();
-  await market.page.locator('[data-exchange-card="fairyExchange"] [data-action="purchase"]').click();
-  const marketSaved = await storedState(market.page);
-  assert.equal(marketSaved.buildings.hallOfLegends, 1);
-  assert.equal(marketSaved.royalExchange.fairy, 10);
-  assert.equal(marketSaved.resources.factionCoins.fairy, 682);
-  await imagesLoaded(market.page);
+  assert.match(await hallCard.locator('[data-field="hall-metrics"]').textContent(), /奖杯 2/);
+  await openTab(market.page, 'misc-upgrades');
+  assert.equal(await market.page.locator('#mainPanel .upgrade-section:not(.purchased) [data-upgrade-card]').first().getAttribute('data-upgrade-card'), 'royalMarket');
+  await market.page.locator('#mainPanel [data-upgrade-card="royalMarket"] [data-action="open-royal-market"]').click();
+  await market.page.locator('#royalMarketDialog [data-action="buy-amount"][data-value="10"]').click();
+  await market.page.locator('#royalMarketDialog [data-exchange-card="fairyExchange"] [data-action="purchase"]').click();
   for (const width of [320, 390, 768, 1024, 1440]) {
     await market.page.setViewportSize({ width, height: 900 });
     await market.page.waitForTimeout(100);
     await noOverflow(market.page, `Royal Market ${width}px`);
   }
+  await market.page.locator('#royalMarketDialog [data-action="close-royal-market"]').click();
+  const marketSaved = await storedState(market.page);
+  assert.equal(marketSaved.buildings.hallOfLegends, 1);
+  assert.equal(marketSaved.royalExchange.fairy, 10);
+  assert.equal(marketSaved.resources.factionCoins.fairy, 682);
+  await imagesLoaded(market.page);
   await market.context.close();
 
   const bonusState = seededState();

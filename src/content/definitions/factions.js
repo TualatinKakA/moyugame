@@ -13,7 +13,7 @@ export const ALIGNMENT_DEFINITIONS = [
   visible: { op: 'always' }, unlock: { op: 'always' },
   purchase: { costs: selectionCost, requires: [{ op: 'notSelected', key: 'alignment' }] },
   effects: [], grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'choiceCard', panel: 'factions', icon: 'assets/images/content-icons/red-cross.svg' },
+  ui: { kind: 'upgradeCard', panel: 'factions', icon: 'assets/images/content-icons/red-cross.svg' },
 }));
 
 export const FACTION_DEFINITIONS = [
@@ -33,7 +33,7 @@ export const FACTION_DEFINITIONS = [
   factionCoin: { enabled: true, dropUnlock: { op: 'always' }, baseWeight: 1, icon: faction.coinIcon },
   purchase: { costs: treatyCost, requires: [{ op: 'notSelected', key: 'faction' }] },
   effects: [], grants: [{ type: 'grantSpellSource', id: faction.spellId, source: faction.id }],
-  reactions: [], scope: 'run', ui: { kind: 'choiceCard', panel: 'factions', icon: `assets/images/content-icons/factions/${faction.id}-contract-tier1.svg` },
+  reactions: [], scope: 'run', ui: { kind: 'upgradeCard', panel: 'factions', icon: `assets/images/content-icons/factions/${faction.id}-contract-tier1.svg` },
 }));
 
 const selectedFaction = faction => ({ op: 'selected', key: 'faction', value: faction });

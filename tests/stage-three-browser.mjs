@@ -111,10 +111,10 @@ try {
   a4State.resources.factionCoins.fairy = 1e28;
   const a4 = await makePage(a4State);
   await openTab(a4.page, 'factions');
-  await a4.page.locator('[data-choice-card="good"] [data-action="purchase"]').click();
+  await a4.page.locator('[data-upgrade-card="good"] [data-action="purchase"]').click();
   await a4.page.locator('.story-overlay:visible [data-choice-id="confirm"]').click();
   await closeStories(a4.page);
-  await a4.page.locator('[data-choice-card="fairy"] [data-action="purchase"]').click();
+  await a4.page.locator('[data-upgrade-card="fairy"] [data-action="purchase"]').click();
   await closeStories(a4.page);
   for (const id of ['fairy-1', 'fairy-2', 'fairy-3', 'fairy-pact', 'fairy-4', 'fairy-5', 'fairy-6', 'fairy-alliance', 'fairy-7', 'fairy-8', 'fairy-9']) await buyUpgrade(a4.page, id);
   const a4Saved = await storedState(a4.page);
@@ -127,13 +127,15 @@ try {
   trophyState.stats.total.clicks = 1;
   for (const definition of CONTENT.definitions) if (definition.originalTrophy) trophyState.permanentUnlocks[definition.id] = true;
   const trophies = await makePage(trophyState);
-  await trophies.page.locator('[data-tab="more"]').click();
-  assert.match(await trophies.page.locator('#mainPanel').textContent(), /原版 430\/430/);
-  assert.equal(await trophies.page.locator('[data-trophy-id]').count(), 0);
-  await trophies.page.locator('[data-trophy-group="facility:farm"] [data-action="toggle-trophy-group"]').click();
-  assert.equal(await trophies.page.locator('[data-trophy-id]').count(), 22);
-  assert.equal(await trophies.page.locator('[data-trophy-id$="-building-trophy-22"]').count(), 1);
-  assert.match(await trophies.page.locator('#mainPanel').textContent(), /R0 职业增益/);
+  await trophies.page.locator('[data-tab="achievements"]').click();
+  assert.match(await trophies.page.locator('#mainPanel').textContent(), /奖杯 430\/430/);
+  assert.equal(await trophies.page.locator('[data-trophy-card]').count(), 62);
+  assert.equal(await trophies.page.locator('[data-trophy-card^="series-"]').count(), 18);
+  await trophies.page.locator('[data-trophy-card="series-farm"] [data-action="show-trophy"]').click();
+  assert.match(await trophies.page.locator('#trophy-series-tooltip-farm').textContent(), /奖杯系列：22\/22/);
+  assert.match(await trophies.page.locator('#trophy-series-tooltip-farm').textContent(), /全部 22 级奖杯已解锁/);
+  await trophies.page.locator('[data-trophy-group="facilities"] [data-action="toggle-trophy-group"]').click();
+  assert.equal(await trophies.page.locator('[data-trophy-card]').count(), 28);
   await imagesLoaded(trophies.page);
   for (const width of [320, 390, 768, 1024, 1440]) {
     await trophies.page.setViewportSize({ width, height: 900 });

@@ -62,7 +62,7 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('nightTime', 'global', 'assistants.production', globalTarget, 'addPercent', { formula: '50 + 50 * x', variables: { x: 'buildings.necropolis' } })],
   }),
   spell({
-    id: 'hellfireBlast', name: '高压执行', description: '20 秒内按原版奖杯数强化高压事业部；购入开场冲刺令后扩展至全天候工作井与传奇档案馆。', cost: 900, duration: 20, alignment: 'evil', icon: redCross,
+    id: 'hellfireBlast', name: '高压执行', description: '20 秒内按奖杯数强化高压事业部；购入开场冲刺令后扩展至全天候工作井与传奇档案馆。', cost: 900, duration: 20, alignment: 'evil', icon: redCross,
     visible: { op: 'spellSource', id: 'hellfireBlast' },
     effects: [effect('hellfireBlast', 'buildingLocal', 'building.production', { type: 'hellfire' }, 'addPercent', { formula: '120 * x ^ 0.8', variables: { x: 'trophies.original' } })],
   }),

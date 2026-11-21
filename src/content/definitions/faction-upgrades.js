@@ -44,13 +44,13 @@ export const ADDITIONAL_FACTION_UPGRADE_DEFINITIONS = [
     effect('elven-4-click', 'click', 'click.reward', globalTarget, 'multiplyPercent', { formula: '1.4 * x ^ 0.6', variables: { x: 'buildings.alignment.good' } }),
     effect('elven-4-offline', 'utility', 'offline.factionCoin', globalTarget, 'multiplyPercent', { constant: 200 }),
   ] }),
-  upgrade({ faction: 'elven', number: 5, sourceId: 'EL5', sourceName: 'Elven Efficiency', name: '精英效率', description: '按本 Era 累计发现的影响力提高皇家交换加成。', mechanics: ['royalExchangeBonus'] }),
+  upgrade({ faction: 'elven', number: 5, sourceId: 'EL5', sourceName: 'Elven Efficiency', name: '精英效率', description: '按本 Era 累计发现的影响力提高统筹调拨加成。', mechanics: ['royalExchangeBonus'] }),
   upgrade({ faction: 'elven', number: 6, sourceId: 'EL6', sourceName: 'Secret Clicking Techniques', name: '秘传连击技巧', description: '按本次职业有效点击数使全部设施产出提高 {effect:elven-6}%。', effects: [
     effect('elven-6', 'global', 'global.production', globalTarget, 'addPercent', { formula: '1.5 * x ^ 0.5', variables: { x: 'effective.r.clicks' } }),
   ] }),
   upgrade({ faction: 'elven', number: 7, sourceId: 'EL7', sourceName: 'Elven Diplomacy', name: '跨部门接口', description: '按本轮影响力提高有效点击计数，不增加真实点击事件。', mechanics: ['effectiveClicks'] }),
   upgrade({ faction: 'elven', number: 8, sourceId: 'EL8', sourceName: 'Elven Luck', name: '技术幸运', description: '点击和数字员工可触发技术幸运，获得额外工资与随机部门影响力。', mechanics: ['elvenLuck'] }),
-  upgrade({ faction: 'elven', number: 9, sourceId: 'EL9', sourceName: 'Elven Treasure Casing', name: '自动输入阵列', description: '按原版奖杯数，影响力发现率 +{effect:elven-9} 个百分点。', effects: [
+  upgrade({ faction: 'elven', number: 9, sourceId: 'EL9', sourceName: 'Elven Treasure Casing', name: '自动输入阵列', description: '按奖杯数，影响力发现率 +{effect:elven-9} 个百分点。', effects: [
     effect('elven-9', 'factionCoin', 'factionCoin.chance', globalTarget, 'add', { formula: '10 + 2.5 * x ^ 0.95', variables: { x: 'trophies.original' } }),
   ] }),
 
@@ -121,7 +121,7 @@ export const ADDITIONAL_FACTION_UPGRADE_DEFINITIONS = [
     effect('demon-4-tier9', 'buildingBase', 'building.baseProduction', tierTarget(9), 'add', { constant: 900000 }),
     effect('demon-4-tier10', 'buildingBase', 'building.baseProduction', tierTarget(10), 'add', { constant: 8800000 }),
   ] }),
-  upgrade({ faction: 'demon', number: 5, sourceId: 'DM5', sourceName: 'Demon Overseers', name: '执行监工', description: '按原版奖杯数使当前最高三阶设施产出提高 {effect:demon-5}%。', effects: [
+  upgrade({ faction: 'demon', number: 5, sourceId: 'DM5', sourceName: 'Demon Overseers', name: '执行监工', description: '按奖杯数使当前最高三阶设施产出提高 {effect:demon-5}%。', effects: [
     effect('demon-5', 'buildingLocal', 'building.production', highestThreeTarget, 'addPercent', { formula: '16 + 4 * x ^ 0.8', variables: { x: 'trophies.original' } }),
   ] }),
   upgrade({ faction: 'demon', number: 6, sourceId: 'DM6', sourceName: 'Demonic Presence', name: '高压存在感', description: '按本次职业务实法术施放数，最大精力 +{effect:demon-6}。', effects: [

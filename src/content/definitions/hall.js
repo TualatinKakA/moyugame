@@ -57,7 +57,7 @@ export const HALL_UPGRADE_DEFINITIONS = tiers.map(([tier, name, sourceName, requ
   return {
     id, kind: 'upgrade', contentVersion: 'base-v1', name, sourceName, sourceVersion, verificationStatus,
     buildingId: 'hallOfLegends', tier, requirement, hallMultiplier, trophyCoefficient,
-    description: `传奇档案馆产出 ×${hallMultiplier}；其他每项设施按每个原版奖杯提高 ${trophyCoefficient * 100}%。`,
+    description: `传奇档案馆产出 ×${hallMultiplier}；其他每项设施按每个奖杯提高 ${trophyCoefficient * 100}%。`,
     era: { minR: tier >= 23 ? 100 : tier >= 20 ? 40 : 0, maxA: 2 },
     visible: { all: [HALL_VISIBLE, { op: 'buildingOwned', id: 'hallOfLegends', value: requirement }] },
     unlock: { op: 'always' },

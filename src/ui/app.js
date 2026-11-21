@@ -123,7 +123,7 @@ let facilityStructure = '';
 let lastUpgradeRailRender = 0;
 let upgradeRailStructure = '';
 const expandedUpgradeCollections = new Set();
-const expandedTrophyGroups = new Set();
+const collapsedTrophyGroups = new Set();
 let manaEditorUnlocked = false;
 let logs = ['打卡成功。系统提示：请勿寻找公司的出口。'];
 let toastTimer;
@@ -346,7 +346,7 @@ function updateBuildingCards() {
       const otherMultiplier = content('upgrade').filter(item => item.buildingId === 'hallOfLegends' && item.trophyCoefficient && state().owned.run[item.id])
         .reduce((multiplier, item) => multiplier * (1 + item.trophyCoefficient * current.originalTrophies), 1);
       const selfMultiplier = current.hallBaseProduction > 0 ? unitOutput / (current.hallBaseProduction * current.globalMult) : 0;
-      hallMetrics.textContent = `原版奖杯 ${formatNumber(current.originalTrophies)} · 每座基础 ${money(current.hallBaseProduction)} · 自身倍率 ×${formatNumber(selfMultiplier)} · 其他设施倍率 ×${formatNumber(otherMultiplier)}`;
+      hallMetrics.textContent = `奖杯 ${formatNumber(current.originalTrophies)} · 每座基础 ${money(current.hallBaseProduction)} · 自身倍率 ×${formatNumber(selfMultiplier)} · 其他设施倍率 ×${formatNumber(otherMultiplier)}`;
     }
     const unavailable = model.status === 'NEED_RESOURCE';
     card.setAttribute('aria-disabled', String(unavailable));
@@ -368,19 +368,21 @@ function renderFacilityRail() {
   }
   updateBuildingCards();
 }
+function upgradeAction(item) { return item.interaction === 'royalMarket' ? 'open-royal-market' : 'purchase'; }
 function quickUpgradeCard(item) {
   const model = view(item.id);
   const tooltipId = `upgrade-tooltip-rail-${item.id}`;
   const text = description(item);
-  const cost = model.costs.map(formatCost).join(' + ') || '无需工资';
-  return `<article class="upgrade-entry quick-upgrade-entry" data-upgrade-card="${item.id}"><button type="button" class="upgrade-icon affordable" data-action="purchase" data-id="${item.id}" aria-describedby="${tooltipId}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${money(model.costs[0]?.value || 0)}</small></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost">${cost}</span><span class="upgrade-tooltip-description">${text}</span><small data-field="hint">点击购买</small></span></article>`;
+  const marketEntry = item.interaction === 'royalMarket';
+  const cost = marketEntry ? '交换窗口' : model.costs.map(formatCost).join(' + ') || '无需工资';
+  return `<article class="upgrade-entry quick-upgrade-entry" data-upgrade-card="${item.id}"><button type="button" class="upgrade-icon affordable" data-action="${upgradeAction(item)}" data-id="${item.id}" aria-describedby="${tooltipId}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${marketEntry ? '打开' : money(model.costs[0]?.value || 0)}</small></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost">${cost}</span><span class="upgrade-tooltip-description">${text}</span><small data-field="hint">${marketEntry ? '点击打开' : '点击购买'}</small></span></article>`;
 }
 function renderUpgradeRail() {
   const now = performance.now();
   if (now - lastUpgradeRailRender < 500) return;
   if (activeUpgradeTooltip?.closest('#upgradeRail') || upgradeLongPress?.button.closest('#upgradeRail')) return;
   lastUpgradeRailRender = now;
-  const candidates = visible('upgrade').filter(item => view(item.id).status === 'PURCHASABLE');
+  const candidates = sortedUpgrades(visible('upgrade').filter(item => view(item.id).status === 'PURCHASABLE'));
   const signature = candidates.map(item => `${item.id}:${view(item.id).costs[0]?.value || 0}:${description(item)}`).join('|');
   if (signature === upgradeRailStructure) return;
   upgradeRailStructure = signature;
@@ -441,13 +443,19 @@ function buildingPanel() {
 }
 function upgradeCard(item) {
   const status = view(item.id).status;
-  const statusClass = status === 'OWNED' ? 'owned' : status === 'NEED_RESOURCE' ? 'insufficient' : '';
+  const statusClass = ['OWNED', 'SELECTED'].includes(status) ? 'owned' : status === 'NEED_RESOURCE' ? 'insufficient' : '';
   const tooltipId = `upgrade-tooltip-${item.id}`;
-  return `<article class="upgrade-entry ${statusClass}" data-upgrade-card="${item.id}"><button type="button" class="upgrade-entry-button" data-action="purchase" data-id="${item.id}" aria-describedby="${tooltipId}"><img class="upgrade-entry-icon" src="${item.ui.icon}" alt=""></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost"></span><span class="upgrade-tooltip-description">${description(item)}</span><small data-field="hint"></small></span></article>`;
+  return `<article class="upgrade-entry ${statusClass}" data-upgrade-card="${item.id}"><button type="button" class="upgrade-entry-button" data-action="${upgradeAction(item)}" data-id="${item.id}" aria-describedby="${tooltipId}"><img class="upgrade-entry-icon" src="${item.ui.icon}" alt=""></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost"></span><span class="upgrade-tooltip-description">${description(item)}</span><small data-field="hint"></small></span></article>`;
 }
 function sortedUpgrades(items) {
   const order = { PURCHASABLE: 0, NEED_RESOURCE: 1, AVAILABLE_UNAFFORDABLE: 1, LOCKED_REQUIREMENT: 2, OWNED: 3, SELECTED: 3 };
-  return [...items].sort((left, right) => (order[view(left.id).status] ?? 4) - (order[view(right.id).status] ?? 4));
+  return [...items].sort((left, right) => {
+    if (left.interaction === 'royalMarket' || right.interaction === 'royalMarket') {
+      if (left === right) return 0;
+      return left.interaction === 'royalMarket' ? -1 : 1;
+    }
+    return (order[view(left.id).status] ?? 4) - (order[view(right.id).status] ?? 4);
+  });
 }
 function collectionEffect(building, items) {
   const context = { state: state(), derived: derived() };
@@ -478,8 +486,8 @@ function upgradeCollectionCard(building, items) {
 }
 function upgradeSections(items) {
   if (!items.length) return '<p class="notice">增加设施或加入部门后显示升级。</p>';
-  const unpurchased = sortedUpgrades(items.filter(item => view(item.id).status !== 'OWNED'));
-  const purchased = sortedUpgrades(items.filter(item => view(item.id).status === 'OWNED'));
+  const unpurchased = sortedUpgrades(items.filter(item => !['OWNED', 'SELECTED'].includes(view(item.id).status)));
+  const purchased = sortedUpgrades(items.filter(item => ['OWNED', 'SELECTED'].includes(view(item.id).status)));
   const groups = content('building').map(building => ({ building, items: purchased.filter(item => item.buildingId === building.id) })).filter(group => group.items.length);
   const cards = [...groups.map(group => upgradeCollectionCard(group.building, group.items)), ...purchased.filter(item => !item.buildingId).map(upgradeCard)];
   const section = (title, cards, owned = false, count = cards.length) => cards.length ? `<section class="upgrade-section ${owned ? 'purchased' : ''}"><h3><span>${title}</span><small>${count}</small></h3><div class="upgrade-entry-grid">${cards.join('')}</div></section>` : '';
@@ -488,34 +496,55 @@ function upgradeSections(items) {
 function upgradesPanel(category = null) {
   const items = visible('upgrade').filter(item => !category || item.ui.category === category || (category === 'building' && item.ui.category === 'hallBonus'));
   const title = category === 'building' ? '设施升级' : category === 'general' ? '通用升级' : '升级';
-  return `<div class="panel-head"><div><h2>${title}</h2><p>点击购买，悬停或长按查看名称、价格与效果。</p></div></div>${upgradeSections(items)}`;
-}
-function choiceCard(item) {
-  const model = view(item.id);
-  const status = model.status;
-  const selected = status === 'SELECTED';
-  const locked = selected || status === 'LOCKED_REQUIREMENT';
-  const label = selected ? (item.kind === 'alignment' ? '当前立场' : '当前部门') : '选择';
-  const priceText = model.costs.length ? model.costs.map(cost => formatCost(cost.resource === 'factionCoin.target' ? { ...cost, resource: `factionCoin.${item.id}` } : cost)).join(' + ') : '免费';
-  const price = `<small class="choice-price">${priceText}</small>`;
-  return `<article class="card ${selected ? 'owned' : ''}" data-choice-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><span class="badge">${item.kind === 'alignment' ? '立场' : '部门'}</span><h3 class="choice-heading"><span>${item.name}</span>${price}</h3><p>${description(item)}</p>${item.spellId ? `<p>专属技能：${definition(item.spellId).name}</p>` : ''}<button data-action="purchase" data-id="${item.id}" ${locked ? 'disabled' : ''}>${label}</button></article>`;
-}
-function exchangeCard(item) {
-  const model = view(item.id);
-  return `<article class="card" data-exchange-card="${item.id}"><img class="content-icon" src="${item.ui.icon}" alt=""><h3>${item.name}</h3><p>已交换 ${formatNumber(model.viewModel.count)} 次</p><p>${description(item)}</p><button data-action="purchase" data-id="${item.id}">交换 ${model.quantity || 0} 次 · ${model.costs.map(formatCost).join(' + ')}</button></article>`;
+  return `<div class="panel-head"><div><h2>${title}</h2><p>点击图标购买升级或打开对应功能，悬停或长按查看详情。</p></div></div>${upgradeSections(items)}`;
 }
 function factionsPanel() {
-  const factionUpgrades = visible('upgrade').filter(item => item.ui.category === 'faction');
-  const header = '<div class="panel-head"><div><h2>部门与立场</h2><p>选择立场，再签署对应部门的条约。</p></div></div>';
-  const alignmentSection = `<section class="subsection"><h3>选择立场</h3><div class="card-grid">${visible('alignment').map(choiceCard).join('')}</div></section>`;
-  const treatySection = `<section class="subsection"><h3>签署部门条约</h3><div class="card-grid">${visible('faction').map(choiceCard).join('') || '<p class="notice">先选择符合的立场。</p>'}</div></section>`;
-  const upgradesSection = `<section class="subsection"><h3>部门升级</h3>${upgradeSections(factionUpgrades)}</section>`;
+  const current = state().selections;
+  const items = [
+    ...visible('alignment').filter(item => !current.alignment || current.alignment === item.id),
+    ...visible('faction').filter(item => !current.faction || current.faction === item.id),
+    ...visible('upgrade').filter(item => item.ui.category === 'faction'),
+  ];
+  return `<div class="panel-head"><div><h2>部门升级</h2><p>选择立场和部门，或购买对应升级。</p></div></div>${upgradeSections(items)}`;
+}
+let royalMarketReturnFocus = null;
+function renderRoyalMarket() {
+  if ($('royalMarketDialog').hidden) return;
+  const focusedId = document.activeElement?.dataset?.id;
   const market = derived();
-  const exchangeSection = `<section class="subsection"><div class="panel-head"><div><h3>皇家交换</h3><p>交换总数 ${formatNumber(market.exchangeCount)} · 加成池 ${formatNumber(market.exchangeBonus)} · 设施倍率 ×${formatNumber(market.exchangeMultiplier)}</p></div>${buyControls()}</div><div class="card-grid">${visible('exchange').map(exchangeCard).join('')}</div></section>`;
-  const sections = state().selections.alignment
-    ? `${treatySection}${upgradesSection}${exchangeSection}${alignmentSection}`
-    : `${alignmentSection}${treatySection}${upgradesSection}${exchangeSection}`;
-  return `${header}${sections}`;
+  const productionBonus = (market.exchangeMultiplier - 1) * 100;
+  const bonusText = productionBonus.toFixed(2).replace(/\.?0+$/, '');
+  $('royalMarketSummary').innerHTML = `<span>调拨 ${formatNumber(market.exchangeCount)} 次 · 当前产出加成 +${bonusText}%</span>`;
+  $('royalMarketBuyControls').innerHTML = buyControls();
+  $('royalMarketRows').innerHTML = content('exchange').map(item => {
+    const model = view(item.id);
+    const quantity = model.quantity || 0;
+    const total = model.costs[0]?.value || 0;
+    const disabled = model.status !== 'PURCHASABLE';
+    return `<div class="royal-market-row" role="row" data-exchange-card="${item.id}"><span role="cell">${item.name}（${formatNumber(model.viewModel.count)}）</span><span role="cell">10%</span><span role="cell">${quantity}× ${formatNumber(total)}</span><span role="cell"><button class="royal-market-buy primary" data-action="purchase" data-id="${item.id}" aria-label="${item.name} ${quantity} 次，成本 ${formatNumber(total)} 点影响力" ${disabled ? 'disabled' : ''}>调拨</button></span></div>`;
+  }).join('');
+  if (focusedId) $('royalMarketRows').querySelector(`[data-id="${focusedId}"]`)?.focus({ preventScroll: true });
+}
+function refreshRoyalMarket(message = null) {
+  if ($('royalMarketDialog').hidden) return;
+  const relevant = !message || message.commandType !== 'tick' || message.changedPaths.some(path => /^(royalExchange|resources\.factionCoins|owned|progression|settings\.buyAmount|permanentUnlocks|timers\.spells|stats\.ascension\.factionCoins)/.test(path));
+  if (relevant) renderRoyalMarket();
+}
+function openRoyalMarket() {
+  closeUpgradeTooltip();
+  closeFactionCoinTooltip();
+  royalMarketReturnFocus = document.activeElement;
+  $('royalMarketDialog').hidden = false;
+  document.body.classList.add('royal-market-open');
+  renderRoyalMarket();
+  $('royalMarketDialog').querySelector('[data-action="close-royal-market"]').focus({ preventScroll: true });
+}
+function closeRoyalMarket() {
+  if ($('royalMarketDialog').hidden) return;
+  $('royalMarketDialog').hidden = true;
+  document.body.classList.remove('royal-market-open');
+  if (royalMarketReturnFocus?.isConnected) royalMarketReturnFocus.focus({ preventScroll: true });
+  royalMarketReturnFocus = null;
 }
 function skillsPanel() {
   const available = visible('spell');
@@ -533,45 +562,63 @@ function statsPanel() {
 function storyForTrophy(trophyId) {
   return content('story').find(story => story.grants.some(action => action.type === 'awardTrophy' && action.id === trophyId));
 }
-function trophyCard(trophy) {
+const SPELL_TROPHY_IDS = new Set(['fairyChoir', 'sunBlessing', 'godsRest', 'greedDrive', 'trueNight', 'hellRush']);
+function trophyCategory(trophy) {
+  if (trophy.id.endsWith('Champion')) return 'champions';
+  if (SPELL_TROPHY_IDS.has(trophy.id)) return 'magic';
+  if (['building-trophy', 'aggregate-building-trophy'].includes(trophy.trophyType)) return 'facilities';
+  if (trophy.trophyType === 'secret-trophy') return 'secrets';
+  return 'records';
+}
+function trophyIconCard(trophy) {
   const unlocked = Boolean(state().permanentUnlocks[trophy.id]);
   const story = storyForTrophy(trophy.id);
-  return `<article class="card ${unlocked ? 'owned' : ''}" data-trophy-id="${trophy.id}"><img class="content-icon ${unlocked ? '' : 'locked'}" src="${trophy.ui.icon}" alt=""><h3>${unlocked ? trophy.name : '未解密奖杯'}</h3><p>${unlocked ? description(trophy) : '继续游玩以解锁。'}</p>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</article>`;
+  const tooltipId = `trophy-tooltip-${trophy.id}`;
+  const name = unlocked ? trophy.name : '未解密奖杯';
+  return `<article class="trophy-icon-card ${unlocked ? 'unlocked' : 'locked'}" data-trophy-card="${trophy.id}" data-trophy-id="${trophy.id}"><button type="button" class="trophy-icon-button" data-action="show-trophy" data-id="${trophy.id}" aria-describedby="${tooltipId}" aria-label="${name}"><img src="${trophy.ui.icon}" alt=""></button><span class="trophy-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${name}</b><span>${unlocked ? description(trophy) : '继续游玩以解锁。'}</span><small>${unlocked ? '已解锁' : '未解锁'}</small>${story && state().story.completed[story.id] ? `<button data-action="replay-story" data-id="${story.id}">回看关联剧情</button>` : ''}</span></article>`;
 }
-function trophyGroup(trophy) {
-  return trophy.ui.trophyGroup || (trophy.originalTrophy ? 'factions' : 'records');
+function buildingSeriesCard(building) {
+  const series = content('trophy').filter(trophy => trophy.trophyType === 'building-trophy' && trophy.id.startsWith(`${building.id}-building-trophy-`))
+    .sort((left, right) => Number(left.id.split('-').at(-1)) - Number(right.id.split('-').at(-1)));
+  const highest = series.reduce((level, trophy) => state().permanentUnlocks[trophy.id] ? Math.max(level, Number(trophy.id.split('-').at(-1))) : level, 0);
+  const next = series[highest];
+  const current = state().buildings[building.id] || 0;
+  const target = next?.reactions[0].when.all[1].value || 0;
+  const progress = next ? Math.min(100, current / target * 100) : 100;
+  const status = highest === 22 ? 'maxed' : highest > 0 ? 'unlocked' : 'locked';
+  const levelText = highest === 22 ? '22/22 已满级' : highest > 0 ? `最高第 ${highest} 级` : '尚未解锁';
+  const tooltipId = `trophy-series-tooltip-${building.id}`;
+  return `<article class="trophy-icon-card trophy-series-card ${status}" data-trophy-card="series-${building.id}"><button type="button" class="trophy-icon-button" data-action="show-trophy" data-id="${building.id}" aria-describedby="${tooltipId}" aria-label="${building.name}，奖杯系列 ${highest}/22"><img src="${building.ui.icon}" alt=""><small>${levelText}</small></button><span class="trophy-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${building.name}</b><span>奖杯系列：${highest}/22</span>${next ? `<span>下一等级：第 ${highest + 1} 级</span><span>进度：${formatNumber(current)}/${formatNumber(target)}（${formatNumber(progress)}%）</span>` : '<span>全部 22 级奖杯已解锁</span>'}</span></article>`;
 }
-function trophyGroupName(id) {
-  if (id.startsWith('facility:')) return `${definition(id.slice(9)).name}规模`;
-  return { records: '员工记录', factions: '部门荣誉', facilities: '设施累计', secrets: '隐秘记录', assistants: '数字员工' }[id] || id;
+function achievementsPanel() {
+  const trophies = content('trophy');
+  const original = trophies.filter(trophy => trophy.originalTrophy);
+  const originalUnlocked = original.filter(trophy => state().permanentUnlocks[trophy.id]).length;
+  const categories = [
+    ['champions', '部门荣誉'], ['magic', '法术奖杯'], ['facilities', '设施奖杯'], ['secrets', '隐秘奖杯'], ['records', '员工记录'],
+  ];
+  return `<div class="panel-head"><div><h2>成就</h2><p>奖杯 ${originalUnlocked}/${original.length}</p></div></div>${categories.map(([id, name]) => {
+    const items = trophies.filter(trophy => trophyCategory(trophy) === id);
+    const unlocked = items.filter(trophy => state().permanentUnlocks[trophy.id]).length;
+    const collapsed = collapsedTrophyGroups.has(id);
+    const cards = id === 'facilities'
+      ? `${content('building').map(buildingSeriesCard).join('')}${items.filter(trophy => trophy.trophyType === 'aggregate-building-trophy').map(trophyIconCard).join('')}`
+      : items.map(trophyIconCard).join('');
+    return `<section class="trophy-section" data-trophy-group="${id}"><button class="trophy-section-toggle" data-action="toggle-trophy-group" data-group="${id}" aria-expanded="${!collapsed}"><span>${name}（${unlocked}/${items.length}）</span><span aria-hidden="true">${collapsed ? '▼' : '▲'}</span></button>${collapsed ? '' : `<div class="trophy-icon-grid">${cards}</div>`}</section>`;
+  }).join('')}`;
 }
 function reincarnationPowerCard() {
   const power = derived().rPower;
   return `<article class="card"><h3>R${state().progression.reincarnations} 职业增益</h3><p>全局产出 +${formatNumber(power.productionPercent)}% · 时间产出 +${formatNumber(power.timeProductionPercent)}% · 每份期权 +${formatNumber(power.gemPowerAdd)}%</p><p>最大精力 +${formatNumber(power.manaMaxAdd)} · 每秒恢复 +${formatNumber(power.manaRegenAdd)} · 恢复倍率 ×${formatNumber(power.manaRegenMultiplier)}</p><p>数字员工 +${formatNumber(power.assistantsAdd)} · 数字员工产出 +${formatNumber(power.assistantProductionPercent)}% · 离线基础倍率 ×${formatNumber(power.offlineMultiplier)}</p><p>影响力发现率 +${formatNumber(power.fcChanceAdd)} 个百分点 · 概率倍率 ×${formatNumber(power.fcChanceMultiplier)} · 获取倍率 ×${formatNumber(power.factionCoinGainMultiplier)} · 交换加成 +${formatNumber(power.exchangeBonus)}</p>${power.r2 > 0 ? `<p>每秒自动点击 ${formatNumber(power.autoClickRate)} 次。</p>` : ''}</article>`;
 }
 function morePanel() {
-  const trophies = content('trophy');
   const completed = Object.keys(state().story.completed).map(definition).filter(Boolean);
   const reincarnation = game.select('reincarnation');
-  const groups = new Map();
-  for (const trophy of trophies) {
-    const id = trophyGroup(trophy);
-    if (!groups.has(id)) groups.set(id, []);
-    groups.get(id).push(trophy);
-  }
-  const original = trophies.filter(trophy => trophy.originalTrophy);
-  const originalUnlocked = original.filter(trophy => state().permanentUnlocks[trophy.id]).length;
-  const trophySections = [...groups].map(([id, items]) => {
-    const expanded = expandedTrophyGroups.has(id);
-    const unlocked = items.filter(trophy => state().permanentUnlocks[trophy.id]).length;
-    return `<section class="subsection" data-trophy-group="${id}"><button data-action="toggle-trophy-group" data-group="${id}" aria-expanded="${expanded}">${trophyGroupName(id)} · ${unlocked}/${items.length}</button>${expanded ? `<div class="card-grid">${items.map(trophyCard).join('')}</div>` : ''}</section>`;
-  }).join('');
-  return `<div class="panel-head"><div><h2>职业与存档</h2><p>管理本地档案，并查看已解锁的奖杯与剧情。</p></div></div>
+  return `<div class="panel-head"><div><h2>职业与存档</h2><p>管理本地档案，并查看剧情。</p></div></div>
     ${reincarnationPowerCard()}
     ${reincarnation.visible ? `<article class="card"><h3>投胎进入 R${reincarnation.nextR}</h3><p>消耗当前全部期权，保留奖杯与历史记录，开启更深层的组织周期。</p><button data-action="reincarnate">投胎</button></article>` : ''}
     <section class="subsection"><h3>数据管理</h3><div class="action-row"><button data-action="edit-user-id">修改游戏 ID</button><button data-action="save">立即保存</button><button data-action="export">导出存档</button><button data-action="import">导入文件</button><button data-action="import-text">从文本导入</button><button class="danger" data-action="hard-reset">清除全部进度</button></div><textarea id="exportText" placeholder="导出后在此显示 JSON；也可直接粘贴存档文本，然后点击“从文本导入”。"></textarea></section>
     <section class="subsection"><h3>精力恢复</h3><form id="manaPasswordForm" class="action-row" autocomplete="off"><label for="manaPassword">密码</label><input id="manaPassword" type="password" inputmode="numeric" autocomplete="off" placeholder="输入密码" required><button type="submit">确认</button></form><p id="manaPasswordFeedback" role="status"></p><div id="manaRegenEditor" hidden><div class="action-row"><label for="manaRegenInput">每秒恢复</label><input id="manaRegenInput" type="number" min="0" step="0.1" required><button data-action="apply-mana-regen">应用</button></div></div></section>
-    <section class="subsection"><h3>奖杯 · 原版 ${originalUnlocked}/${original.length}</h3>${trophySections}</section>
     <section class="subsection"><h3>剧情回看</h3><div class="action-row">${completed.map(story => `<button data-action="replay-story" data-id="${story.id}">${story.title}</button>`).join('') || '<p class="notice">暂无可回看的剧情。</p>'}</div></section>`;
 }
 function syncManaEditor() {
@@ -582,23 +629,24 @@ function syncManaEditor() {
 }
 function updatePanel() {
   updateBuildingCards(); updateCastButtons();
-  document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card]), #upgradeRail [data-action="purchase"]').forEach(button => {
+  document.querySelectorAll('#mainPanel [data-action="purchase"]:not([data-building-card]), #upgradeRail [data-action="purchase"], #mainPanel [data-action="open-royal-market"], #upgradeRail [data-action="open-royal-market"]').forEach(button => {
     const model = view(button.dataset.id);
     const unavailable = ['NEED_RESOURCE', 'OWNED', 'SELECTED', 'LOCKED_REQUIREMENT'].includes(model.status);
     const card = button.closest(tooltipEntrySelector);
     if (card) {
       const item = definition(button.dataset.id);
-      const cost = model.costs.map(formatCost).join(' + ');
-      const hint = model.status === 'OWNED' ? '已生效' : model.status === 'NEED_RESOURCE' ? '资源不足' : model.status === 'LOCKED_REQUIREMENT' ? '尚未满足条件' : '点击购买';
+      const marketEntry = item.interaction === 'royalMarket';
+      const cost = marketEntry ? '统筹调拨' : model.costs.map(formatCost).join(' + ');
+      const hint = marketEntry ? '点击打开' : model.status === 'OWNED' ? '已生效' : model.status === 'SELECTED' ? '已选择' : model.status === 'NEED_RESOURCE' ? '资源不足' : model.status === 'LOCKED_REQUIREMENT' ? '尚未满足条件' : '点击购买';
       const text = description(item);
       button.setAttribute('aria-disabled', String(unavailable));
-      button.setAttribute('aria-label', `${item.name}，价格 ${cost || '无'}。${text}${hint}。`);
+      button.setAttribute('aria-label', marketEntry ? `${item.name}，${text}${hint}。` : `${item.name}，价格 ${cost || '无'}。${text}${hint}。`);
       const descriptionElement = card.querySelector('.upgrade-tooltip-description');
       if (descriptionElement) descriptionElement.textContent = text;
-      card.classList.toggle('owned', model.status === 'OWNED');
+      card.classList.toggle('owned', ['OWNED', 'SELECTED'].includes(model.status));
       card.classList.toggle('insufficient', model.status === 'NEED_RESOURCE');
       card.classList.toggle('affordable', model.status === 'PURCHASABLE');
-      card.querySelector('[data-field="cost"]').textContent = cost || '无需工资';
+      card.querySelector('[data-field="cost"]').textContent = marketEntry ? cost : cost || '无需工资';
       card.querySelector('[data-field="hint"]').textContent = hint;
       return;
     }
@@ -619,13 +667,14 @@ function renderPanel() {
   cancelUpgradeLongPress();
   closeUpgradeTooltip();
   if (activeTab === 'work') { $('mainPanel').hidden = true; return; }
-  $('mainPanel').classList.toggle('more-dialog', activeTab === 'more');
+  $('mainPanel').classList.toggle('more-dialog', activeTab === 'more' || activeTab === 'achievements');
   $('mainPanel').classList.toggle('skills-dialog', activeTab === 'skills');
   const body = activeTab === 'buildings' ? buildingPanel()
     : activeTab === 'building-upgrades' ? upgradesPanel('building')
       : activeTab === 'misc-upgrades' ? upgradesPanel('general')
         : activeTab === 'upgrades' ? upgradesPanel()
           : activeTab === 'factions' ? factionsPanel() : activeTab === 'skills' ? skillsPanel()
+            : activeTab === 'achievements' ? achievementsPanel()
       : activeTab === 'stats' ? statsPanel() : morePanel();
   $('mainPanel').innerHTML = `<div class="panel-return"><button data-action="close-panel" aria-label="返回工位">× 返回工位</button></div>${body}`;
   $('mainPanel').hidden = false; updatePanel(); syncManaEditor();
@@ -726,6 +775,7 @@ function refresh(message = null) {
   const structural = message?.commandType !== 'tick' || message?.changedPaths.some(path => /^(permanentUnlocks|story|owned|buildings|selections)/.test(path));
   if (activeTab !== 'work' && structural) renderPanel(); else updatePanel();
   syncStories();
+  refreshRoyalMarket(message);
 }
 let pendingAlignmentId = null;
 function reloadWithSave(raw, { recover = false } = {}) {
@@ -859,9 +909,9 @@ let upgradeLongPress = null;
 let suppressedUpgradeClick = null;
 const upgradeLongPressDelay = 200;
 const upgradeLongPressMoveLimit = 12;
-const tooltipEntrySelector = '[data-upgrade-card], [data-building-card]';
-const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card], #upgradeRail .upgrade-icon';
-const tooltipElement = entry => entry?.querySelector('.upgrade-tooltip, .building-tooltip');
+const tooltipEntrySelector = '[data-upgrade-card], [data-building-card], [data-trophy-card]';
+const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card], #upgradeRail .upgrade-icon, [data-trophy-card] .trophy-icon-button';
+const tooltipElement = entry => entry?._floatingTrophyTooltip || entry?.querySelector('.upgrade-tooltip, .building-tooltip, .trophy-tooltip');
 function positionUpgradeTooltip(entry) {
   const rect = entry.getBoundingClientRect();
   const tooltip = tooltipElement(entry);
@@ -882,8 +932,12 @@ function positionUpgradeTooltipAt(entry, x, y) {
 }
 function closeUpgradeTooltip() {
   if (!activeUpgradeTooltip) return;
-  activeUpgradeTooltip.classList.remove('tooltip-open', 'tooltip-following');
-  tooltipElement(activeUpgradeTooltip)?.setAttribute('aria-hidden', 'true');
+  const entry = activeUpgradeTooltip;
+  const tooltip = tooltipElement(entry);
+  entry.classList.remove('tooltip-open', 'tooltip-following');
+  tooltip?.classList.remove('tooltip-open', 'tooltip-following');
+  tooltip?.setAttribute('aria-hidden', 'true');
+  if (entry._floatingTrophyTooltip && tooltip.parentElement === document.body) entry.appendChild(tooltip);
   activeUpgradeTooltip = null;
   touchUpgradeTooltip = null;
 }
@@ -893,6 +947,12 @@ function openUpgradeTooltip(entry, touch = false) {
   activeUpgradeTooltip = entry;
   touchUpgradeTooltip = touch ? entry : null;
   const tooltip = tooltipElement(entry);
+  if (entry.matches('[data-trophy-card]')) {
+    entry._floatingTrophyTooltip = tooltip;
+    document.body.appendChild(tooltip);
+  }
+  tooltip.classList.add('tooltip-open');
+  tooltip.classList.toggle('tooltip-following', touch);
   tooltip.style.transition = touch ? 'none' : '';
   entry.classList.add('tooltip-open');
   entry.classList.toggle('tooltip-following', touch);
@@ -917,12 +977,17 @@ document.addEventListener('pointerover', event => {
 });
 document.addEventListener('pointerout', event => {
   if (event.pointerType !== 'mouse') return;
+  const floatingTooltip = event.target.closest('.trophy-tooltip');
+  if (floatingTooltip && activeUpgradeTooltip && !activeUpgradeTooltip.contains(event.relatedTarget) && !floatingTooltip.contains(event.relatedTarget)) {
+    closeUpgradeTooltip();
+    return;
+  }
   const fcItem = event.target.closest('#factionCoinList .faction-coin-item');
   if (fcItem && (!event.relatedTarget || !fcItem.contains(event.relatedTarget)) && activeFactionCoinTooltip === fcItem) {
     closeFactionCoinTooltip();
   }
   const entry = event.target.closest(tooltipEntrySelector);
-  if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
+  if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget)) || tooltipElement(entry)?.contains(event.relatedTarget)) return;
   if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
   dismissedUpgradeTooltip = null;
 });
@@ -1130,11 +1195,19 @@ document.addEventListener('click', event => {
   }
   if (action === 'toggle-trophy-group') {
     const group = button.dataset.group;
-    if (expandedTrophyGroups.has(group)) expandedTrophyGroups.delete(group);
-    else expandedTrophyGroups.add(group);
+    if (collapsedTrophyGroups.has(group)) collapsedTrophyGroups.delete(group);
+    else collapsedTrophyGroups.add(group);
     renderPanel();
     return;
   }
+  if (action === 'show-trophy') {
+    const entry = button.closest('[data-trophy-card]');
+    if (activeUpgradeTooltip === entry) closeUpgradeTooltip();
+    else openUpgradeTooltip(entry, event.pointerType !== 'mouse');
+    return;
+  }
+  if (action === 'open-royal-market') { openRoyalMarket(); return; }
+  if (action === 'close-royal-market') { closeRoyalMarket(); return; }
   if (action === 'purchase') {
     if (definition(id).kind === 'alignment') {
       pendingAlignmentId = id;
@@ -1205,6 +1278,9 @@ document.addEventListener('click', event => {
     } });
   }
 });
+$('royalMarketDialog').addEventListener('click', event => {
+  if (event.target === $('royalMarketDialog')) closeRoyalMarket();
+});
 document.addEventListener('submit', async event => {
   if (event.target.id !== 'manaPasswordForm') return;
   event.preventDefault();
@@ -1232,6 +1308,7 @@ $('importFile').addEventListener('change', async event => {
   importSave(raw, '导入失败：文件不是有效的游戏存档');
 });
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !$('royalMarketDialog').hidden) { closeRoyalMarket(); return; }
   if (event.key === 'Escape') {
     if (activeFactionCoinTooltip) { closeFactionCoinTooltip(); return; }
     setFactionCoinPanel(false);

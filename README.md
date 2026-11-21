@@ -20,7 +20,7 @@ npm run serve
 - 412 项设施 Trophy、三项 Secret Trophy／Upgrade、三项 Assistant 前置 Trophy；连同阶段二的 12 项 Trophy，共 430 项原版 Trophy；
 - Misc 共 46 项：27 项完整可用目标、9 项已接通完整离线依赖的登记项、10 项保持关闭的 Neutral／第二 Alignment 条目；
 - R1–R5 的产出、mana、Assistant、FC、Exchange、自动点击、离线与 Gem 接口，以及 R40／R100／R160／R220 的 Ascension 边界；
-- 六派系 Royal Exchange 逐枚价格、批量事务、统一 B／E／A 倍率与退休重置；
+- Royal Market（统筹调拨）使用通用升级未购买区首位的统一入口，点击打开六部门统筹调拨弹窗；Royal Exchange 保留逐枚价格、批量事务、统一 B／E／A 倍率与退休重置；
 - Fairy／Goblin／Elven／Angel／Undead／Demon 六种部门影响力：加入部门前即可随机发现，立场与当前部门不缩窄掉落池；数字员工按 30-tick 累计器产生影响力，离线收益先进入共享缓存；
 - 工资结算、全员冲刺、两个立场技能及六个派系技能；
 - 序章：入职、第一笔工资、加入部门、退休指引与第一次退休；

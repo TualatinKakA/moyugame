@@ -17,5 +17,5 @@ export const INFLUENCE_FACTION_DEFINITIONS = [
   },
   purchase: { costs: treatyCost, requires: [{ op: 'notSelected', key: 'faction' }] },
   effects: [], grants: [{ type: 'grantSpellSource', id: faction.spellId, source: faction.id }], reactions: [], scope: 'run',
-  ui: { kind: 'choiceCard', panel: 'factions', icon: 'assets/images/content-icons/red-cross.svg' },
+  ui: { kind: 'upgradeCard', panel: 'factions', icon: 'assets/images/content-icons/red-cross.svg' },
 }));

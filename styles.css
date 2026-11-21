@@ -656,3 +656,61 @@ textarea { width: 100%; min-height: 110px; background: #0f120f; color: var(--tex
 @media (prefers-reduced-motion: reduce) {
   .assistant-income-floater { animation: none; }
 }
+
+body.royal-market-open { overflow: hidden; }
+.royal-market-overlay { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: #080a08ed; backdrop-filter: blur(6px); }
+.royal-market-dialog { width: min(900px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; border: 1px solid #687d58; background: #111411; box-shadow: 0 24px 90px #000c; }
+.royal-market-head { position: sticky; z-index: 2; top: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 18px 20px 14px; border-bottom: 1px solid var(--line); background: #111411; }
+.royal-market-head h2 { margin: 0 0 6px; color: var(--text); font-size: 20px; }
+.royal-market-head p { max-width: 700px; margin: 0; color: var(--muted); font-size: 12px; }
+.royal-market-head button { flex: 0 0 44px; min-height: 40px; font-size: 22px; }
+.royal-market-summary { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 14px 20px; color: var(--green); font: 12px Consolas, "Microsoft YaHei", monospace; border-bottom: 1px solid var(--line); }
+.royal-market-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px; color: var(--muted); font-size: 11px; }
+.royal-market-table { margin: 0 20px 20px; border: 1px solid #3d4638; }
+.royal-market-row { display: grid; grid-template-columns: minmax(150px, 1.25fr) minmax(80px, .65fr) minmax(145px, 1fr) minmax(100px, .7fr); align-items: center; gap: 12px; min-height: 58px; padding: 8px 12px; border-bottom: 1px solid #30382d; }
+.royal-market-row:last-child { border-bottom: 0; }
+.royal-market-row-head { min-height: 42px; background: #191e17; color: var(--text); font-weight: 700; }
+.royal-market-row:not(.royal-market-row-head) > span:nth-child(2), .royal-market-row:not(.royal-market-row-head) > span:nth-child(3) { color: #d5dccd; font-family: Consolas, "Microsoft YaHei", monospace; }
+.royal-market-row .royal-market-buy { width: 100%; min-height: 42px; border: 1px solid var(--green); border-radius: 4px; background: var(--green); color: #17200f; font: 700 14px "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; }
+.royal-market-row .royal-market-buy:hover:not(:disabled) { background: #d0f995; border-color: #d0f995; }
+.royal-market-row .royal-market-buy:disabled { border-color: #30352f; background: #191c19; color: #858d80; }
+@media (max-width: 600px) {
+  .royal-market-overlay { padding: 8px; }
+  .royal-market-dialog { max-height: calc(100dvh - 16px); }
+  .royal-market-head { padding: 14px 12px 10px; }
+  .royal-market-head h2 { font-size: 17px; }
+  .royal-market-head p { font-size: 10px; }
+  .royal-market-summary { padding: 10px 12px; font-size: 10px; }
+  .royal-market-toolbar { padding: 8px 12px; }
+  .royal-market-table { margin: 0 8px 8px; }
+  .royal-market-row { grid-template-columns: minmax(72px, 1.15fr) minmax(48px, .6fr) minmax(86px, 1fr) minmax(62px, .7fr); gap: 5px; min-height: 52px; padding: 6px; font-size: 10px; }
+  .royal-market-row .royal-market-buy { min-height: 38px; font-size: 17px; }
+}
+
+.trophy-section { margin-bottom: 14px; }
+.trophy-section-toggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border-color: #4b5544; background: #191e17; color: var(--text); text-align: left; font-weight: 700; }
+.trophy-section-toggle > span:last-child { flex: 0 0 30px; color: var(--green); text-align: center; }
+.trophy-icon-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.trophy-icon-card { position: relative; min-width: 0; aspect-ratio: 1; }
+.trophy-icon-button { position: relative; width: 100%; height: 100%; min-width: 0; padding: 6px; display: grid; place-items: center; border: 1px solid #454b40; border-radius: 3px; background: #151815; }
+.trophy-icon-button img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.trophy-icon-card.unlocked .trophy-icon-button, .trophy-icon-card.maxed .trophy-icon-button { border-color: #b49352; box-shadow: inset 0 0 0 1px #6f592e; }
+.trophy-icon-card.maxed .trophy-icon-button { border-color: var(--green); }
+.trophy-icon-card.locked .trophy-icon-button img { opacity: .2; filter: grayscale(1); }
+.trophy-icon-button small { position: absolute; left: 2px; right: 2px; bottom: 2px; padding: 1px 2px; overflow: hidden; background: #111411d9; color: var(--text); font-size: 9px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+.trophy-series-card .trophy-icon-button img { height: calc(100% - 14px); }
+.trophy-tooltip { position: fixed; z-index: 72; width: 270px; max-width: calc(100vw - 16px); padding: 12px 14px; border: 1px solid #71865d; border-radius: 8px; background: #171c15f5; box-shadow: 0 10px 35px #000c; color: var(--text); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s ease-out, visibility .12s ease-out; }
+.trophy-icon-card.tooltip-open .trophy-tooltip, .trophy-tooltip.tooltip-open { opacity: 1; visibility: visible; pointer-events: auto; }
+.trophy-tooltip > b, .trophy-tooltip > span, .trophy-tooltip > small { display: block; margin-bottom: 7px; }
+.trophy-tooltip > b { color: var(--green); font-size: 15px; }
+.trophy-tooltip > span { color: #d4dccd; font-size: 12px; }
+.trophy-tooltip > small { color: var(--muted); font-size: 11px; }
+.trophy-tooltip > button { width: 100%; min-height: 34px; margin-top: 4px; font-size: 11px; }
+@media (max-width: 900px) {
+  .trophy-icon-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .trophy-icon-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .trophy-icon-button { padding: 4px; }
+  .trophy-icon-button small { font-size: 8px; }
+}

@@ -106,7 +106,7 @@ export const SPELL_TROPHY_DEFINITIONS = [
     ],
   }),
   trophy({
-    id: 'greedDrive', name: '预算连算', sourceName: 'Greed Drive', description: '预算腾挪生效期间拥有至少 100 次皇家交换。',
+    id: 'greedDrive', name: '预算连算', sourceName: 'Greed Drive', description: '预算腾挪生效期间拥有至少 100 次统筹调拨。',
     reactions: [
       { event: 'spell.cast', when: { all: [{ op: 'eventDataEquals', path: 'spellId', value: 'goblinsGreed' }, active('goblinsGreed'), { op: 'statAtLeast', path: 'derived.exchangeCount', value: 100 }] } },
       { event: 'exchange.purchased', when: { all: [active('goblinsGreed'), { op: 'statAtLeast', path: 'derived.exchangeCount', value: 100 }] } },

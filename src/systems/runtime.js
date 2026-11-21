@@ -294,6 +294,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return runTransaction('purchase', tx => {
       const definition = graph.definitionsById.get(id);
       if (!definition) return { rejected: true, reason: 'UNKNOWN_CONTENT' };
+      if (definition.interactionOnly) return { rejected: true, reason: 'INTERACTION_ONLY' };
       const selected = selectContent(tx.state, graph, cache.get(), id, { amount });
       if (['HIDDEN_SYSTEM', 'LOCKED_REQUIREMENT', 'OWNED', 'SELECTED'].includes(selected.status)) return { rejected: true, reason: selected.status };
       if (selected.status === 'NEED_RESOURCE') return { rejected: true, reason: 'NEED_RESOURCE' };

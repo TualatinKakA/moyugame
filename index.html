@@ -51,7 +51,7 @@
   <header class="topbar">
     <div class="brand"><img src="assets/images/cash.png" alt=""><div><h1>无限工时</h1><small>ENDLESS SHIFT</small></div><span class="brand-version">v1.1.1</span></div>
     <div class="rank"><span id="rankText">R0 · 地球试用期</span><span class="player-identity" id="playerIdentity"></span></div>
-    <div class="top-actions"><span id="saveStatus">本地存档已就绪</span><button data-action="save">保存</button><button data-tab="more" id="moreTabButton">更多</button></div>
+    <div class="top-actions"><span id="saveStatus">本地存档已就绪</span><button data-action="save">保存</button><button data-tab="achievements" id="achievementsTabButton">成就</button><button data-tab="more" id="moreTabButton">更多</button></div>
   </header>
 
   <section class="resource-bar">
@@ -112,6 +112,18 @@
     <aside class="facility-rail" id="facilityRail" aria-label="常驻设施采购"></aside>
   </div>
   <section class="main-panel panel-scroll" id="mainPanel" aria-label="辅助功能面板" tabindex="-1" hidden></section>
+
+  <section class="royal-market-overlay" id="royalMarketDialog" role="dialog" aria-modal="true" aria-labelledby="royalMarketTitle" hidden>
+    <div class="royal-market-dialog">
+      <header class="royal-market-head"><div><h2 id="royalMarketTitle">统筹调拨</h2><p>加成列为单项调拨的基础加成，不受 Ascension 修正影响；最终倍率在下方汇总。</p></div><button data-action="close-royal-market" aria-label="关闭统筹调拨">×</button></header>
+      <div class="royal-market-summary" id="royalMarketSummary"></div>
+      <div class="royal-market-toolbar"><span>本次调拨数量</span><div id="royalMarketBuyControls"></div></div>
+      <div class="royal-market-table" role="table" aria-label="六部门统筹调拨">
+        <div class="royal-market-row royal-market-row-head" role="row"><span role="columnheader">部门</span><span role="columnheader">基础加成</span><span role="columnheader">影响力成本</span><span role="columnheader">操作</span></div>
+        <div id="royalMarketRows"></div>
+      </div>
+    </div>
+  </section>
 
   <div class="toast" id="toast" role="status"></div>
   <input type="file" id="importFile" accept="application/json" hidden>
