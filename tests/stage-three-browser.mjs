@@ -92,6 +92,7 @@ try {
   miscState.stats.total.clicks = 100000;
   miscState.buildings = { farm: 1, inn: 1, blacksmith: 1 };
   const misc = await makePage(miscState);
+  assert.equal(await misc.page.locator('.brand-version').textContent(), 'v1.1.1');
   await openTab(misc.page, 'misc-upgrades');
   for (let index = 1; index <= 6; index++) await buyUpgrade(misc.page, `clickingBase${index}`);
   await buyUpgrade(misc.page, 'unitaryUpgrade');
