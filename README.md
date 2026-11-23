@@ -80,6 +80,17 @@ Content Definitions → ContentGraph → GameRuntime → Selector / ViewModel �
 
 新增普通条目不需要修改 Tick、购买 Command、State 字段或 UI 分支。条目改名通过 `src/content/migrations/content-aliases.js` 显式迁移。
 
+## 制作内容数据库
+
+`data/production/production_items.json` 是人工编辑的制作内容源数据，`data/production/production.db` 是对应的 SQLite 查询结果，两者都纳入 Git。`version` 只记录实际实装版本，未实装条目为 `null`；`enabled` 单独表示当前是否开放。条目、图片和剧情使用 `not_started`／`in_progress`／`done` 状态，无需独立图片的条目使用 `image_status = not_required`。
+
+```bash
+python data/production/build.py
+python data/production/build.py --check
+```
+
+第一条命令重建数据库并校验源数据、状态、版本和正式图片路径；第二条只检查现有数据库是否与 JSON 一致，不写文件。构建过程不依赖 `original_verification/`。
+
 ## 存档与恢复
 
 - 当前存档 schema 为 6，旧 schema 1～5 会先迁移再进入运行时。
