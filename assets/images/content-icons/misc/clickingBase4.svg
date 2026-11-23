@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>三线出入证</title>
+  <desc>三线出入证（ID: clickingBase4）：低多边形员工工牌第 4 阶段，固定指针按压牌面、橙金接触爆点与金币收益符号，明确表示手动点击触发基础工资；牌体护角、三线穿孔、防磁金属与零号权限环继续区分升级等级。</desc>
+  <g id="clickingBase4-master" stroke-linecap="square" stroke-linejoin="miter">
+    <g transform="translate(-2,1) scale(0.88)">
+    <polygon points="20,3 24,3 31,15 28,17" fill="#65402F"/>
+    <polygon points="40,3 44,3 36,17 33,15" fill="#65402F"/>
+    <polygon points="28,11 36,11 38,16 26,16" fill="#333B3A"/>    <polygon points="17,15 45,15 50,20 48,55 16,55 13,50 14,20" fill="#65402F"/>
+    <polygon points="18,17 43,17 47,21 45,51 18,51 16,48 16,21" fill="#A5684A"/>
+    <polygon points="25,14 39,14 39,20 25,20" fill="#46504F"/>
+    <rect x="29" y="15" width="6" height="3" fill="#D9E2E2"/>    <polygon points="19,22 44,22 44,28 19,28" fill="#E7CA74"/>
+    <polygon points="20,33 42,33 42,36 20,36" fill="#D9E2E2"/>
+    <g fill="#333B3A">
+      <rect x="20" y="40" width="4" height="4"/><rect x="27" y="40" width="4" height="4"/>
+      <rect x="34" y="40" width="4" height="4"/><rect x="41" y="40" width="4" height="4"/>
+      <rect x="22" y="47" width="4" height="4"/><rect x="31" y="47" width="4" height="4"/><rect x="39" y="47" width="4" height="4"/>
+    </g>
+  
+    </g>
+    <g fill="#DF9A6C">
+      <polygon points="17,25 26,27 25,31 16,29"/>
+      <polygon points="28,14 31,23 35,22 33,13"/>
+      <polygon points="37,16 38,23 42,21 40,14"/>
+      <polygon points="20,17 24,19 22,23 18,21" fill="#E7CA74"/>
+    </g>
+    <polygon points="31,29 34,52 39,46 45,56 51,53 44,43 53,41" fill="#333B3A"/>
+    <polygon points="33,33 35,47 39,41 46,52 48,51 41,40 48,39" fill="#EEF3F2"/>
+    <polygon points="35,47 39,41 46,52 45,56 39,46 34,52" fill="#AAB8B8"/>
+    <polygon points="46,2 54,2 58,6 58,14 54,18 46,18 42,14 42,6" fill="#B09552"/>
+    <polygon points="46,4 54,4 56,7 56,13 53,16 46,16 44,13 44,7" fill="#F5E4A8"/>
+    <polygon points="45,5 48,5 50,9 52,5 55,5 52,10 55,10 55,12 52,12 52,15 48,15 48,12 45,12 45,10 48,10" fill="#A5684A"/>
+  </g>
+</svg>

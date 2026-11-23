@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>达标创收指标</title>
+  <desc>达标创收指标（ID: clickingProduction1）：现代财务现金分拣托盘与逐级增高的黄铜薪资硬币堆，第 1 阶段以上行创收标记表现点击收入和设施产出的同步扩张。</desc>
+  <g id="clickingProduction1-master" stroke-linecap="square" stroke-linejoin="miter">
+
+    <polygon points="19,42 27,42 29,43 29,45 19,45" fill="#E7CA74"/>
+    <polygon points="27,42 29,43 29,45 27,44" fill="#B09552"/>
+    <polygon points="19,39 27,39 29,40 29,42 19,42" fill="#D1B15C"/>
+    <polygon points="27,39 29,40 29,42 27,41" fill="#B09552"/>
+    <polygon points="19,39 21,38 27,38 29,39 27,40 21,40" fill="#F5E4A8"/>
+    <polygon points="35,42 43,42 45,43 45,45 35,45" fill="#E7CA74"/>
+    <polygon points="43,42 45,43 45,45 43,44" fill="#B09552"/>
+    <polygon points="35,42 37,41 43,41 45,42 43,43 37,43" fill="#F5E4A8"/>
+    <polygon points="7,42 55,42 59,49 55,58 9,58 5,49" fill="#65402F"/>
+    <polygon points="9,43 53,43 56,48 52,52 12,52 8,48" fill="#A5684A"/>
+    <polygon points="9,51 55,51 55,58 9,58" fill="#835039"/>
+    <polygon points="12,52 52,52 52,55 12,55" fill="#C4764D"/>
+    <polygon points="48,11 54,11 54,7 61,15 54,23 54,19 48,19" fill="#DF9A6C"/>
+  </g>
+</svg>

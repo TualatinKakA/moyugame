@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>务实团队认证</title>
+  <desc>务实团队认证（ID: evilProduction1）：务实路线的认证公文与资格印章，采用低多边形现代办公公文与深色橙红块面，表达对应立场设施产出强化。</desc>
+  <g id="evilProduction1-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="14,8 45,8 54,17 52,54 11,54 11,11" fill="#333B3A"/>
+    <polygon points="15,9 44,9 52,17 50,51 13,51 13,12" fill="#46504F"/>
+    <polygon points="44,9 44,18 52,17" fill="#697473"/>    <polygon points="18,17 36,17 36,20 18,20" fill="#C4764D"/>
+    <polygon points="18,24 40,24 40,27 18,27" fill="#AAB8B8"/>
+    <polygon points="18,30 34,30 34,33 18,33" fill="#AAB8B8"/>
+    <polygon points="33,38 36,35 42,35 45,38 45,44 42,47 36,47 33,44" fill="#C4764D"/>
+    <polygon points="36,38 42,38 43,41 42,44 36,44 35,41" fill="#DF9A6C"/>
+    <polygon points="18,40 29,40 29,43 18,43" fill="#AAB8B8"/>
+  </g>
+</svg>

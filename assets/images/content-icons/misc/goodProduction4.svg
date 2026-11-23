@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>理想员工公告</title>
+  <desc>理想员工公告（ID: goodProduction4）：理想路线的公告栏与扩音发布器，采用低多边形现代办公公文与灰白黄铜块面，表达对应立场设施产出强化。</desc>
+  <g id="goodProduction4-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="7,9 52,5 58,51 12,57" fill="#65402F"/>
+    <polygon points="11,12 49,9 54,47 16,52" fill="#EEF3F2"/>
+    <polygon points="25,6 39,5 41,13 26,14" fill="#E7CA74"/>
+    <polygon points="19,20 43,18 44,22 20,24" fill="#F5E4A8"/>
+    <polygon points="20,28 45,26 45,29 21,31" fill="#697473"/>
+    <polygon points="21,35 39,33 40,36 22,38" fill="#697473"/>
+    <polygon points="43,38 55,32 59,38 48,45" fill="#E7CA74"/>
+    <polygon points="39,40 46,37 50,45 43,48" fill="#F5E4A8"/>
+    <polygon points="42,47 48,45 50,55 45,56" fill="#E7CA74"/>
+    <polygon points="56,31 60,33 61,40 58,41" fill="#697473"/>
+  </g>
+</svg>

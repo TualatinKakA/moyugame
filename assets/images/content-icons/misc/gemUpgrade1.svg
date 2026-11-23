@@ -1,30 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
   <title>期权行权增值</title>
-  <desc>Gem Upgrade 1 购买升级（ID: gemUpgrade1）：单体低多边形核心估值晶核置于暗岩黄铜基座上，激活基础晶体增幅效能。</desc>
-  <g id="gemUpgrade1-master">
-    <!-- Top Subtle Calibration Spark -->
-    <polygon points="32.0,6.5 30.2,10.5 32.0,10.5" fill="#F5E4A8"/>
-    <polygon points="32.0,6.5 33.8,10.5 32.0,10.5" fill="#E7CA74"/>
-    <!-- Side Brass Clamping Prongs -->
-    <polygon points="14.0,23.5 18.5,23.5 21.0,36.5 16.5,36.5" fill="#E7CA74"/>
-    <polygon points="50.0,23.5 45.5,23.5 43.0,36.5 47.5,36.5" fill="#C9A754"/>
-    <!-- Central Faceted Emerald-Sage Valuation Gem -->
-    <polygon points="24.5,12.5 32.0,12.5 32.0,22.4 25.0,22.4" fill="#EEF3F2"/>
-    <polygon points="32.0,12.5 39.5,12.5 39.0,22.4 32.0,22.4" fill="#B4CDA3"/>
-    <polygon points="24.5,12.5 25.0,22.4 17.5,22.4" fill="#B4CDA3"/>
-    <polygon points="39.5,12.5 46.5,22.4 39.0,22.4" fill="#91B77A"/>
-    <polygon points="17.5,22.4 25.0,22.4 32.0,41.5" fill="#91B77A"/>
-    <polygon points="25.0,22.4 32.0,22.4 32.0,41.5" fill="#B4CDA3"/>
-    <polygon points="32.0,22.4 39.0,22.4 32.0,41.5" fill="#91B77A"/>
-    <polygon points="39.0,22.4 46.5,22.4 32.0,41.5" fill="#697473"/>
-    <!-- Stepped Slate & Obsidian Mounting Pedestal -->
-    <polygon points="21.0,41.5 32.0,41.5 32.0,45.5 19.0,45.5" fill="#899492"/>
-    <polygon points="43.0,41.5 32.0,41.5 32.0,45.5 45.0,45.5" fill="#697473"/>
-    <polygon points="16.5,45.5 32.0,45.5 32.0,51.0 15.0,51.0" fill="#46504F"/>
-    <polygon points="47.5,45.5 32.0,45.5 32.0,51.0 49.0,51.0" fill="#333B3A"/>
-    <polygon points="13.5,51.0 32.0,51.0 32.0,56.0 12.0,56.0" fill="#333B3A"/>
-    <polygon points="50.5,51.0 32.0,51.0 32.0,56.0 52.0,56.0" fill="#252A27"/>
-    <!-- Tier 1 Single Gold Indicator Pip -->
-    <rect x="29.0" y="47.2" width="6.0" height="2.2" fill="#E7CA74"/>
+  <desc>期权行权增值（ID: gemUpgrade1）：低多边形期权合约与绿色估值晶核，分别以上行执行标记、期权池节点控制和黄铜主权钥匙表现第 1 阶段期权强化。</desc>
+  <g id="gemUpgrade1-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="12,9 43,9 51,17 49,53 10,53 10,12" fill="#D9E2E2"/>
+    <polygon points="13,8 44,8 52,16 50,51 12,51 12,11" fill="#EEF3F2"/>
+    <polygon points="44,8 44,17 52,16" fill="#A5684A"/>
+    <polygon points="17,16 37,16 37,19 17,19" fill="#A5684A"/>
+    <polygon points="17,42 40,42 40,45 17,45" fill="#899492"/>    <g transform="translate(29,29) scale(0.9)">
+      <polygon points="-8,-8 0,-12 0,-2 -8,-2" fill="#D9E2E2"/>
+      <polygon points="0,-12 8,-8 8,-2 0,-2" fill="#B4CDA3"/>
+      <polygon points="-8,-8 -12,-2 -8,-2" fill="#91B77A"/>
+      <polygon points="8,-8 12,-2 8,-2" fill="#697473"/>
+      <polygon points="-12,-2 0,-2 0,12" fill="#B4CDA3"/>
+      <polygon points="0,-2 12,-2 0,12" fill="#91B77A"/>
+    </g>    <polygon points="43,24 49,24 49,20 56,28 49,36 49,32 43,32" fill="#E7CA74"/>
+    <polygon points="43,24 46,24 46,32 43,32" fill="#F5E4A8"/>
+    <polygon points="18,48 42,48 42,51 18,51" fill="#91B77A"/>
   </g>
 </svg>

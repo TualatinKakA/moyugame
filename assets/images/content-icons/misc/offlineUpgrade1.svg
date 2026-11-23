@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>缺席打卡</title>
+  <desc>缺席打卡（ID: offlineUpgrade1）：冷战工业风考勤终端第 1 阶段，分别以离位工牌、断开考勤连接和空白零号工号表现离线产出与员工存在状态的逐步脱离。</desc>
+  <g id="offlineUpgrade1-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="10,7 44,7 49,12 47,53 11,53 7,48 7,13" fill="#333B3A"/>
+    <polygon points="13,10 42,10 46,14 44,49 13,49 10,46 10,15" fill="#697473"/>
+    <polygon points="16,14 40,14 42,17 41,31 15,31 14,28 14,17" fill="#252A27"/>
+    <polygon points="18,36 38,36 38,40 18,40" fill="#333B3A"/>
+    <polygon points="17,45 39,45 39,48 17,48" fill="#46504F"/>    <circle cx="28" cy="23" r="6" fill="#D9E2E2"/>
+    <polyline points="28,19 28,23 32,25" fill="none" stroke="#46504F" stroke-width="2"/>
+    <rect x="24" y="46" width="8" height="2" fill="#91B77A"/>
+    <polygon points="45,24 56,22 60,46 49,50 44,46" fill="#EEF3F2"/>
+    <polygon points="48,28 55,27 56,32 49,33" fill="#AAB8B8"/>
+    <polygon points="49,38 56,37 56,40 50,41" fill="#DF9A6C"/>
+  </g>
+</svg>
