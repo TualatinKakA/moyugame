@@ -246,6 +246,13 @@ function workFeedback(event, facts = []) {
     zone.appendChild(particle); setTimeout(() => particle.remove(), 750);
   }
 }
+let lastAutoClickVisual = 0;
+function autoWorkFeedback(fact) {
+  const now = performance.now();
+  if (now - lastAutoClickVisual < 90) return;
+  lastAutoClickVisual = now;
+  workFeedback(null, [fact]);
+}
 function viewModelReward() { return derived().clickReward; }
 function formatFactionCoinGain(amount) {
   if (amount < 10 && amount % 1 !== 0) return amount.toFixed(amount < 1 ? 2 : 1).replace(/\.?0+$/, '');
@@ -255,7 +262,7 @@ function factionCoinGainText(factionId, amount) {
   return `+${formatFactionCoinGain(amount)} ${definition(factionId).name}影响力`;
 }
 function showManualFactionCoins(facts, zone, x, y) {
-  facts.filter(fact => fact.type === 'factionCoins.found' && fact.payload.source === 'manualClick').forEach((fact, index) => {
+  facts.filter(fact => fact.type === 'factionCoins.found' && ['manualClick', 'autoClick'].includes(fact.payload.source)).forEach((fact, index) => {
     const floater = document.createElement('span');
     floater.className = 'faction-coin-float manual-faction-coin-float';
     floater.dataset.fcSource = 'manualClick';
@@ -745,6 +752,7 @@ function renderTop() {
 }
 function factFeedback(facts) {
   for (const fact of facts) {
+    if (fact.type === 'work.clicked' && fact.payload.automatic) autoWorkFeedback(fact);
     if (fact.type === 'factionCoins.found' && fact.payload.source === 'randomCache' && fact.payload.mode === 'online') queueAssistantFactionCoin(fact.payload);
     if (fact.type === 'building.purchased') {
       playPurchaseSound('building');

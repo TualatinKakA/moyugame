@@ -114,7 +114,7 @@ const clickingBase = [
   ['clickingBase5', '不破储薪罐', 'Unbreakable Treasure', 50000, 5e13, 50000000],
   ['clickingBase6', '永恒储薪罐', 'Eternal Treasure', 100000, 5e16, 50000000000],
 ].map(([id, name, sourceName, requirement, cost, baseAdd]) => upgrade({
-  id, name, sourceName, description: `基础点击收入 +${baseAdd}；离线时每秒额外自动点击 1 次。`, cost,
+  id, name, sourceName, description: `基础点击收入 +${baseAdd}；每秒自动点击 1 次，在线与离线均生效。`, cost,
   visible: visibleAtLeast('stats.total.clicks', requirement), miscStatus: 'dependency', mechanics: ['offlineAutoClick'],
   effects: [effect(id, 'click', 'click.base', 'add', { constant: baseAdd })],
 }));

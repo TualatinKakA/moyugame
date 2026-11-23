@@ -97,10 +97,10 @@ test('automatic clicks retain FR4 and EL1 source labels without becoming manual 
     assert.equal(tick.ok, true, tick.error?.stack);
   }
   const clicks = facts.filter(fact => fact.type === 'work.clicked');
-  assert.equal(clicks.length, 4);
-  assert.deepEqual(clicks.map(fact => fact.payload.source).sort(), ['elven-1', 'elven-1', 'elven-1', 'fairy-4']);
+  assert.equal(clicks.length, 12);
+  assert.deepEqual(clicks.map(fact => fact.payload.source).sort(), [...Array(9).fill('elven-1'), ...Array(3).fill('fairy-4')].sort());
   assert.ok(clicks.every(fact => fact.payload.automatic));
-  assert.equal(game.select('state').stats.run.clicks, 4);
+  assert.equal(game.select('state').stats.run.clicks, 12);
 });
 
 

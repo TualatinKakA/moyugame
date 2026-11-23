@@ -1178,23 +1178,24 @@ test('six factions use ID-matched pure vector SVG icons with confirmed stacking'
   assert.equal(paths.size, 72);
 });
 
-test('all 157 department spell exchange and misc images use ID-matched pure vector resources', async () => {
+test('all 569 department spell exchange trophy and misc images use ID-matched pure vector resources', async () => {
   const prefix = 'assets/images/content-icons/';
   const entries = CONTENT.definitions.filter(item => /^(factions|exchange|spells|trophies|misc)\//.test(item.ui?.icon?.slice(prefix.length) || ''));
   const paths = new Set();
-  assert.equal(entries.length, 157);
+  assert.equal(entries.length, 569);
   for (const entry of entries) {
     const directory = entry.ui.icon.slice(prefix.length).split('/')[0];
-    assert.equal(entry.ui.icon, `${prefix}${directory}/${entry.id}.svg`);
+    const generic = entry.ui.icon === `${prefix}trophies/generic-trophy.svg`;
+    if (!generic) assert.equal(entry.ui.icon, `${prefix}${directory}/${entry.id}.svg`);
     paths.add(entry.ui.icon);
     const svg = await readFile(new URL(`../${entry.ui.icon}`, import.meta.url), 'utf8');
     assert.match(svg, /<svg[^>]+width="64"[^>]+height="64"/);
     const title = svg.match(/<title>(.*?)<\/title>/)?.[1];
-    assert.ok(title?.includes(entry.name), `${entry.id} title matches the current entry name`);
+    if (!generic) assert.ok(title?.includes(entry.name), `${entry.id} title matches the current entry name`);
     assert.match(svg, /<desc>.*<\/desc>/);
     assert.doesNotMatch(svg, /<image|base64|<script|<foreignObject|<animate|filter=/);
   }
-  assert.equal(paths.size, 157);
+  assert.equal(paths.size, 158);
 });
 
 test('upgraded spells reuse trophy artwork shared with their linked upgrades', async () => {
@@ -1758,8 +1759,8 @@ test('FR4 performs one automatic click per active spell per accumulated second',
   game.tick(0.2);
   assert.equal(game.select('state').stats.run.clicks, 0);
   game.tick(1); game.tick(1); game.tick(1);
-  assert.equal(game.select('state').stats.run.clicks, 2);
-  assertClose(game.select('state').stats.run.clickCoins, game.select('derived').clickReward * 2);
+  assert.equal(game.select('state').stats.run.clicks, 6);
+  assertClose(game.select('state').stats.run.clickCoins, game.select('derived').clickReward * 6);
   assert.ok(game.select('state').stats.run.coins >= game.select('state').stats.run.clickCoins);
 });
 

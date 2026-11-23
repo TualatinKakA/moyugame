@@ -38,6 +38,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
   let developerUnlocked = false;
   let factionCoinCache = 0;
   let assistantTickAccumulator = 0;
+  let automaticClickRemainders = {};
   const diagnostics = { lastTransaction: null, recoveredSave: false, migration: null, offlineTruncated: false, lastOfflineReport: null };
 
   function notify(type, transaction = null) {
@@ -74,13 +75,14 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     if (!started || stopped) return { ok: false, reason: 'RUNTIME_NOT_RUNNING' };
     if (activeTransaction) return { ok: false, reason: 'TRANSACTION_REENTRY' };
     const transaction = beginTransaction(state);
-    const transientSnapshot = { factionCoinCache, assistantTickAccumulator };
+    const transientSnapshot = { factionCoinCache, assistantTickAccumulator, automaticClickRemainders: { ...automaticClickRemainders } };
     transaction.commandType = type;
     activeTransaction = transaction;
     const rollback = () => {
       transaction.rollback();
       factionCoinCache = transientSnapshot.factionCoinCache;
       assistantTickAccumulator = transientSnapshot.assistantTickAccumulator;
+      automaticClickRemainders = transientSnapshot.automaticClickRemainders;
     };
     try {
       const result = callback(transaction);
@@ -186,7 +188,6 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     const remainder = p - count * 100;
     if (roll <= remainder) count++;
     if (count > 0) queueRandomFactionCoins(3 * count);
-    settleAutomaticClicks(tx, seconds);
     if (tx.state.owned.run['elven-8']) {
       const events = Math.floor(derived.realAssistants || 0) * seconds;
       for (let index = 0; index < events; index++) triggerElvenLuck(tx, 'assistant');
@@ -375,7 +376,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     return runTransaction('work', tx => { performWork(tx); });
   }
 
-  function settleAutomaticClicks(tx, seconds) {
+  function settleAutomaticClicks(tx, seconds, online = false) {
     if (seconds <= 0) return;
     const sources = [];
     const activeSpells = Object.keys(tx.state.timers.spells).filter(id => spellActive(tx.state, id)).length;
@@ -389,8 +390,17 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const id = `clickingBase${index}`;
       if (tx.state.owned.run[id]) sources.push({ id, rate: 1 });
     }
+    if (online) {
+      const activeIds = new Set(sources.map(source => source.id));
+      for (const id of Object.keys(automaticClickRemainders)) {
+        if (!activeIds.has(id)) delete automaticClickRemainders[id];
+      }
+    }
     for (const source of sources) {
-      const clicks = Math.floor(source.rate * seconds);
+      const previous = online ? automaticClickRemainders[source.id] || 0 : 0;
+      const accumulated = source.rate * seconds + previous;
+      const clicks = Math.floor(accumulated);
+      if (online) automaticClickRemainders[source.id] = accumulated - clicks;
       for (let index = 0; index < clicks; index++) performWork(tx, true, source.id);
     }
   }
@@ -482,6 +492,7 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     tx.write('resources.factionCoins', {});
     tx.write('royalExchange', {});
     factionCoinCache = 0;
+    automaticClickRemainders = {};
     cache.invalidate(tx.changedPaths);
   }
   function abdicate() {
@@ -567,8 +578,10 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
     increment(tx, 'resources.coins', production * delta);
     for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.coins`, production * delta);
     tx.write('resources.mana', Math.min(derived.manaMax, tx.state.resources.mana + derived.manaRegen * delta));
-    if (!offline) settleOnlineAssistantFactionCoins(tx, delta, derived);
-    else settleAutomaticClicks(tx, delta);
+    if (!offline) {
+      settleOnlineAssistantFactionCoins(tx, delta, derived);
+      settleAutomaticClicks(tx, delta, true);
+    } else settleAutomaticClicks(tx, delta);
     const greenFingersTimer = tx.state.timers.tasks.greenFingersDiscount;
     if (!offline && tx.state.owned.run['goblin-9'] && greenFingersTimer && greenFingersTimer.dueAt <= tx.state.stats.run.time) {
       triggerGreenFingersDiscount(tx, derived);

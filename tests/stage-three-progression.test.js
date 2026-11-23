@@ -93,14 +93,14 @@ test('R2 and R3 faction coin gains apply per faction before flooring', async () 
   }
 });
 
-test('R2 autoclicks keep their source and floor each original update', async () => {
+test('R2 autoclicks keep their source and accumulate fractional rates', async () => {
   const state = atReincarnation(41);
   const game = await fixture(state);
   const facts = [];
   game.subscribe(message => facts.push(...message.facts));
   for (let index = 0; index < 6; index++) assert.equal(game.tick(1).ok, true);
   const clicks = facts.filter(fact => fact.type === 'work.clicked' && fact.payload.source === 'reincarnation2');
-  assert.equal(clicks.length, 2);
+  assert.equal(clicks.length, 8);
   assert.ok(clicks.every(fact => fact.payload.automatic));
 });
 
