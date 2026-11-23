@@ -247,11 +247,11 @@ function workFeedback(event, facts = []) {
   }
 }
 let lastAutoClickVisual = 0;
-function autoWorkFeedback(fact) {
+function autoWorkFeedback(facts) {
   const now = performance.now();
   if (now - lastAutoClickVisual < 90) return;
   lastAutoClickVisual = now;
-  workFeedback(null, [fact]);
+  workFeedback(null, facts);
 }
 function viewModelReward() { return derived().clickReward; }
 function formatFactionCoinGain(amount) {
@@ -750,9 +750,9 @@ function renderTop() {
   const saveStatus = game.select('saveStatus'); $('saveStatus').textContent = saveStatus.error ? '未保存 · 将自动重试' : saveStatus.dirty ? '有未保存更改' : '本地存档已就绪';
   updateRetirement();
 }
-function factFeedback(facts) {
+function factFeedback(facts, commandType = null) {
+  if (commandType === 'tick' && facts.some(fact => fact.type === 'work.clicked' && fact.payload.automatic)) autoWorkFeedback(facts);
   for (const fact of facts) {
-    if (fact.type === 'work.clicked' && fact.payload.automatic) autoWorkFeedback(fact);
     if (fact.type === 'factionCoins.found' && fact.payload.source === 'randomCache' && fact.payload.mode === 'online') queueAssistantFactionCoin(fact.payload);
     if (fact.type === 'building.purchased') {
       playPurchaseSound('building');
@@ -1444,7 +1444,7 @@ async function bootstrap() {
   graph = game.graph;
   $('workContent').innerHTML = workView();
   if (state().stats.total.clicks > 0 || Object.keys(state().buildings).length || state().story.pending.length || Object.keys(state().story.completed).length) $('intro').classList.add('hidden');
-  game.subscribe(message => { if (message.type === 'commit') factFeedback(message.facts); refresh(message); });
+  game.subscribe(message => { if (message.type === 'commit') factFeedback(message.facts, message.commandType); refresh(message); });
   refresh();
   lastTick = performance.now();
   setInterval(() => {
