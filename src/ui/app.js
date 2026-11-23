@@ -191,11 +191,12 @@ const description = item => {
   if (text.includes('{spellDuration}')) text = text.replaceAll('{spellDuration}', formatNumber(spellDuration(state(), graph, item, derived())));
   return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
 };
-const formatCost = cost => {
+const formatCost = (cost, targetId = null) => {
   if (cost.resource === 'coins') return money(cost.value);
   if (cost.resource === 'mana') return `${formatNumber(cost.value)} 精力`;
   if (cost.resource.startsWith('factionCoin.')) {
-    const factionId = cost.resource.slice('factionCoin.'.length);
+    const resourceId = cost.resource.slice('factionCoin.'.length);
+    const factionId = resourceId === 'target' ? targetId : resourceId;
     const faction = definition(factionId);
     return `${formatNumber(cost.value)} ${faction?.name || factionId}影响力`;
   }
@@ -376,7 +377,7 @@ function quickUpgradeCard(item) {
   const tooltipId = `upgrade-tooltip-rail-${item.id}`;
   const text = description(item);
   const marketEntry = item.interaction === 'royalMarket';
-  const cost = marketEntry ? '交换窗口' : model.costs.map(formatCost).join(' + ') || '无需工资';
+  const cost = marketEntry ? '交换窗口' : model.costs.map(cost => formatCost(cost, item.id)).join(' + ') || '无需工资';
   return `<article class="upgrade-entry quick-upgrade-entry" data-upgrade-card="${item.id}"><button type="button" class="upgrade-icon affordable" data-action="${upgradeAction(item)}" data-id="${item.id}" aria-describedby="${tooltipId}"><img src="${item.ui.icon}" alt=""><span>${item.name}</span><small>${marketEntry ? '打开' : money(model.costs[0]?.value || 0)}</small></button><span class="upgrade-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${item.name}</b><span class="upgrade-tooltip-cost" data-field="cost">${cost}</span><span class="upgrade-tooltip-description">${text}</span><small data-field="hint">${marketEntry ? '点击打开' : '点击购买'}</small></span></article>`;
 }
 function renderUpgradeRail() {
@@ -641,7 +642,7 @@ function updatePanel() {
     if (card) {
       const item = definition(button.dataset.id);
       const marketEntry = item.interaction === 'royalMarket';
-      const cost = marketEntry ? '统筹调拨' : model.costs.map(formatCost).join(' + ');
+      const cost = marketEntry ? '统筹调拨' : model.costs.map(cost => formatCost(cost, item.id)).join(' + ');
       const hint = marketEntry ? '点击打开' : model.status === 'OWNED' ? '已生效' : model.status === 'SELECTED' ? '已选择' : model.status === 'NEED_RESOURCE' ? '资源不足' : model.status === 'LOCKED_REQUIREMENT' ? '尚未满足条件' : '点击购买';
       const text = description(item);
       button.setAttribute('aria-disabled', String(unavailable));
@@ -812,6 +813,7 @@ const modal = createStoryModal({
     if (id === 'ui.alignment.confirm') { pendingAlignmentId = null; return; }
     if (id === 'ui.save-recovery.confirm') { pendingSaveRecovery = null; return; }
     if (id === 'ui.hard-reset.confirm') return;
+    if (id === 'ui.retirement.confirm') return;
     if (!replay) game.dispatch({ type: 'story.close', id, skipped: action === 'skip' });
   },
   onChoice: ({ id, choiceId }) => {
@@ -842,12 +844,17 @@ const modal = createStoryModal({
       }
       return;
     }
+    if (id === 'ui.retirement.confirm') {
+      modal.close();
+      if (choiceId === 'confirm') commandResult(game.dispatch({ type: 'abdicate' }));
+      return;
+    }
     const result = game.dispatch({ type: 'story.choice', id, choiceId });
     if (result.ok && definition(id).choices.find(choice => choice.id === choiceId).close !== false) modal.close();
   },
 });
 function syncStories() {
-  if (modal.current?.replay || ['ui.alignment.confirm', 'ui.hard-reset.confirm', 'ui.save-recovery.confirm'].includes(modal.current?.story.id)) return;
+  if (modal.current?.replay || ['ui.alignment.confirm', 'ui.hard-reset.confirm', 'ui.save-recovery.confirm', 'ui.retirement.confirm'].includes(modal.current?.story.id)) return;
   const next = game.select('storyQueue')[0];
   if (next && modal.current?.story.id !== next.id) modal.show({ story: next });
 }
@@ -1239,8 +1246,18 @@ document.addEventListener('click', event => {
   if (action === 'close-log') { setEventLogOpen(false, true); return; }
   if (action === 'close-panel') { closeAuxPanel(); return; }
   if (action === 'abdicate') {
-    if (game.select('retirement').eligible && !confirm('确定退休结算吗？本轮工资、设施、升级和部门关系将重置，奖杯与剧情保留。')) return;
-    commandResult(game.dispatch({ type: 'abdicate' })); return;
+    if (!game.select('retirement').eligible) {
+      commandResult(game.dispatch({ type: 'abdicate' }));
+      return;
+    }
+    modal.show({ story: {
+      id: 'ui.retirement.confirm',
+      title: '确定退休结算吗？',
+      paragraphs: ['本轮工资、设施、升级和部门关系将重置，奖杯与剧情保留。'],
+      choices: [{ id: 'confirm', label: '确认退休' }],
+      buttonLabel: '取消',
+    } });
+    return;
   }
   if (action === 'reincarnate') { if (confirm('确定投胎吗？当前期权将被清空。')) commandResult(game.dispatch({ type: 'reincarnate' })); return; }
   if (action === 'replay-story') { replayStory(id); return; }
