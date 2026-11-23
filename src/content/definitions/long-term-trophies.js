@@ -1,7 +1,7 @@
 import { BUILDING_DEFINITIONS } from './buildings.js';
 import { HALL_BUILDING_DEFINITION } from './hall.js';
 
-const redCross = 'assets/images/content-icons/red-cross.svg';
+const genericTrophy = 'assets/images/content-icons/trophies/generic-trophy.svg';
 const sourceVersion = '4.3.24 build 26618872';
 const verificationStatus = 'source-confirmed';
 const owned = id => ({ op: 'owned', id });
@@ -22,7 +22,7 @@ function trophy({ id, name, sourceName, description, reactions, trophyType, grou
     originalTrophy: true, trophyType, statScope: 'run', rounding: 'threshold', resetScope: 'total',
     description, era: { minR: 0 }, visible: { op: 'always' }, unlock: { op: 'always' },
     purchase: null, effects: [], grants: [], reactions, rewardId: id, scope: 'total',
-    ui: { kind: 'trophyCard', panel: 'trophies', trophyGroup: group, icon: redCross },
+    ui: { kind: 'trophyCard', panel: 'trophies', trophyGroup: group, icon: genericTrophy },
   };
 }
 const reconcile = (path, when) => [
