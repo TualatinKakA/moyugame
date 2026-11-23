@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>三线出入证</title>
+  <desc>三线出入证（ID: clickingBase4）：低多边形员工工牌第 4 阶段，以挂绳、牌体、护角和材质升级表现基础点击与离线自动点击能力；高阶版本融入三线穿孔记录、防磁金属与零号权限环。</desc>
+  <g id="clickingBase4-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="20,3 24,3 31,15 28,17" fill="#65402F"/>
+    <polygon points="40,3 44,3 36,17 33,15" fill="#65402F"/>
+    <polygon points="28,11 36,11 38,16 26,16" fill="#333B3A"/>    <polygon points="17,15 45,15 50,20 48,55 16,55 13,50 14,20" fill="#65402F"/>
+    <polygon points="18,17 43,17 47,21 45,51 18,51 16,48 16,21" fill="#A5684A"/>
+    <polygon points="25,14 39,14 39,20 25,20" fill="#46504F"/>
+    <rect x="29" y="15" width="6" height="3" fill="#D9E2E2"/>    <polygon points="19,22 44,22 44,28 19,28" fill="#E7CA74"/>
+    <polygon points="20,33 42,33 42,36 20,36" fill="#D9E2E2"/>
+    <g fill="#333B3A">
+      <rect x="20" y="40" width="4" height="4"/><rect x="27" y="40" width="4" height="4"/>
+      <rect x="34" y="40" width="4" height="4"/><rect x="41" y="40" width="4" height="4"/>
+      <rect x="22" y="47" width="4" height="4"/><rect x="31" y="47" width="4" height="4"/><rect x="39" y="47" width="4" height="4"/>
+    </g>
+  </g>
+</svg>

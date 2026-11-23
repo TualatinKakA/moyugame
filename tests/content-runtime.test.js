@@ -1178,11 +1178,11 @@ test('six factions use ID-matched pure vector SVG icons with confirmed stacking'
   assert.equal(paths.size, 72);
 });
 
-test('all 130 department spell exchange and misc images use ID-matched pure vector resources', async () => {
+test('all 157 department spell exchange and misc images use ID-matched pure vector resources', async () => {
   const prefix = 'assets/images/content-icons/';
   const entries = CONTENT.definitions.filter(item => /^(factions|exchange|spells|trophies|misc)\//.test(item.ui?.icon?.slice(prefix.length) || ''));
   const paths = new Set();
-  assert.equal(entries.length, 130);
+  assert.equal(entries.length, 157);
   for (const entry of entries) {
     const directory = entry.ui.icon.slice(prefix.length).split('/')[0];
     assert.equal(entry.ui.icon, `${prefix}${directory}/${entry.id}.svg`);
@@ -1194,7 +1194,7 @@ test('all 130 department spell exchange and misc images use ID-matched pure vect
     assert.match(svg, /<desc>.*<\/desc>/);
     assert.doesNotMatch(svg, /<image|base64|<script|<foreignObject|<animate|filter=/);
   }
-  assert.equal(paths.size, 130);
+  assert.equal(paths.size, 157);
 });
 
 test('upgraded spells reuse trophy artwork shared with their linked upgrades', async () => {

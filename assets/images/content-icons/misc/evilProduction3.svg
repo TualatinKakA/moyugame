@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>务实团队表彰</title>
+  <desc>务实团队表彰（ID: evilProduction3）：务实路线的表彰证书与荣誉绶带，采用低多边形现代办公公文与深色橙红块面，表达对应立场设施产出强化。</desc>
+  <g id="evilProduction3-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="14,8 45,8 54,17 52,54 11,54 11,11" fill="#333B3A"/>
+    <polygon points="15,9 44,9 52,17 50,51 13,51 13,12" fill="#46504F"/>
+    <polygon points="44,9 44,18 52,17" fill="#697473"/>    <polygon points="18,15 38,15 38,18 18,18" fill="#C4764D"/>
+    <polygon points="18,22 40,22 40,25 18,25" fill="#AAB8B8"/>
+    <polygon points="18,28 35,28 35,31 18,31" fill="#AAB8B8"/>
+    <polygon points="33,40 37,43 34,57 29,51" fill="#C4764D"/>
+    <polygon points="43,40 47,38 52,53 45,51 42,56" fill="#DF9A6C"/>
+    <polygon points="34,35 37,32 43,32 46,35 46,41 43,44 37,44 34,41" fill="#C4764D"/>
+    <polygon points="37,35 43,35 44,38 43,41 37,41 36,38" fill="#DF9A6C"/>
+    <polygon points="37,35 40,32 43,35 43,40 40,43 37,40" fill="#333B3A"/>
+  </g>
+</svg>

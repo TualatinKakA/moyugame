@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>一期资本沉淀</title>
+  <desc>一期资本沉淀（ID: clickingTotalProduction1）：指针点击资本账册或金库并产生金币收益，橙金接触爆点强化手动结算联想；第 1 阶段以扩充台账、离岸节点、重资产储备和主权级资本池表现累计产值向基础点击收入的转化。</desc>
+  <g id="clickingTotalProduction1-master" stroke-linecap="square" stroke-linejoin="miter">
+    <g transform="translate(-2,2) scale(0.86)">
+    <polygon points="16,8 42,10 40,42 13,40" fill="#65402F"/>
+    <polygon points="18,10 40,12 38,39 15,38" fill="#D9E2E2"/>
+    <polygon points="13,10 18,8 18,39 13,42" fill="#A5684A"/>
+    <polygon points="23,16 35,17 35,20 23,19" fill="#899492"/>
+    <polygon points="23,23 33,24 33,27 23,26" fill="#AAB8B8"/>    <polygon points="8,42 48,42 55,49 51,58 12,58 7,51" fill="#46504F"/>
+    <polygon points="12,43 46,43 50,48 47,51 15,51 11,48" fill="#697473"/>
+    <polygon points="21,47 35,47 39,51 17,51" fill="#E7CA74"/>
+    <polygon points="18,52 46,52 46,55 18,55" fill="#333B3A"/>
+  
+    </g>
+    <g fill="#DF9A6C">
+      <polygon points="17,25 26,27 25,31 16,29"/>
+      <polygon points="28,14 31,23 35,22 33,13"/>
+      <polygon points="37,16 38,23 42,21 40,14"/>
+      <polygon points="20,17 24,19 22,23 18,21" fill="#E7CA74"/>
+    </g>
+    <polygon points="31,29 34,52 39,46 45,56 51,53 44,43 53,41" fill="#333B3A"/>
+    <polygon points="33,33 35,47 39,41 46,52 48,51 41,40 48,39" fill="#EEF3F2"/>
+    <polygon points="35,47 39,41 46,52 45,56 39,46 34,52" fill="#AAB8B8"/>
+    <polygon points="48,1 56,1 60,5 60,13 56,17 48,17 44,13 44,5" fill="#B09552"/>
+    <polygon points="48,3 56,3 58,6 58,12 55,15 48,15 46,12 46,6" fill="#F5E4A8"/>
+    <polygon points="47,4 50,4 52,8 54,4 57,4 54,9 57,9 57,11 54,11 54,14 50,14 50,11 47,11 47,9 50,9" fill="#A5684A"/>
+  </g>
+</svg>

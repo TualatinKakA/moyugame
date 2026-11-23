@@ -1,30 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
   <title>数字员工小组</title>
-  <desc>Assistant前置奖杯1对应购买升级（ID: assistantUpgrade1）：单体低多边形智能协理终端，配备绿色光学感应核心与暗岩底座，象征首位自动化办公助手接入。</desc>
-  <g id="assistantUpgrade1-master">
-    <!-- Top Signal Fin / Antenna -->
-    <polygon points="30.0,7.5 32.0,7.5 32.0,14.5 29.0,14.5" fill="#B4CDA3"/>
-    <polygon points="32.0,7.5 34.0,7.5 35.0,14.5 32.0,14.5" fill="#91B77A"/>
-    <!-- Side Acoustic / Telemetry Ears -->
-    <polygon points="14.5,24.5 18.0,22.5 18.0,34.5 14.5,32.5" fill="#899492"/>
-    <polygon points="49.5,24.5 46.0,22.5 46.0,34.5 49.5,32.5" fill="#697473"/>
-    <!-- Main Faceted Assistant Head Chassis (Two-Tone Silver-White) -->
-    <polygon points="32.0,13.5 20.0,18.0 17.5,28.5 20.5,39.0 32.0,41.5" fill="#EEF3F2"/>
-    <polygon points="32.0,13.5 44.0,18.0 46.5,28.5 43.5,39.0 32.0,41.5" fill="#D9E2E2"/>
-    <!-- Dark Obsidian Visor Screen -->
-    <polygon points="32.0,20.5 22.5,23.0 21.5,28.5 23.0,33.5 32.0,35.0" fill="#333B3A"/>
-    <polygon points="32.0,20.5 41.5,23.0 42.5,28.5 41.0,33.5 32.0,35.0" fill="#252A27"/>
-    <!-- Central Active Automation Green Optical Core -->
-    <polygon points="32.0,23.2 27.2,27.8 32.0,32.4" fill="#B4CDA3"/>
-    <polygon points="32.0,23.2 36.8,27.8 32.0,32.4" fill="#91B77A"/>
-    <!-- Neck Collar & Stepped Slate Dock Base -->
-    <polygon points="26.5,40.8 32.0,41.5 32.0,46.0 25.5,46.0" fill="#AAB8B8"/>
-    <polygon points="37.5,40.8 32.0,41.5 32.0,46.0 38.5,46.0" fill="#899492"/>
-    <polygon points="18.0,46.0 32.0,46.0 32.0,51.5 16.0,51.5" fill="#697473"/>
-    <polygon points="46.0,46.0 32.0,46.0 32.0,51.5 48.0,51.5" fill="#46504F"/>
-    <polygon points="14.0,51.5 32.0,51.5 32.0,56.0 12.5,56.0" fill="#333B3A"/>
-    <polygon points="50.0,51.5 32.0,51.5 32.0,56.0 51.5,56.0" fill="#252A27"/>
-    <!-- Single Tier Status Pip -->
-    <rect x="29.0" y="47.8" width="6.0" height="2.2" fill="#91B77A"/>
+  <desc>数字员工小组（ID: assistantGroup）：与 assistantUpgrade1 共享画面的数字员工终端组网图标，以绿色核心和连接节点标识对应规模的数字员工团队。</desc>
+  <g id="assistantUpgrade1-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polyline points="23,30 32,24 41,30" fill="none" stroke="#91B77A" stroke-width="2"/>
+    <polygon points="28,20 32,17 36,20 32,23" fill="#E7CA74"/>
+    <g transform="translate(9,20) scale(0.86)">
+      <polygon points="9,-5 12,-5 12,1 9,1" fill="#91B77A"/>
+      <polygon points="-3,6 0,4 0,17 -3,15" fill="#899492"/>
+      <polygon points="23,6 20,4 20,17 23,15" fill="#697473"/>
+      <polygon points="0,0 10,-2 10,24 1,21 -2,15 -2,5" fill="#EEF3F2"/>
+      <polygon points="10,-2 20,0 22,5 22,15 19,21 10,24" fill="#AAB8B8"/>
+      <polygon points="2,5 10,4 10,16 3,15" fill="#46504F"/>
+      <polygon points="10,4 18,5 19,15 10,16" fill="#333B3A"/>
+      <polygon points="10,7 14,10 10,13 6,10" fill="#B4CDA3"/>
+      <polygon points="7,23 13,23 14,27 6,27" fill="#899492"/>
+      <polygon points="2,27 18,27 21,31 -1,31" fill="#46504F"/>
+      <rect x="7" y="28" width="6" height="2" fill="#91B77A"/>
+    </g>
+    <g transform="translate(33,20) scale(0.86)">
+      <polygon points="9,-5 12,-5 12,1 9,1" fill="#91B77A"/>
+      <polygon points="-3,6 0,4 0,17 -3,15" fill="#899492"/>
+      <polygon points="23,6 20,4 20,17 23,15" fill="#697473"/>
+      <polygon points="0,0 10,-2 10,24 1,21 -2,15 -2,5" fill="#EEF3F2"/>
+      <polygon points="10,-2 20,0 22,5 22,15 19,21 10,24" fill="#AAB8B8"/>
+      <polygon points="2,5 10,4 10,16 3,15" fill="#46504F"/>
+      <polygon points="10,4 18,5 19,15 10,16" fill="#333B3A"/>
+      <polygon points="10,7 14,10 10,13 6,10" fill="#B4CDA3"/>
+      <polygon points="7,23 13,23 14,27 6,27" fill="#899492"/>
+      <polygon points="2,27 18,27 21,31 -1,31" fill="#46504F"/>
+      <rect x="7" y="28" width="6" height="2" fill="#91B77A"/>
+    </g>
+    <polygon points="12,52 32,48 52,52 48,58 16,58" fill="#333B3A"/>
+    <polygon points="16,52 32,49 48,52 32,55" fill="#697473"/>
+    <rect x="27" y="52" width="10" height="3" fill="#B4CDA3"/>
   </g>
 </svg>

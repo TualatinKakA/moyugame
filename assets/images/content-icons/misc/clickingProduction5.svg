@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>溢出创收指标</title>
+  <desc>溢出创收指标（ID: clickingProduction5）：指针按压创收现金托盘并触发橙金爆点，配合第 5 阶段逐级增加的黄铜薪资硬币堆，直观表现每次点击带来的收入与设施产出扩张。</desc>
+  <g id="clickingProduction5-master" stroke-linecap="square" stroke-linejoin="miter">
+    <g transform="translate(-1,2) scale(0.86)">
+    <polygon points="7,42 15,42 17,43 17,45 7,45" fill="#E7CA74"/>
+    <polygon points="15,42 17,43 17,45 15,44" fill="#B09552"/>
+    <polygon points="7,39 15,39 17,40 17,42 7,42" fill="#D1B15C"/>
+    <polygon points="15,39 17,40 17,42 15,41" fill="#B09552"/>
+    <polygon points="7,36 15,36 17,37 17,39 7,39" fill="#E7CA74"/>
+    <polygon points="15,36 17,37 17,39 15,38" fill="#B09552"/>
+    <polygon points="7,33 15,33 17,34 17,36 7,36" fill="#D1B15C"/>
+    <polygon points="15,33 17,34 17,36 15,35" fill="#B09552"/>
+    <polygon points="7,30 15,30 17,31 17,33 7,33" fill="#E7CA74"/>
+    <polygon points="15,30 17,31 17,33 15,32" fill="#B09552"/>
+    <polygon points="7,30 9,29 15,29 17,30 15,31 9,31" fill="#F5E4A8"/>
+    <polygon points="19,42 27,42 29,43 29,45 19,45" fill="#E7CA74"/>
+    <polygon points="27,42 29,43 29,45 27,44" fill="#B09552"/>
+    <polygon points="19,39 27,39 29,40 29,42 19,42" fill="#D1B15C"/>
+    <polygon points="27,39 29,40 29,42 27,41" fill="#B09552"/>
+    <polygon points="19,36 27,36 29,37 29,39 19,39" fill="#E7CA74"/>
+    <polygon points="27,36 29,37 29,39 27,38" fill="#B09552"/>
+    <polygon points="19,33 27,33 29,34 29,36 19,36" fill="#D1B15C"/>
+    <polygon points="27,33 29,34 29,36 27,35" fill="#B09552"/>
+    <polygon points="19,30 27,30 29,31 29,33 19,33" fill="#E7CA74"/>
+    <polygon points="27,30 29,31 29,33 27,32" fill="#B09552"/>
+    <polygon points="19,27 27,27 29,28 29,30 19,30" fill="#D1B15C"/>
+    <polygon points="27,27 29,28 29,30 27,29" fill="#B09552"/>
+    <polygon points="19,24 27,24 29,25 29,27 19,27" fill="#E7CA74"/>
+    <polygon points="27,24 29,25 29,27 27,26" fill="#B09552"/>
+    <polygon points="19,24 21,23 27,23 29,24 27,25 21,25" fill="#F5E4A8"/>
+    <polygon points="32,42 40,42 42,43 42,45 32,45" fill="#E7CA74"/>
+    <polygon points="40,42 42,43 42,45 40,44" fill="#B09552"/>
+    <polygon points="32,39 40,39 42,40 42,42 32,42" fill="#D1B15C"/>
+    <polygon points="40,39 42,40 42,42 40,41" fill="#B09552"/>
+    <polygon points="32,36 40,36 42,37 42,39 32,39" fill="#E7CA74"/>
+    <polygon points="40,36 42,37 42,39 40,38" fill="#B09552"/>
+    <polygon points="32,33 40,33 42,34 42,36 32,36" fill="#D1B15C"/>
+    <polygon points="40,33 42,34 42,36 40,35" fill="#B09552"/>
+    <polygon points="32,30 40,30 42,31 42,33 32,33" fill="#E7CA74"/>
+    <polygon points="40,30 42,31 42,33 40,32" fill="#B09552"/>
+    <polygon points="32,27 40,27 42,28 42,30 32,30" fill="#D1B15C"/>
+    <polygon points="40,27 42,28 42,30 40,29" fill="#B09552"/>
+    <polygon points="32,24 40,24 42,25 42,27 32,27" fill="#E7CA74"/>
+    <polygon points="40,24 42,25 42,27 40,26" fill="#B09552"/>
+    <polygon points="32,21 40,21 42,22 42,24 32,24" fill="#D1B15C"/>
+    <polygon points="40,21 42,22 42,24 40,23" fill="#B09552"/>
+    <polygon points="32,21 34,20 40,20 42,21 40,22 34,22" fill="#F5E4A8"/>
+    <polygon points="45,42 53,42 55,43 55,45 45,45" fill="#E7CA74"/>
+    <polygon points="53,42 55,43 55,45 53,44" fill="#B09552"/>
+    <polygon points="45,39 53,39 55,40 55,42 45,42" fill="#D1B15C"/>
+    <polygon points="53,39 55,40 55,42 53,41" fill="#B09552"/>
+    <polygon points="45,36 53,36 55,37 55,39 45,39" fill="#E7CA74"/>
+    <polygon points="53,36 55,37 55,39 53,38" fill="#B09552"/>
+    <polygon points="45,33 53,33 55,34 55,36 45,36" fill="#D1B15C"/>
+    <polygon points="53,33 55,34 55,36 53,35" fill="#B09552"/>
+    <polygon points="45,30 53,30 55,31 55,33 45,33" fill="#E7CA74"/>
+    <polygon points="53,30 55,31 55,33 53,32" fill="#B09552"/>
+    <polygon points="45,27 53,27 55,28 55,30 45,30" fill="#D1B15C"/>
+    <polygon points="53,27 55,28 55,30 53,29" fill="#B09552"/>
+    <polygon points="45,27 47,26 53,26 55,27 53,28 47,28" fill="#F5E4A8"/>
+    <polygon points="7,42 55,42 59,49 55,58 9,58 5,49" fill="#65402F"/>
+    <polygon points="9,43 53,43 56,48 52,52 12,52 8,48" fill="#A5684A"/>
+    <polygon points="9,51 55,51 55,58 9,58" fill="#835039"/>
+    <polygon points="12,52 52,52 52,55 12,55" fill="#C4764D"/>
+    <polygon points="48,14 54,12 59,15 55,19 49,18" fill="#F5E4A8"/>
+    <polygon points="52,25 59,23 62,27 57,31 51,29" fill="#E7CA74"/>
+    <polygon points="4,28 10,25 14,29 11,33 5,33" fill="#E7CA74"/>
+    <polygon points="25,9 31,6 36,9 33,13 27,13" fill="#F5E4A8"/>
+  
+    </g>
+    <g fill="#DF9A6C">
+      <polygon points="17,24 26,26 25,30 16,28"/>
+      <polygon points="28,13 31,22 35,21 33,12"/>
+      <polygon points="37,15 38,22 42,20 40,13"/>
+      <polygon points="20,16 24,18 22,22 18,20" fill="#E7CA74"/>
+    </g>
+    <polygon points="31,28 34,51 39,45 45,55 51,52 44,42 53,40" fill="#333B3A"/>
+    <polygon points="33,32 35,46 39,40 46,51 48,50 41,39 48,38" fill="#EEF3F2"/>
+    <polygon points="35,46 39,40 46,51 45,55 39,45 34,51" fill="#AAB8B8"/>
+  </g>
+</svg>

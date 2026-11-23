@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>一期资本沉淀</title>
+  <desc>一期资本沉淀（ID: clickingTotalProduction1）：首册资本台账与初始沉淀盒，以低多边形现代财务物件表现本轮全部设施产出向基础点击收入的资本转化。</desc>
+  <g id="clickingTotalProduction1-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="16,8 42,10 40,42 13,40" fill="#65402F"/>
+    <polygon points="18,10 40,12 38,39 15,38" fill="#D9E2E2"/>
+    <polygon points="13,10 18,8 18,39 13,42" fill="#A5684A"/>
+    <polygon points="23,16 35,17 35,20 23,19" fill="#899492"/>
+    <polygon points="23,23 33,24 33,27 23,26" fill="#AAB8B8"/>    <polygon points="8,42 48,42 55,49 51,58 12,58 7,51" fill="#46504F"/>
+    <polygon points="12,43 46,43 50,48 47,51 15,51 11,48" fill="#697473"/>
+    <polygon points="21,47 35,47 39,51 17,51" fill="#E7CA74"/>
+    <polygon points="18,52 46,52 46,55 18,55" fill="#333B3A"/>
+  </g>
+</svg>

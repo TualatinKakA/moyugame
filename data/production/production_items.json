@@ -4758,7 +4758,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "理想员工认证",
-      "description_zh": "理想立场设施产出 ×2。"
+      "description_zh": "理想立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/goodProduction1.svg",
+      "image_status": "done"
     },
     {
       "id": "goodProduction2",
@@ -4766,7 +4768,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "理想员工复核",
-      "description_zh": "理想立场设施产出 ×2。"
+      "description_zh": "理想立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/goodProduction2.svg",
+      "image_status": "done"
     },
     {
       "id": "goodProduction3",
@@ -4774,7 +4778,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "理想员工表彰",
-      "description_zh": "理想立场设施产出 ×2。"
+      "description_zh": "理想立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/goodProduction3.svg",
+      "image_status": "done"
     },
     {
       "id": "goodProduction4",
@@ -4782,7 +4788,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "理想员工公告",
-      "description_zh": "理想立场设施产出 ×2。"
+      "description_zh": "理想立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/goodProduction4.svg",
+      "image_status": "done"
     },
     {
       "id": "evilProduction1",
@@ -4790,7 +4798,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "务实团队认证",
-      "description_zh": "务实立场设施产出 ×2。"
+      "description_zh": "务实立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/evilProduction1.svg",
+      "image_status": "done"
     },
     {
       "id": "evilProduction2",
@@ -4798,7 +4808,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "务实团队复核",
-      "description_zh": "务实立场设施产出 ×2。"
+      "description_zh": "务实立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/evilProduction2.svg",
+      "image_status": "done"
     },
     {
       "id": "evilProduction3",
@@ -4806,7 +4818,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "务实团队表彰",
-      "description_zh": "务实立场设施产出 ×2。"
+      "description_zh": "务实立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/evilProduction3.svg",
+      "image_status": "done"
     },
     {
       "id": "evilProduction4",
@@ -4814,7 +4828,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "务实团队公告",
-      "description_zh": "务实立场设施产出 ×2。"
+      "description_zh": "务实立场设施产出 ×2。",
+      "image_path": "assets/images/content-icons/misc/evilProduction4.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingProduction1",
@@ -4822,7 +4838,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "达标创收指标",
-      "description_zh": "点击收入与全部设施产出 ×1.25。"
+      "description_zh": "点击收入与全部设施产出 ×1.25。",
+      "image_path": "assets/images/content-icons/misc/clickingProduction1.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingProduction2",
@@ -4830,7 +4848,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "丰厚创收指标",
-      "description_zh": "点击收入与全部设施产出 ×1.25。"
+      "description_zh": "点击收入与全部设施产出 ×1.25。",
+      "image_path": "assets/images/content-icons/misc/clickingProduction2.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingProduction3",
@@ -4838,7 +4858,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "超额创收指标",
-      "description_zh": "点击收入与全部设施产出 ×1.25。"
+      "description_zh": "点击收入与全部设施产出 ×1.25。",
+      "image_path": "assets/images/content-icons/misc/clickingProduction3.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingProduction4",
@@ -4846,7 +4868,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "巨额创收指标",
-      "description_zh": "点击收入与全部设施产出 ×1.25。"
+      "description_zh": "点击收入与全部设施产出 ×1.25。",
+      "image_path": "assets/images/content-icons/misc/clickingProduction4.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingProduction5",
@@ -4854,7 +4878,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "溢出创收指标",
-      "description_zh": "点击收入与全部设施产出 ×1.25。"
+      "description_zh": "点击收入与全部设施产出 ×1.25。",
+      "image_path": "assets/images/content-icons/misc/clickingProduction5.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingTotalProduction1",
@@ -4862,7 +4888,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "一期资本沉淀",
-      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction1}）。"
+      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction1}）。",
+      "image_path": "assets/images/content-icons/misc/clickingTotalProduction1.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingTotalProduction2",
@@ -4870,7 +4898,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "扩充资本沉淀",
-      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction2}）。"
+      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction2}）。",
+      "image_path": "assets/images/content-icons/misc/clickingTotalProduction2.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingTotalProduction3",
@@ -4878,7 +4908,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "离岸资本沉淀",
-      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction3}）。"
+      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction3}）。",
+      "image_path": "assets/images/content-icons/misc/clickingTotalProduction3.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingTotalProduction4",
@@ -4886,7 +4918,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "重资产资本池",
-      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction4}）。"
+      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction4}）。",
+      "image_path": "assets/images/content-icons/misc/clickingTotalProduction4.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingTotalProduction5",
@@ -4894,7 +4928,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "主权级资本池",
-      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction5}）。"
+      "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction5}）。",
+      "image_path": "assets/images/content-icons/misc/clickingTotalProduction5.svg",
+      "image_status": "done"
     },
     {
       "id": "gemUpgrade1",
@@ -4962,7 +4998,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "结实的工牌",
-      "description_zh": "基础点击收入 +4；离线时每秒额外自动点击 1 次。"
+      "description_zh": "基础点击收入 +4；离线时每秒额外自动点击 1 次。",
+      "image_path": "assets/images/content-icons/misc/clickingBase1.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingBase2",
@@ -4970,7 +5008,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "耐用的工牌",
-      "description_zh": "基础点击收入 +45；离线时每秒额外自动点击 1 次。"
+      "description_zh": "基础点击收入 +45；离线时每秒额外自动点击 1 次。",
+      "image_path": "assets/images/content-icons/misc/clickingBase2.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingBase3",
@@ -4978,7 +5018,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "加固的工牌",
-      "description_zh": "基础点击收入 +4950；离线时每秒额外自动点击 1 次。"
+      "description_zh": "基础点击收入 +4950；离线时每秒额外自动点击 1 次。",
+      "image_path": "assets/images/content-icons/misc/clickingBase3.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingBase4",
@@ -4986,7 +5028,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "三线出入证",
-      "description_zh": "基础点击收入 +500000；离线时每秒额外自动点击 1 次。"
+      "description_zh": "基础点击收入 +500000；离线时每秒额外自动点击 1 次。",
+      "image_path": "assets/images/content-icons/misc/clickingBase4.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingBase5",
@@ -4994,7 +5038,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "防磁金属牌",
-      "description_zh": "基础点击收入 +50000000；离线时每秒额外自动点击 1 次。"
+      "description_zh": "基础点击收入 +50000000；离线时每秒额外自动点击 1 次。",
+      "image_path": "assets/images/content-icons/misc/clickingBase5.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingBase6",
@@ -5002,7 +5048,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "永恒零号牌",
-      "description_zh": "基础点击收入 +50000000000；离线时每秒额外自动点击 1 次。"
+      "description_zh": "基础点击收入 +50000000000；离线时每秒额外自动点击 1 次。",
+      "image_path": "assets/images/content-icons/misc/clickingBase6.svg",
+      "image_status": "done"
     },
     {
       "id": "offlineUpgrade1",
@@ -5010,7 +5058,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "缺席打卡",
-      "description_zh": "离线产出提高 200%。"
+      "description_zh": "离线产出提高 200%。",
+      "image_path": "assets/images/content-icons/misc/offlineUpgrade1.svg",
+      "image_status": "done"
     },
     {
       "id": "offlineUpgrade2",
@@ -5018,7 +5068,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "失踪考勤",
-      "description_zh": "离线产出提高 500%。"
+      "description_zh": "离线产出提高 500%。",
+      "image_path": "assets/images/content-icons/misc/offlineUpgrade2.svg",
+      "image_status": "done"
     },
     {
       "id": "offlineUpgrade3",
@@ -5026,7 +5078,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "不存在工号",
-      "description_zh": "离线产出提高 1500%。"
+      "description_zh": "离线产出提高 1500%。",
+      "image_path": "assets/images/content-icons/misc/offlineUpgrade3.svg",
+      "image_status": "done"
     },
     {
       "id": "grindingDedication",

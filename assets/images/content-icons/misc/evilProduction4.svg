@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>务实团队公告</title>
+  <desc>务实团队公告（ID: evilProduction4）：务实路线的公告栏与扩音发布器，采用低多边形现代办公公文与深色橙红块面，表达对应立场设施产出强化。</desc>
+  <g id="evilProduction4-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="7,9 52,5 58,51 12,57" fill="#252A27"/>
+    <polygon points="11,12 49,9 54,47 16,52" fill="#46504F"/>
+    <polygon points="25,6 39,5 41,13 26,14" fill="#C4764D"/>
+    <polygon points="19,20 43,18 44,22 20,24" fill="#DF9A6C"/>
+    <polygon points="20,28 45,26 45,29 21,31" fill="#AAB8B8"/>
+    <polygon points="21,35 39,33 40,36 22,38" fill="#AAB8B8"/>
+    <polygon points="43,38 55,32 59,38 48,45" fill="#C4764D"/>
+    <polygon points="39,40 46,37 50,45 43,48" fill="#DF9A6C"/>
+    <polygon points="42,47 48,45 50,55 45,56" fill="#C4764D"/>
+    <polygon points="56,31 60,33 61,40 58,41" fill="#AAB8B8"/>
+  </g>
+</svg>

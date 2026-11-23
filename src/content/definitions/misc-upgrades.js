@@ -29,7 +29,10 @@ function upgrade({ id, name, sourceName, description, cost, visible, effects = [
     visible, unlock: { op: 'always' },
     purchase: { costs: [{ resource: 'coins', amount: { constant: cost } }], requires: [{ op: 'notOwned', id }] },
     effects, grants: [], reactions: [], scope: 'run',
-    ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'general', icon: redCross },
+    ui: {
+      kind: 'upgradeCard', panel: 'upgrades', category: 'general',
+      icon: miscStatus === 'unavailable' ? redCross : `assets/images/content-icons/misc/${id}.svg`,
+    },
   };
 }
 
