@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">运维部</title>
+  <desc id="desc">三层持续运行服务器机柜，灰黑块面搭配唯一绿色状态灯，代表运维部。</desc>
+  <g id="undead-body">
+    <path d="M13 7 50 10 52 55 12 52Z" fill="#333B3A"/>
+    <path d="M50 10 56 14 57 53 52 55Z" fill="#252A27"/>
+    <path d="M16 11 47 13 47 24 16 23Z" fill="#46504F"/>
+    <path d="M16 26 47 27 47 39 16 38Z" fill="#46504F"/>
+    <path d="M16 41 47 42 47 51 16 49Z" fill="#46504F"/>
+    <path d="M20 16h17M20 31h17M20 46h17" fill="none" stroke="#899492" stroke-width="2" stroke-linecap="square"/>
+    <path d="M40 16h3v3h-3ZM40 31h3v3h-3ZM40 46h3v3h-3Z" fill="#697473"/>
+    <path d="M40 45h4v4h-4Z" fill="#B4CDA3"/>
+    <path d="M8 56h9l4-4 5 5 6-6 5 5h15" fill="none" stroke="#91B77A" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+  </g>
+</svg>

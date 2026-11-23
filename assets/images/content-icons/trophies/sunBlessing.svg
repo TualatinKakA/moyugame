@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>白昼自动编译（Sun Blessing）</title>
+  <desc>技术部升级技能与法术成就：金色八角烈日与鼠尾草绿自动编译播放核心，低多边形风格。</desc>
+  <g id="sunBlessing-icon">
+    <polygon points="32,7 36,14 28,14" fill="#E7CA74"/>
+    <polygon points="32,57 36,50 28,50" fill="#DF9A6C"/>
+    <polygon points="7,32 14,28 14,36" fill="#E7CA74"/>
+    <polygon points="57,32 50,28 50,36" fill="#DF9A6C"/>
+    <polygon points="32,16 43,21 48,32 43,43 32,48 21,43 16,32 21,21" fill="#F5E4A8"/>
+    <polygon points="32,16 43,21 48,32 43,43 32,48 32,16" fill="#E7CA74"/>
+    <polygon points="27,25 39,32 27,39" fill="#91B77A"/>
+  </g>
+</svg>

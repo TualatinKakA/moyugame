@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>运维部战略协议（Undead 战略协议）</title>
+  <desc>运维部战略协议：冷战立式双盘磁带机主体，右下方叠加战略协议，合约中央写有数字3。</desc>
+  <g id="undead-alliance-base" transform="translate(-2.5, -2.5) scale(0.92)">
+    <polygon points="10,16 24,10 53,21.5 39,27.5" fill="#899492"/>
+    <polygon points="10,16 39,27.5 39,55 10,43.5" fill="#46504F"/>
+    <polygon points="39,27.5 53,21.5 53,49 39,55" fill="#333B3A"/>
+    <polygon points="12.5,20 36.5,29.5 36.5,43 12.5,33.5" fill="#333B3A"/>
+    <polygon points="18,22.2 22.8,24.1 24.5,28.5 22.8,32.2 18,30.3 16.3,25.9" fill="#EEF3F2"/>
+    <polygon points="19.5,25.4 21.5,26.2 21.5,29 19.5,28.2" fill="#333B3A"/>
+    <polygon points="28.5,26.4 33.3,28.3 35,32.7 33.3,36.4 28.5,34.5 26.8,30.1" fill="#D9E2E2"/>
+    <polygon points="30,29.6 32,30.4 32,33.2 30,32.4" fill="#333B3A"/>
+    <polygon points="12.5,36 36.5,45.5 36.5,51.8 12.5,42.3" fill="#697473"/>
+    <polygon points="15,39.2 20.5,41.4 20.5,44.2 15,42" fill="#91B77A"/>
+    <polygon points="22.5,42.2 27,44 27,46.8 22.5,45" fill="#DF9A6C"/>
+    <polygon points="29.5,45 34.5,47 34.5,48.8 29.5,46.8" fill="#EEF3F2"/>
+  </g>
+  <g id="contract-tier-3">
+    <path d="M35 26H54L63 35V62H35Z" fill="#111311" opacity=".45"/>
+    <path d="M34 25H53L62 34V60H34Z" fill="#E7CA74" stroke="#5E4B28" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M53 25V34H62Z" fill="#F4E4A9"/>
+    <path d="M53 25 62 34H53Z" fill="#B99545"/>
+    <path d="M39 31H48M39 35H51M39 39H46" fill="none" stroke="#9A7838" stroke-width="2" stroke-linecap="square"/>
+    <text x="49" y="55" text-anchor="middle" fill="#4D3B1E" font-family="Consolas, monospace" font-size="20" font-weight="700">3</text>
+  </g>
+</svg>

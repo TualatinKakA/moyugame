@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>无休在线节点（运维部升级 8）</title>
+  <desc>运维部第8项升级（无休在线节点）：金阶2件冷战立式双盘磁带机阵列，低多边形风格。</desc>
+  <g id="undead-8-back" transform="translate(12, 2.5) scale(0.76)">
+    <polygon points="10,16 24,10 53,21.5 39,27.5" fill="#F5E4A8"/>
+    <polygon points="10,16 39,27.5 39,55 10,43.5" fill="#D1B15C"/>
+    <polygon points="39,27.5 53,21.5 53,49 39,55" fill="#835039"/>
+    <polygon points="12.5,20 36.5,29.5 36.5,43 12.5,33.5" fill="#333B3A"/>
+    <polygon points="18,22.2 22.8,24.1 24.5,28.5 22.8,32.2 18,30.3 16.3,25.9" fill="#F5E4A8"/>
+    <polygon points="19.5,25.4 21.5,26.2 21.5,29 19.5,28.2" fill="#333B3A"/>
+    <polygon points="28.5,26.4 33.3,28.3 35,32.7 33.3,36.4 28.5,34.5 26.8,30.1" fill="#E7CA74"/>
+    <polygon points="30,29.6 32,30.4 32,33.2 30,32.4" fill="#333B3A"/>
+    <polygon points="12.5,36 36.5,45.5 36.5,51.8 12.5,42.3" fill="#B09552"/>
+    <polygon points="15,39.2 20.5,41.4 20.5,44.2 15,42" fill="#F5E4A8"/>
+    <polygon points="22.5,42.2 27,44 27,46.8 22.5,45" fill="#DF9A6C"/>
+    <polygon points="29.5,45 34.5,47 34.5,48.8 29.5,46.8" fill="#EEF3F2"/>
+  </g>
+  <g id="undead-8-front" transform="translate(1.5, 8.5) scale(0.76)">
+    <polygon points="10,16 24,10 53,21.5 39,27.5" fill="#F5E4A8"/>
+    <polygon points="10,16 39,27.5 39,55 10,43.5" fill="#D1B15C"/>
+    <polygon points="39,27.5 53,21.5 53,49 39,55" fill="#835039"/>
+    <polygon points="12.5,20 36.5,29.5 36.5,43 12.5,33.5" fill="#333B3A"/>
+    <polygon points="18,22.2 22.8,24.1 24.5,28.5 22.8,32.2 18,30.3 16.3,25.9" fill="#F5E4A8"/>
+    <polygon points="19.5,25.4 21.5,26.2 21.5,29 19.5,28.2" fill="#333B3A"/>
+    <polygon points="28.5,26.4 33.3,28.3 35,32.7 33.3,36.4 28.5,34.5 26.8,30.1" fill="#E7CA74"/>
+    <polygon points="30,29.6 32,30.4 32,33.2 30,32.4" fill="#333B3A"/>
+    <polygon points="12.5,36 36.5,45.5 36.5,51.8 12.5,42.3" fill="#B09552"/>
+    <polygon points="15,39.2 20.5,41.4 20.5,44.2 15,42" fill="#F5E4A8"/>
+    <polygon points="22.5,42.2 27,44 27,46.8 22.5,45" fill="#DF9A6C"/>
+    <polygon points="29.5,45 34.5,47 34.5,48.8 29.5,46.8" fill="#EEF3F2"/>
+  </g>
+</svg>

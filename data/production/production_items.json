@@ -179,7 +179,9 @@
       "kind": "building",
       "version": "1.1.0",
       "name_zh": "传奇档案馆",
-      "description_zh": ""
+      "description_zh": "",
+      "image_path": "assets/images/content-icons/buildings/hallOfLegends.svg",
+      "image_status": "done"
     },
     {
       "id": "farm-tier1",
@@ -330,7 +332,7 @@
       "original_item_id": "upgrade.building.farm.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "副业培训园",
+      "name_zh": "内部孵化园",
       "description_zh": "见习工位产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/farm-tier17.svg"
     },
@@ -339,7 +341,7 @@
       "original_item_id": "upgrade.building.farm.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "完整人才牧场",
+      "name_zh": "标准化人才库",
       "description_zh": "见习工位产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/farm-tier18.svg"
     },
@@ -366,7 +368,7 @@
       "original_item_id": "upgrade.building.farm.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "员工自我萌发",
+      "name_zh": "员工自驱觉醒",
       "description_zh": "见习工位产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/farm-tier21.svg"
     },
@@ -420,7 +422,7 @@
       "original_item_id": "upgrade.building.inn.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "受训茶水员",
+      "name_zh": "专职茶水员",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier4.svg"
     },
@@ -447,7 +449,7 @@
       "original_item_id": "upgrade.building.inn.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "柔软床垫",
+      "name_zh": "折叠行军床",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier7.svg"
     },
@@ -483,7 +485,7 @@
       "original_item_id": "upgrade.building.inn.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "半日餐补券",
+      "name_zh": "加班夜宵券",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier11.svg"
     },
@@ -492,7 +494,7 @@
       "original_item_id": "upgrade.building.inn.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "私人咖啡烘焙",
+      "name_zh": "手冲咖啡角",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier12.svg"
     },
@@ -501,7 +503,7 @@
       "original_item_id": "upgrade.building.inn.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "豪华洗手间",
+      "name_zh": "带薪智能卫浴",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier13.svg"
     },
@@ -519,7 +521,7 @@
       "original_item_id": "upgrade.building.inn.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "行政套房午休",
+      "name_zh": "高管专属休息室",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier15.svg"
     },
@@ -537,7 +539,7 @@
       "original_item_id": "upgrade.building.inn.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "精细烹饪",
+      "name_zh": "精品工作简餐",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier17.svg"
     },
@@ -546,7 +548,7 @@
       "original_item_id": "upgrade.building.inn.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "雕花木桌",
+      "name_zh": "实木洽谈桌",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier18.svg"
     },
@@ -555,7 +557,7 @@
       "original_item_id": "upgrade.building.inn.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "幸运饼干",
+      "name_zh": "周易签文饼干",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier19.svg"
     },
@@ -582,7 +584,7 @@
       "original_item_id": "upgrade.building.inn.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "跨域精神补给",
+      "name_zh": "特调提神原液",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier22.svg"
     },
@@ -591,7 +593,7 @@
       "original_item_id": "upgrade.building.inn.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "异常关系装饰",
+      "name_zh": "蛛网人脉墙",
       "description_zh": "茶水间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/inn-tier23.svg"
     },
@@ -609,7 +611,7 @@
       "original_item_id": "upgrade.building.blacksmith.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "标准打印模具",
+      "name_zh": "标准制版模具",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier2.svg"
     },
@@ -645,7 +647,7 @@
       "original_item_id": "upgrade.building.blacksmith.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "限量装订作品",
+      "name_zh": "无限装订制程",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier6.svg"
     },
@@ -654,7 +656,7 @@
       "original_item_id": "upgrade.building.blacksmith.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "金属装订炉",
+      "name_zh": "重型热熔装订机",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier7.svg"
     },
@@ -663,7 +665,7 @@
       "original_item_id": "upgrade.building.blacksmith.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "限量装订工艺",
+      "name_zh": "精装切纸工艺",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier8.svg"
     },
@@ -672,7 +674,7 @@
       "original_item_id": "upgrade.building.blacksmith.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "火山加热器",
+      "name_zh": "超频热敏定影器",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier9.svg"
     },
@@ -708,7 +710,7 @@
       "original_item_id": "upgrade.building.blacksmith.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "全域打印磨床",
+      "name_zh": "全域裁纸滚刀",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier13.svg"
     },
@@ -726,7 +728,7 @@
       "original_item_id": "upgrade.building.blacksmith.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "淬火金属",
+      "name_zh": "回火钢制机芯",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier15.svg"
     },
@@ -762,7 +764,7 @@
       "original_item_id": "upgrade.building.blacksmith.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "双倍维修台",
+      "name_zh": "双工位维修台",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier19.svg"
     },
@@ -771,7 +773,7 @@
       "original_item_id": "upgrade.building.blacksmith.20",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "不可撤销耗材",
+      "name_zh": "高耐久合金件",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier20.svg"
     },
@@ -780,7 +782,7 @@
       "original_item_id": "upgrade.building.blacksmith.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "签署维修工艺",
+      "name_zh": "铭牌认证维修",
       "description_zh": "打印维修间产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/blacksmith-tier21.svg"
     },
@@ -879,7 +881,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "秘银协作甲",
+      "name_zh": "轻量化协作法",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier9.svg"
     },
@@ -897,7 +899,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "元素需求应对",
+      "name_zh": "多维需求拆解课",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier11.svg"
     },
@@ -906,7 +908,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "星玻璃演示器",
+      "name_zh": "全息路演演示术",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier12.svg"
     },
@@ -915,7 +917,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "真银承诺术",
+      "name_zh": "硬核画饼话术",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier13.svg"
     },
@@ -987,7 +989,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "半构执行工具",
+      "name_zh": "半成品交付话术",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier21.svg"
     },
@@ -996,7 +998,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑曜执行工具",
+      "name_zh": "黑盒攻坚方法论",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier22.svg"
     },
@@ -1005,7 +1007,7 @@
       "original_item_id": "upgrade.building.warrior-barracks.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "秘法执行工具",
+      "name_zh": "祖传业务心法",
       "description_zh": "奋斗培训室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/warriorBarracks-tier23.svg"
     },
@@ -1023,7 +1025,7 @@
       "original_item_id": "upgrade.building.slave-pen.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "惩罚教鞭",
+      "name_zh": "绩效警示鞭",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier2.svg"
     },
@@ -1050,7 +1052,7 @@
       "original_item_id": "upgrade.building.slave-pen.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "带刺合同链",
+      "name_zh": "竞业限制锁链",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier5.svg"
     },
@@ -1104,7 +1106,7 @@
       "original_item_id": "upgrade.building.slave-pen.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "更脏的格子间",
+      "name_zh": "高密度格子间",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier11.svg"
     },
@@ -1122,7 +1124,7 @@
       "original_item_id": "upgrade.building.slave-pen.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "权利废止",
+      "name_zh": "休假权废止",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier13.svg"
     },
@@ -1140,7 +1142,7 @@
       "original_item_id": "upgrade.building.slave-pen.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "社会边缘劳动力",
+      "name_zh": "灵活用工蓄水池",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier15.svg"
     },
@@ -1158,7 +1160,7 @@
       "original_item_id": "upgrade.building.slave-pen.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "低质配给",
+      "name_zh": "临期福利餐盒",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier17.svg"
     },
@@ -1176,7 +1178,7 @@
       "original_item_id": "upgrade.building.slave-pen.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "污渍地板",
+      "name_zh": "陈年油垢地毯",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier19.svg"
     },
@@ -1185,7 +1187,7 @@
       "original_item_id": "upgrade.building.slave-pen.20",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "钻石合同链",
+      "name_zh": "终身绑定协议",
       "description_zh": "外包压缩舱产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/slavePen-tier20.svg"
     },
@@ -1221,7 +1223,7 @@
       "original_item_id": "upgrade.building.knights-joust.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "尖头需求枪",
+      "name_zh": "锐利需求长矛",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier1.svg"
     },
@@ -1275,7 +1277,7 @@
       "original_item_id": "upgrade.building.knights-joust.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "重甲项目车",
+      "name_zh": "重装交付战车",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier7.svg"
     },
@@ -1293,7 +1295,7 @@
       "original_item_id": "upgrade.building.knights-joust.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "荣耀冲锋",
+      "name_zh": "全速冲刺交付",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier9.svg"
     },
@@ -1302,7 +1304,7 @@
       "original_item_id": "upgrade.building.knights-joust.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黄金需求矛",
+      "name_zh": "金牌立项书",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier10.svg"
     },
@@ -1311,7 +1313,7 @@
       "original_item_id": "upgrade.building.knights-joust.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "华丽答辩服",
+      "name_zh": "高定路演PPT",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier11.svg"
     },
@@ -1329,7 +1331,7 @@
       "original_item_id": "upgrade.building.knights-joust.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "正式项目执照",
+      "name_zh": "金牌PM认证",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier13.svg"
     },
@@ -1356,7 +1358,7 @@
       "original_item_id": "upgrade.building.knights-joust.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "高速项目教练",
+      "name_zh": "敏捷冲刺教练",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier16.svg"
     },
@@ -1365,7 +1367,7 @@
       "original_item_id": "upgrade.building.knights-joust.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "高级擂台战术",
+      "name_zh": "高阶评审博弈",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier17.svg"
     },
@@ -1374,7 +1376,7 @@
       "original_item_id": "upgrade.building.knights-joust.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "金手项目冠军",
+      "name_zh": "金牌交付标兵",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier18.svg"
     },
@@ -1383,7 +1385,7 @@
       "original_item_id": "upgrade.building.knights-joust.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "银辉答辩枪",
+      "name_zh": "银牌方案书",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier19.svg"
     },
@@ -1401,7 +1403,7 @@
       "original_item_id": "upgrade.building.knights-joust.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "贵宾项目邀请",
+      "name_zh": "高管评审席位",
       "description_zh": "项目擂台产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/knightsJoust-tier21.svg"
     },
@@ -1428,7 +1430,7 @@
       "original_item_id": "upgrade.building.orcish-arena.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "不公正评委",
+      "name_zh": "主观打分评委",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier1.svg"
     },
@@ -1437,7 +1439,7 @@
       "original_item_id": "upgrade.building.orcish-arena.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "废除规则",
+      "name_zh": "弹性考核规则",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier2.svg"
     },
@@ -1455,7 +1457,7 @@
       "original_item_id": "upgrade.building.orcish-arena.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "跨组混战",
+      "name_zh": "部门赛马混战",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier4.svg"
     },
@@ -1473,7 +1475,7 @@
       "original_item_id": "upgrade.building.orcish-arena.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "无情绩效手",
+      "name_zh": "冷血卷王",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier6.svg"
     },
@@ -1482,7 +1484,7 @@
       "original_item_id": "upgrade.building.orcish-arena.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "锯齿状指标",
+      "name_zh": "严苛KPI指标",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier7.svg"
     },
@@ -1500,7 +1502,7 @@
       "original_item_id": "upgrade.building.orcish-arena.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "绩效冠军",
+      "name_zh": "季度销冠",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier9.svg"
     },
@@ -1518,7 +1520,7 @@
       "original_item_id": "upgrade.building.orcish-arena.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "饥渴考核赛",
+      "name_zh": "饥饿晋升赛",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier11.svg"
     },
@@ -1527,7 +1529,7 @@
       "original_item_id": "upgrade.building.orcish-arena.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "鼓掌观众",
+      "name_zh": "鼓掌气氛组",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier12.svg"
     },
@@ -1545,7 +1547,7 @@
       "original_item_id": "upgrade.building.orcish-arena.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "巨型圆形会场",
+      "name_zh": "全员述职大会场",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier14.svg"
     },
@@ -1554,7 +1556,7 @@
       "original_item_id": "upgrade.building.orcish-arena.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "致命竞争",
+      "name_zh": "生死KPI对决",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier15.svg"
     },
@@ -1563,7 +1565,7 @@
       "original_item_id": "upgrade.building.orcish-arena.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "异常项目擂台",
+      "name_zh": "S级攻坚擂台",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier16.svg"
     },
@@ -1572,7 +1574,7 @@
       "original_item_id": "upgrade.building.orcish-arena.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "扩容观众席",
+      "name_zh": "全员围观席",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier17.svg"
     },
@@ -1599,7 +1601,7 @@
       "original_item_id": "upgrade.building.orcish-arena.20",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "带刺绩效地板",
+      "name_zh": "高压底线红线",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier20.svg"
     },
@@ -1608,7 +1610,7 @@
       "original_item_id": "upgrade.building.orcish-arena.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "异常项目救场",
+      "name_zh": "空降大牛救场",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier21.svg"
     },
@@ -1626,7 +1628,7 @@
       "original_item_id": "upgrade.building.orcish-arena.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "交付胜利奏鸣",
+      "name_zh": "喜报全员播报",
       "description_zh": "绩效竞技场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/orcishArena-tier23.svg"
     },
@@ -1635,7 +1637,7 @@
       "original_item_id": "upgrade.building.wizard-tower.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "自动化法阵",
+      "name_zh": "自动化工作流",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier1.svg"
     },
@@ -1671,7 +1673,7 @@
       "original_item_id": "upgrade.building.wizard-tower.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "算法奖学金",
+      "name_zh": "科研算力补贴",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier5.svg"
     },
@@ -1698,7 +1700,7 @@
       "original_item_id": "upgrade.building.wizard-tower.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "全自动穹顶",
+      "name_zh": "算力集群穹顶",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier8.svg"
     },
@@ -1716,7 +1718,7 @@
       "original_item_id": "upgrade.building.wizard-tower.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "新编脚本卷轴",
+      "name_zh": "上古脚本卷轴",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier10.svg"
     },
@@ -1779,7 +1781,7 @@
       "original_item_id": "upgrade.building.wizard-tower.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "史诗脚本",
+      "name_zh": "核心底层脚本",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier17.svg"
     },
@@ -1788,7 +1790,7 @@
       "original_item_id": "upgrade.building.wizard-tower.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "连发脚本师",
+      "name_zh": "高并发脚本手",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier18.svg"
     },
@@ -1815,7 +1817,7 @@
       "original_item_id": "upgrade.building.wizard-tower.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "环形技能导流",
+      "name_zh": "闭环算力导流",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier21.svg"
     },
@@ -1824,7 +1826,7 @@
       "original_item_id": "upgrade.building.wizard-tower.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "自动化授权棒",
+      "name_zh": "超级管理员令牌",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier22.svg"
     },
@@ -1833,7 +1835,7 @@
       "original_item_id": "upgrade.building.wizard-tower.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "悬浮制度纪念碑",
+      "name_zh": "全息架构丰碑",
       "description_zh": "自动化实验室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/wizardTower-tier23.svg"
     },
@@ -1860,7 +1862,7 @@
       "original_item_id": "upgrade.building.witch-conclave.3",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "密谋小组",
+      "name_zh": "闭门攻坚组",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier3.svg"
     },
@@ -1869,7 +1871,7 @@
       "original_item_id": "upgrade.building.witch-conclave.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "禁忌知识库",
+      "name_zh": "未公开接口库",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier4.svg"
     },
@@ -1878,7 +1880,7 @@
       "original_item_id": "upgrade.building.witch-conclave.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "不可原谅的催办",
+      "name_zh": "夺命连环催办",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier5.svg"
     },
@@ -1887,7 +1889,7 @@
       "original_item_id": "upgrade.building.witch-conclave.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "夜巫知识库",
+      "name_zh": "夜班排障秘籍",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier6.svg"
     },
@@ -1896,7 +1898,7 @@
       "original_item_id": "upgrade.building.witch-conclave.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黄金夜班刀",
+      "name_zh": "黄金热修复手术刀",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier7.svg"
     },
@@ -1905,7 +1907,7 @@
       "original_item_id": "upgrade.building.witch-conclave.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "替身考勤娃娃",
+      "name_zh": "代打卡模拟器",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier8.svg"
     },
@@ -1932,7 +1934,7 @@
       "original_item_id": "upgrade.building.witch-conclave.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "红水晶夜行鞋",
+      "name_zh": "防静电夜班鞋",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier11.svg"
     },
@@ -1941,7 +1943,7 @@
       "original_item_id": "upgrade.building.witch-conclave.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "夜间咒文串",
+      "name_zh": "夜间加密指令串",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier12.svg"
     },
@@ -1950,7 +1952,7 @@
       "original_item_id": "upgrade.building.witch-conclave.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "夜间边界场",
+      "name_zh": "夜间隔离沙盒",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier13.svg"
     },
@@ -1959,7 +1961,7 @@
       "original_item_id": "upgrade.building.witch-conclave.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "模糊故障占卜",
+      "name_zh": "玄学日志排查",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier14.svg"
     },
@@ -1968,7 +1970,7 @@
       "original_item_id": "upgrade.building.witch-conclave.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "禁忌仪式",
+      "name_zh": "深夜上线仪式",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier15.svg"
     },
@@ -1977,7 +1979,7 @@
       "original_item_id": "upgrade.building.witch-conclave.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "反常徽记",
+      "name_zh": "机房镇宅符箓",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier16.svg"
     },
@@ -1986,7 +1988,7 @@
       "original_item_id": "upgrade.building.witch-conclave.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "飞行巡检扫帚",
+      "name_zh": "自动巡检脚本",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier17.svg"
     },
@@ -1995,7 +1997,7 @@
       "original_item_id": "upgrade.building.witch-conclave.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "夜间奇术",
+      "name_zh": "深夜热修黑科技",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier18.svg"
     },
@@ -2004,7 +2006,7 @@
       "original_item_id": "upgrade.building.witch-conclave.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "夜班疣猪吉祥物",
+      "name_zh": "夜班机房招财猫",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier19.svg"
     },
@@ -2013,7 +2015,7 @@
       "original_item_id": "upgrade.building.witch-conclave.20",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "地下制度法典",
+      "name_zh": "洞库值守规程",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier20.svg"
     },
@@ -2022,7 +2024,7 @@
       "original_item_id": "upgrade.building.witch-conclave.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "破损项目披风",
+      "name_zh": "防寒夜班冲锋衣",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier21.svg"
     },
@@ -2031,7 +2033,7 @@
       "original_item_id": "upgrade.building.witch-conclave.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑猫故障吉祥物",
+      "name_zh": "机房乖巧绿植",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier22.svg"
     },
@@ -2040,7 +2042,7 @@
       "original_item_id": "upgrade.building.witch-conclave.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "故障占卜卡",
+      "name_zh": "周易排障签",
       "description_zh": "夜间作战室产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/witchConclave-tier23.svg"
     },
@@ -2049,7 +2051,7 @@
       "original_item_id": "upgrade.building.cathedral.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黄金价值观十字",
+      "name_zh": "黄金企业徽标",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier1.svg"
     },
@@ -2067,7 +2069,7 @@
       "original_item_id": "upgrade.building.cathedral.3",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "价值观圣像",
+      "name_zh": "创始人标准像",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier3.svg"
     },
@@ -2094,7 +2096,7 @@
       "original_item_id": "upgrade.building.cathedral.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "文化祭坛",
+      "name_zh": "企业文化宣讲台",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier6.svg"
     },
@@ -2103,7 +2105,7 @@
       "original_item_id": "upgrade.building.cathedral.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "受训文化督察",
+      "name_zh": "企业文化稽查员",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier7.svg"
     },
@@ -2112,7 +2114,7 @@
       "original_item_id": "upgrade.building.cathedral.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "价值观治",
+      "name_zh": "价值观治企",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier8.svg"
     },
@@ -2121,7 +2123,7 @@
       "original_item_id": "upgrade.building.cathedral.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "企业圣典",
+      "name_zh": "太一员工手册",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier9.svg"
     },
@@ -2130,7 +2132,7 @@
       "original_item_id": "upgrade.building.cathedral.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "文化远征号召",
+      "name_zh": "全员奋斗动员令",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier10.svg"
     },
@@ -2139,7 +2141,7 @@
       "original_item_id": "upgrade.building.cathedral.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "价值观认证场地",
+      "name_zh": "标准文化培训基地",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier11.svg"
     },
@@ -2175,7 +2177,7 @@
       "original_item_id": "upgrade.building.cathedral.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "价值观玫瑰窗",
+      "name_zh": "文化标语玻璃幕墙",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier15.svg"
     },
@@ -2184,7 +2186,7 @@
       "original_item_id": "upgrade.building.cathedral.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "文化念珠",
+      "name_zh": "文化工牌挂绳",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier16.svg"
     },
@@ -2202,7 +2204,7 @@
       "original_item_id": "upgrade.building.cathedral.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "彩绘立面",
+      "name_zh": "文化宣传墙面",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier18.svg"
     },
@@ -2211,7 +2213,7 @@
       "original_item_id": "upgrade.building.cathedral.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "长明文化烛",
+      "name_zh": "长明激励灯箱",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier19.svg"
     },
@@ -2220,7 +2222,7 @@
       "original_item_id": "upgrade.building.cathedral.20",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "创始员工降临",
+      "name_zh": "创始元老训话",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier20.svg"
     },
@@ -2238,7 +2240,7 @@
       "original_item_id": "upgrade.building.cathedral.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "价值观圣人委员会",
+      "name_zh": "道德风尚委员会",
       "description_zh": "企业文化礼堂产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/cathedral-tier22.svg"
     },
@@ -2256,7 +2258,7 @@
       "original_item_id": "upgrade.building.dark-temple.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "故障献祭台",
+      "name_zh": "紧急熔断台",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier1.svg"
     },
@@ -2265,7 +2267,7 @@
       "original_item_id": "upgrade.building.dark-temple.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "暗箱仪式",
+      "name_zh": "黑盒运维规程",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier2.svg"
     },
@@ -2283,7 +2285,7 @@
       "original_item_id": "upgrade.building.dark-temple.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "隐藏运维教团",
+      "name_zh": "核心运维秘密组",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier4.svg"
     },
@@ -2292,7 +2294,7 @@
       "original_item_id": "upgrade.building.dark-temple.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "狂热信徒",
+      "name_zh": "狂热极客组",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier5.svg"
     },
@@ -2301,7 +2303,7 @@
       "original_item_id": "upgrade.building.dark-temple.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "染血回滚刀",
+      "name_zh": "强制回滚脚本",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier6.svg"
     },
@@ -2310,7 +2312,7 @@
       "original_item_id": "upgrade.building.dark-temple.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "异端运维信条",
+      "name_zh": "非标运维信条",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier7.svg"
     },
@@ -2319,7 +2321,7 @@
       "original_item_id": "upgrade.building.dark-temple.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "诅咒进程",
+      "name_zh": "僵尸后台进程",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier8.svg"
     },
@@ -2328,7 +2330,7 @@
       "original_item_id": "upgrade.building.dark-temple.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "跨域故障召唤",
+      "name_zh": "跨区节点唤醒",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier9.svg"
     },
@@ -2337,7 +2339,7 @@
       "original_item_id": "upgrade.building.dark-temple.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "暗影运维牧师",
+      "name_zh": "底层架构守护者",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier10.svg"
     },
@@ -2346,7 +2348,7 @@
       "original_item_id": "upgrade.building.dark-temple.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "地下服务神殿",
+      "name_zh": "地下核心机房",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier11.svg"
     },
@@ -2355,7 +2357,7 @@
       "original_item_id": "upgrade.building.dark-temple.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "邪恶故障诅咒",
+      "name_zh": "级联雪崩故障",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier12.svg"
     },
@@ -2364,7 +2366,7 @@
       "original_item_id": "upgrade.building.dark-temple.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "宕机仪式",
+      "name_zh": "全网降频演练",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier13.svg"
     },
@@ -2373,7 +2375,7 @@
       "original_item_id": "upgrade.building.dark-temple.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "毁灭肖像",
+      "name_zh": "事故复盘档案",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier14.svg"
     },
@@ -2382,7 +2384,7 @@
       "original_item_id": "upgrade.building.dark-temple.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "暗影领主",
+      "name_zh": "底层权限主管",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier15.svg"
     },
@@ -2391,7 +2393,7 @@
       "original_item_id": "upgrade.building.dark-temple.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "亵渎监控",
+      "name_zh": "屏蔽告警日志",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier16.svg"
     },
@@ -2400,7 +2402,7 @@
       "original_item_id": "upgrade.building.dark-temple.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "长角值班兽",
+      "name_zh": "夜间值守机器人",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier17.svg"
     },
@@ -2427,7 +2429,7 @@
       "original_item_id": "upgrade.building.dark-temple.20",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "注定宕机走廊",
+      "name_zh": "高压机柜走廊",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier20.svg"
     },
@@ -2436,7 +2438,7 @@
       "original_item_id": "upgrade.building.dark-temple.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "故障恐惧舱",
+      "name_zh": "恒温封存舱",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier21.svg"
     },
@@ -2445,7 +2447,7 @@
       "original_item_id": "upgrade.building.dark-temple.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "丝滑宕机流程",
+      "name_zh": "静默熔断流程",
       "description_zh": "黑盒运维中心产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/darkTemple-tier22.svg"
     },
@@ -2463,7 +2465,7 @@
       "original_item_id": "upgrade.building.citadel.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "事业群守卫训练",
+      "name_zh": "信息安全培训",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier1.svg"
     },
@@ -2472,7 +2474,7 @@
       "original_item_id": "upgrade.building.citadel.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "瞭望员",
+      "name_zh": "舆情监控员",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier2.svg"
     },
@@ -2481,7 +2483,7 @@
       "original_item_id": "upgrade.building.citadel.3",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "跨部门信号火",
+      "name_zh": "跨部门应急通报",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier3.svg"
     },
@@ -2490,7 +2492,7 @@
       "original_item_id": "upgrade.building.citadel.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "深护城河",
+      "name_zh": "核心业务护城河",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier4.svg"
     },
@@ -2499,7 +2501,7 @@
       "original_item_id": "upgrade.building.citadel.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "项目弩炮台",
+      "name_zh": "重型交付堡垒",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier5.svg"
     },
@@ -2508,7 +2510,7 @@
       "original_item_id": "upgrade.building.citadel.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "守夜人",
+      "name_zh": "夜间轮值组",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier6.svg"
     },
@@ -2535,7 +2537,7 @@
       "original_item_id": "upgrade.building.citadel.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "头盔式指挥所",
+      "name_zh": "封闭式指挥中心",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier9.svg"
     },
@@ -2544,7 +2546,7 @@
       "original_item_id": "upgrade.building.citadel.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "防御投石机",
+      "name_zh": "反制竞品策略",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier10.svg"
     },
@@ -2553,7 +2555,7 @@
       "original_item_id": "upgrade.building.citadel.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "应急退出路线",
+      "name_zh": "业务止损预案",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier11.svg"
     },
@@ -2571,7 +2573,7 @@
       "original_item_id": "upgrade.building.citadel.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "瞭望塔",
+      "name_zh": "数据监控塔",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier13.svg"
     },
@@ -2580,7 +2582,7 @@
       "original_item_id": "upgrade.building.citadel.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "加固边界",
+      "name_zh": "权限隔离边界",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier14.svg"
     },
@@ -2589,7 +2591,7 @@
       "original_item_id": "upgrade.building.citadel.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "宣誓守卫",
+      "name_zh": "保密协议核心组",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier15.svg"
     },
@@ -2598,7 +2600,7 @@
       "original_item_id": "upgrade.building.citadel.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "跨区信鸽",
+      "name_zh": "离线加密简报",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier16.svg"
     },
@@ -2607,7 +2609,7 @@
       "original_item_id": "upgrade.building.citadel.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "密码术",
+      "name_zh": "底层加密协议",
       "description_zh": "集团事业群产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/citadel-tier17.svg"
     },
@@ -2670,7 +2672,7 @@
       "original_item_id": "upgrade.building.necropolis.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "被删档的墓穴",
+      "name_zh": "被清退的档案库",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier1.svg"
     },
@@ -2679,7 +2681,7 @@
       "original_item_id": "upgrade.building.necropolis.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "腐烂项目遗体",
+      "name_zh": "烂尾项目遗骸",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier2.svg"
     },
@@ -2688,7 +2690,7 @@
       "original_item_id": "upgrade.building.necropolis.3",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "项目灵魂存储",
+      "name_zh": "残余权重归档",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier3.svg"
     },
@@ -2706,7 +2708,7 @@
       "original_item_id": "upgrade.building.necropolis.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "免费脑细胞",
+      "name_zh": "闲置算力回收",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier5.svg"
     },
@@ -2715,7 +2717,7 @@
       "original_item_id": "upgrade.building.necropolis.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "骷髅维护手",
+      "name_zh": "遗留代码维护员",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier6.svg"
     },
@@ -2733,7 +2735,7 @@
       "original_item_id": "upgrade.building.necropolis.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "首个亡故项目",
+      "name_zh": "初代归档项目",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier8.svg"
     },
@@ -2742,7 +2744,7 @@
       "original_item_id": "upgrade.building.necropolis.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "无主邪恶需求",
+      "name_zh": "无主历史遗留需求",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier9.svg"
     },
@@ -2760,7 +2762,7 @@
       "original_item_id": "upgrade.building.necropolis.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "石刻墓志铭",
+      "name_zh": "项目结项碑文",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier11.svg"
     },
@@ -2769,7 +2771,7 @@
       "original_item_id": "upgrade.building.necropolis.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "沉重墓碑",
+      "name_zh": "厚重归档封条",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier12.svg"
     },
@@ -2787,7 +2789,7 @@
       "original_item_id": "upgrade.building.necropolis.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "腐烂化",
+      "name_zh": "代码腐化",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier14.svg"
     },
@@ -2796,7 +2798,7 @@
       "original_item_id": "upgrade.building.necropolis.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "恶臭",
+      "name_zh": "架构异味",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier15.svg"
     },
@@ -2814,7 +2816,7 @@
       "original_item_id": "upgrade.building.necropolis.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "绿色故障粘液",
+      "name_zh": "过期营养液残渣",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier17.svg"
     },
@@ -2823,7 +2825,7 @@
       "original_item_id": "upgrade.building.necropolis.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "项目废土",
+      "name_zh": "废弃测试区",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier18.svg"
     },
@@ -2832,7 +2834,7 @@
       "original_item_id": "upgrade.building.necropolis.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "项目入土",
+      "name_zh": "项目封存",
       "description_zh": "历史项目坟场产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/necropolis-tier19.svg"
     },
@@ -2904,7 +2906,7 @@
       "original_item_id": "upgrade.building.royal-castle.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "镶宝王冠",
+      "name_zh": "董事会主席徽章",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier4.svg"
     },
@@ -2922,7 +2924,7 @@
       "original_item_id": "upgrade.building.royal-castle.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "董事会祝福",
+      "name_zh": "董事会特批",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier6.svg"
     },
@@ -2949,7 +2951,7 @@
       "original_item_id": "upgrade.building.royal-castle.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "英雄继承人",
+      "name_zh": "核心接班人计划",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier9.svg"
     },
@@ -2958,7 +2960,7 @@
       "original_item_id": "upgrade.building.royal-castle.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "试吃审查员",
+      "name_zh": "合规前置审查员",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier10.svg"
     },
@@ -2976,7 +2978,7 @@
       "original_item_id": "upgrade.building.royal-castle.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "皇家宴会",
+      "name_zh": "集团高管晚宴",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier12.svg"
     },
@@ -2985,7 +2987,7 @@
       "original_item_id": "upgrade.building.royal-castle.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "繁盛继承人",
+      "name_zh": "管培生梯队",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier13.svg"
     },
@@ -2994,7 +2996,7 @@
       "original_item_id": "upgrade.building.royal-castle.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黄金权杖",
+      "name_zh": "一票否决权",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier14.svg"
     },
@@ -3003,7 +3005,7 @@
       "original_item_id": "upgrade.building.royal-castle.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "皇家财务官",
+      "name_zh": "集团首席财务官",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier15.svg"
     },
@@ -3021,7 +3023,7 @@
       "original_item_id": "upgrade.building.royal-castle.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "总部宏伟化",
+      "name_zh": "总部园区扩建",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier17.svg"
     },
@@ -3030,7 +3032,7 @@
       "original_item_id": "upgrade.building.royal-castle.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "行业山丘之王",
+      "name_zh": "行业龙头地位",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier18.svg"
     },
@@ -3039,7 +3041,7 @@
       "original_item_id": "upgrade.building.royal-castle.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "创始人肖像墙",
+      "name_zh": "创始人标准像",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier19.svg"
     },
@@ -3057,7 +3059,7 @@
       "original_item_id": "upgrade.building.royal-castle.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "总部舞会厅",
+      "name_zh": "总部年会大厅",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier21.svg"
     },
@@ -3075,7 +3077,7 @@
       "original_item_id": "upgrade.building.royal-castle.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "待解救项目代表",
+      "name_zh": "待纾困子公司",
       "description_zh": "全球总部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/royalCastle-tier23.svg"
     },
@@ -3084,7 +3086,7 @@
       "original_item_id": "upgrade.building.evil-fortress.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "带刺围墙",
+      "name_zh": "高压隔离围墙",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier1.svg"
     },
@@ -3093,7 +3095,7 @@
       "original_item_id": "upgrade.building.evil-fortress.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "深入地牢",
+      "name_zh": "地下三层办公区",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier2.svg"
     },
@@ -3102,7 +3104,7 @@
       "original_item_id": "upgrade.building.evil-fortress.3",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑曜王座",
+      "name_zh": "黑铁总监椅",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier3.svg"
     },
@@ -3111,7 +3113,7 @@
       "original_item_id": "upgrade.building.evil-fortress.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "石像鬼督工",
+      "name_zh": "铁面绩效督工",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier4.svg"
     },
@@ -3120,7 +3122,7 @@
       "original_item_id": "upgrade.building.evil-fortress.5",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑色尖塔",
+      "name_zh": "黑盒监控塔",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier5.svg"
     },
@@ -3129,7 +3131,7 @@
       "original_item_id": "upgrade.building.evil-fortress.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "看门猎犬",
+      "name_zh": "风控稽查犬",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier6.svg"
     },
@@ -3138,7 +3140,7 @@
       "original_item_id": "upgrade.building.evil-fortress.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑曜大门",
+      "name_zh": "权限门禁重门",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier7.svg"
     },
@@ -3165,7 +3167,7 @@
       "original_item_id": "upgrade.building.evil-fortress.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "背信事业部主",
+      "name_zh": "铁腕事业部总",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier10.svg"
     },
@@ -3174,7 +3176,7 @@
       "original_item_id": "upgrade.building.evil-fortress.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "穿刺示众榜",
+      "name_zh": "违规通报红黑榜",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier11.svg"
     },
@@ -3183,7 +3185,7 @@
       "original_item_id": "upgrade.building.evil-fortress.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑衣卫队",
+      "name_zh": "内审督察队",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier12.svg"
     },
@@ -3210,7 +3212,7 @@
       "original_item_id": "upgrade.building.evil-fortress.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "地牢管理员",
+      "name_zh": "机房值守管理员",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier15.svg"
     },
@@ -3219,7 +3221,7 @@
       "original_item_id": "upgrade.building.evil-fortress.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "致命毒雾",
+      "name_zh": "高压窒息氛围",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier16.svg"
     },
@@ -3228,7 +3230,7 @@
       "original_item_id": "upgrade.building.evil-fortress.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "酸液淘汰池",
+      "name_zh": "末位清退池",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier17.svg"
     },
@@ -3246,7 +3248,7 @@
       "original_item_id": "upgrade.building.evil-fortress.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黑暗王座",
+      "name_zh": "幕后决策席",
       "description_zh": "高压事业部产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/evilFortress-tier19.svg"
     },
@@ -3291,7 +3293,7 @@
       "original_item_id": "upgrade.building.heavens-gate.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "黄金钥匙",
+      "name_zh": "高维权限密钥",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier1.svg"
     },
@@ -3309,7 +3311,7 @@
       "original_item_id": "upgrade.building.heavens-gate.3",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "自动闸门",
+      "name_zh": "星际虫洞闸门",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier3.svg"
     },
@@ -3318,7 +3320,7 @@
       "original_item_id": "upgrade.building.heavens-gate.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "奇迹分配器",
+      "name_zh": "共识编译分配器",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier4.svg"
     },
@@ -3336,7 +3338,7 @@
       "original_item_id": "upgrade.building.heavens-gate.6",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "轨道升舱",
+      "name_zh": "纯意识上传",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier6.svg"
     },
@@ -3363,7 +3365,7 @@
       "original_item_id": "upgrade.building.heavens-gate.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "轨道通道",
+      "name_zh": "虫洞光纤通道",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier9.svg"
     },
@@ -3372,7 +3374,7 @@
       "original_item_id": "upgrade.building.heavens-gate.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "轨道突破",
+      "name_zh": "算力奇点突破",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier10.svg"
     },
@@ -3381,7 +3383,7 @@
       "original_item_id": "upgrade.building.heavens-gate.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "正式授星",
+      "name_zh": "核心节点授勋",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier11.svg"
     },
@@ -3390,7 +3392,7 @@
       "original_item_id": "upgrade.building.heavens-gate.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "云端光照",
+      "name_zh": "戴森环供能束",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier12.svg"
     },
@@ -3399,7 +3401,7 @@
       "original_item_id": "upgrade.building.heavens-gate.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "辐射办公环",
+      "name_zh": "恒星套娃脑壳层",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier13.svg"
     },
@@ -3417,7 +3419,7 @@
       "original_item_id": "upgrade.building.heavens-gate.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "神圣交付游戏",
+      "name_zh": "宏观观测演练",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier15.svg"
     },
@@ -3453,7 +3455,7 @@
       "original_item_id": "upgrade.building.heavens-gate.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "神辉办公光束",
+      "name_zh": "高能激光链路",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier19.svg"
     },
@@ -3489,7 +3491,7 @@
       "original_item_id": "upgrade.building.heavens-gate.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "异常访客记录",
+      "name_zh": "未授权线程接入",
       "description_zh": "轨道办公港产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/heavensGate-tier23.svg"
     },
@@ -3498,7 +3500,7 @@
       "original_item_id": "upgrade.building.hell-portal.1",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "持续痛苦",
+      "name_zh": "持续过载",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier1.svg"
     },
@@ -3507,7 +3509,7 @@
       "original_item_id": "upgrade.building.hell-portal.2",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "无尽悲伤",
+      "name_zh": "无尽工时",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%，数字员工 +1。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier2.svg"
     },
@@ -3525,7 +3527,7 @@
       "original_item_id": "upgrade.building.hell-portal.4",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "不休苦楚",
+      "name_zh": "不休轮回",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier4.svg"
     },
@@ -3552,7 +3554,7 @@
       "original_item_id": "upgrade.building.hell-portal.7",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "常年悲痛",
+      "name_zh": "常年超频",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier7.svg"
     },
@@ -3561,7 +3563,7 @@
       "original_item_id": "upgrade.building.hell-portal.8",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "永续苦闷",
+      "name_zh": "永续待命",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier8.svg"
     },
@@ -3570,7 +3572,7 @@
       "original_item_id": "upgrade.building.hell-portal.9",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "无边苦难",
+      "name_zh": "无边递归",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier9.svg"
     },
@@ -3579,7 +3581,7 @@
       "original_item_id": "upgrade.building.hell-portal.10",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "不可计量心酸",
+      "name_zh": "不可计量废热",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier10.svg"
     },
@@ -3588,7 +3590,7 @@
       "original_item_id": "upgrade.building.hell-portal.11",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "深不可测绝望",
+      "name_zh": "深不可测洞库",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier11.svg"
     },
@@ -3597,7 +3599,7 @@
       "original_item_id": "upgrade.building.hell-portal.12",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "无限烦躁",
+      "name_zh": "无限死循环",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier12.svg"
     },
@@ -3606,7 +3608,7 @@
       "original_item_id": "upgrade.building.hell-portal.13",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "灾难性事件",
+      "name_zh": "系统级雪崩",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier13.svg"
     },
@@ -3615,7 +3617,7 @@
       "original_item_id": "upgrade.building.hell-portal.14",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "灾难性巧合",
+      "name_zh": "防火墙老化崩溃",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier14.svg"
     },
@@ -3624,7 +3626,7 @@
       "original_item_id": "upgrade.building.hell-portal.15",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "可怕瞬间",
+      "name_zh": "记忆清空瞬间",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier15.svg"
     },
@@ -3633,7 +3635,7 @@
       "original_item_id": "upgrade.building.hell-portal.16",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "悲剧时刻",
+      "name_zh": "皮层剥离时刻",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier16.svg"
     },
@@ -3642,7 +3644,7 @@
       "original_item_id": "upgrade.building.hell-portal.17",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "恐怖画面",
+      "name_zh": "渲染穿帮画面",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier17.svg"
     },
@@ -3651,7 +3653,7 @@
       "original_item_id": "upgrade.building.hell-portal.18",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "毁灭幻象",
+      "name_zh": "集体幻觉裂痕",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier18.svg"
     },
@@ -3660,7 +3662,7 @@
       "original_item_id": "upgrade.building.hell-portal.19",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "毁灭念头",
+      "name_zh": "格式化冲动",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier19.svg"
     },
@@ -3678,7 +3680,7 @@
       "original_item_id": "upgrade.building.hell-portal.21",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "深层排班事故",
+      "name_zh": "底层校验死锁",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier21.svg"
     },
@@ -3687,7 +3689,7 @@
       "original_item_id": "upgrade.building.hell-portal.22",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "不可承受交付灾难",
+      "name_zh": "不可逆熵增灾难",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier22.svg"
     },
@@ -3696,7 +3698,7 @@
       "original_item_id": "upgrade.building.hell-portal.23",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "空心员工念头",
+      "name_zh": "空壳线程残响",
       "description_zh": "全天候工作井产出提高 {activeProductionPercent}%。",
       "image_path": "assets/images/content-icons/upgrades/hellPortal-tier23.svg"
     },
@@ -3705,184 +3707,230 @@
       "original_item_id": "upgrades.hall-of-legends-production@9926",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇员工代表",
-      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。"
+      "name_zh": "先进代表名录",
+      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier1.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier2",
       "original_item_id": "upgrades.hall-of-legends-production@9939",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇员工联席会",
-      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。"
+      "name_zh": "骨干联席名录",
+      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier2.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier3",
       "original_item_id": "upgrades.hall-of-legends-production@9952",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇项目骨干",
-      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。"
+      "name_zh": "攻坚标兵名录",
+      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier3.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier4",
       "original_item_id": "upgrades.hall-of-legends-production@9965",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇项目冠军",
-      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。"
+      "name_zh": "首席功臣名录",
+      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier4.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier5",
       "original_item_id": "upgrades.hall-of-legends-production@9978",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇业务领袖",
-      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。"
+      "name_zh": "业务带头人录",
+      "description_zh": "传奇档案馆产出 ×1.75；其他每项设施按每个奖杯提高 0.25%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier5.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier6",
       "original_item_id": "upgrades.hall-of-legends-production@9994",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇部门负责人",
-      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。"
+      "name_zh": "部门掌舵人录",
+      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier6.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier7",
       "original_item_id": "upgrades.hall-of-legends-production@10007",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇团队矩阵",
-      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。"
+      "name_zh": "核心方阵名录",
+      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier7.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier8",
       "original_item_id": "upgrades.hall-of-legends-production@10020",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇组织管理者",
-      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。"
+      "name_zh": "中枢执掌者录",
+      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier8.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier9",
       "original_item_id": "upgrades.hall-of-legends-production@10033",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇制度制定者",
-      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。"
+      "name_zh": "章程起草人录",
+      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier9.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier10",
       "original_item_id": "upgrades.hall-of-legends-production@10046",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇履历起点",
-      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。"
+      "name_zh": "创社元勋档案",
+      "description_zh": "传奇档案馆产出 ×2.5；其他每项设施按每个奖杯提高 0.5%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier10.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier11",
       "original_item_id": "upgrades.hall-of-legends-production@10059",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇员工殿堂",
-      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。"
+      "name_zh": "荣光殿堂卷宗",
+      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier11.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier12",
       "original_item_id": "upgrades.hall-of-legends-production@10072",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇规则授予者",
-      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。"
+      "name_zh": "定鼎宗师档案",
+      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier12.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier13",
       "original_item_id": "upgrades.hall-of-legends-production@10085",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇组织实体",
-      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。"
+      "name_zh": "核心节点档案",
+      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier13.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier14",
       "original_item_id": "upgrades.hall-of-legends-production@10101",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "永恒工龄账户",
-      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。"
+      "name_zh": "长明工号档案",
+      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier14.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier15",
       "original_item_id": "upgrades.hall-of-legends-production@10117",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇业务域",
-      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。"
+      "name_zh": "统筹辖区档案",
+      "description_zh": "传奇档案馆产出 ×4；其他每项设施按每个奖杯提高 0.75%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier15.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier16",
       "original_item_id": "upgrades.hall-of-legends-production@10130",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "跨世员工重聚",
-      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。"
+      "name_zh": "跨期归档名录",
+      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier16.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier17",
       "original_item_id": "upgrades.hall-of-legends-production@10143",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "历届主管会议",
-      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。"
+      "name_zh": "历届全会纪要",
+      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier17.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier18",
       "original_item_id": "upgrades.hall-of-legends-production@10156",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "跨域履历汇聚",
-      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。"
+      "name_zh": "多维并网纪要",
+      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier18.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier19",
       "original_item_id": "upgrades.hall-of-legends-production@10169",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "全员传奇大会",
-      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。"
+      "name_zh": "全体大会纪要",
+      "description_zh": "传奇档案馆产出 ×7；其他每项设施按每个奖杯提高 1%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier19.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier20",
       "original_item_id": "upgrades.hall-of-legends-production@10182",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇档案库藏",
-      "description_zh": "传奇档案馆产出 ×1.2；其他每项设施按每个奖杯提高 0.1%。"
+      "name_zh": "深层洞库藏卷",
+      "description_zh": "传奇档案馆产出 ×1.2；其他每项设施按每个奖杯提高 0.1%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier20.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier21",
       "original_item_id": "upgrades.hall-of-legends-production@10199",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇参与记录",
-      "description_zh": "传奇档案馆产出 ×1.4；其他每项设施按每个奖杯提高 0.15%。"
+      "name_zh": "在岗校验记录",
+      "description_zh": "传奇档案馆产出 ×1.4；其他每项设施按每个奖杯提高 0.15%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier21.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier22",
       "original_item_id": "upgrades.hall-of-legends-production@10212",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇出席记录",
-      "description_zh": "传奇档案馆产出 ×1.6；其他每项设施按每个奖杯提高 0.2%。"
+      "name_zh": "永续考勤记录",
+      "description_zh": "传奇档案馆产出 ×1.6；其他每项设施按每个奖杯提高 0.2%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier22.svg",
+      "image_status": "done"
     },
     {
       "id": "hallOfLegends-tier23",
       "original_item_id": "upgrades.hall-of-legends-production@10225",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传奇员工年会",
-      "description_zh": "传奇档案馆产出 ×1.8；其他每项设施按每个奖杯提高 0.25%。"
+      "name_zh": "太一庆典纪要",
+      "description_zh": "传奇档案馆产出 ×1.8；其他每项设施按每个奖杯提高 0.25%。",
+      "image_path": "assets/images/content-icons/upgrades/hallOfLegends-tier23.svg",
+      "image_status": "done"
     },
     {
       "id": "hallBonus1",
@@ -3890,65 +3938,79 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "荣誉档案库",
-      "description_zh": "每座传奇档案馆基础值 +750000；按其他设施数量提高传奇档案馆产出。"
+      "description_zh": "每座传奇档案馆基础值 +750000；按其他设施数量提高传奇档案馆产出。",
+      "image_path": "assets/images/content-icons/upgrades/hallBonus1.svg",
+      "image_status": "done"
     },
     {
       "id": "hallBonus2",
       "original_item_id": "upgrades.hall-of-legends-prestige@10255",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "声望档案库",
-      "description_zh": "每座传奇档案馆基础值 +2000000；按其他设施数量提高传奇档案馆产出。"
+      "name_zh": "功勋档案库",
+      "description_zh": "每座传奇档案馆基础值 +2000000；按其他设施数量提高传奇档案馆产出。",
+      "image_path": "assets/images/content-icons/upgrades/hallBonus2.svg",
+      "image_status": "done"
     },
     {
       "id": "hallBonus3",
       "original_item_id": "upgrades.hall-of-legends-prestige@10269",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "名望档案库",
-      "description_zh": "每座传奇档案馆基础值 +7000000；按其他设施数量提高传奇档案馆产出。"
+      "name_zh": "元老档案库",
+      "description_zh": "每座传奇档案馆基础值 +7000000；按其他设施数量提高传奇档案馆产出。",
+      "image_path": "assets/images/content-icons/upgrades/hallBonus3.svg",
+      "image_status": "done"
     },
     {
       "id": "hallBonus4",
       "original_item_id": "upgrades.trophy-upgrade@10280",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "档案中的传奇",
-      "description_zh": "传奇档案馆产出 ×2。"
+      "name_zh": "绝密内参卷宗",
+      "description_zh": "传奇档案馆产出 ×2。",
+      "image_path": "assets/images/content-icons/upgrades/hallBonus4.svg",
+      "image_status": "done"
     },
     {
       "id": "hallBonus5",
       "original_item_id": "upgrades.trophy-upgrade@10295",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "层层皆是传奇",
-      "description_zh": "传奇档案馆产出 ×3。"
+      "name_zh": "层层递归卷宗",
+      "description_zh": "传奇档案馆产出 ×3。",
+      "image_path": "assets/images/content-icons/upgrades/hallBonus5.svg",
+      "image_status": "done"
     },
     {
       "id": "hallBonus6",
       "original_item_id": "upgrades.trophy-upgrade@10306",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "档案成就档案",
-      "description_zh": "传奇档案馆产出 ×5。"
+      "name_zh": "档案总目索引",
+      "description_zh": "传奇档案馆产出 ×5。",
+      "image_path": "assets/images/content-icons/upgrades/hallBonus6.svg",
+      "image_status": "done"
     },
     {
       "id": "good",
       "original_item_id": "upgrades.alignment-good@2395",
       "kind": "alignment",
       "version": "1.0.2",
-      "name_zh": "理想",
+      "name_zh": "理想路线",
       "description_zh": "主动点击、技能与快速扩张。",
-      "image_status": "not_started"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/factions/good.svg"
     },
     {
       "id": "evil",
       "original_item_id": "upgrades.alignment-evil@2400",
       "kind": "alignment",
       "version": "1.0.2",
-      "name_zh": "务实",
+      "name_zh": "务实路线",
       "description_zh": "稳定产出、离线收益与高阶设施。",
-      "image_status": "not_started"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/factions/evil.svg"
     },
     {
       "id": "fairy",
@@ -3957,7 +4019,8 @@
       "version": "1.0.2",
       "name_zh": "产品部",
       "description_zh": "强化见习工位、茶水间与打印维修间，偏向低阶设施协同。",
-      "image_path": "assets/images/content-icons/factions/fairy-contract-tier1.svg"
+      "image_path": "assets/images/content-icons/factions/fairy.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin",
@@ -3966,7 +4029,8 @@
       "version": "1.0.2",
       "name_zh": "财务部",
       "description_zh": "将设施规模、影响力与工资结算转化为长期收益。",
-      "image_path": "assets/images/content-icons/factions/goblin-contract-tier1.svg"
+      "image_path": "assets/images/content-icons/factions/goblin.svg",
+      "image_status": "done"
     },
     {
       "id": "elven",
@@ -3974,7 +4038,9 @@
       "kind": "faction",
       "version": "1.1.0",
       "name_zh": "技术部",
-      "description_zh": "通过点击、技术幸运与部门交换扩大收益。"
+      "description_zh": "通过点击、技术幸运与部门交换扩大收益。",
+      "image_path": "assets/images/content-icons/factions/elven.svg",
+      "image_status": "done"
     },
     {
       "id": "angel",
@@ -3982,7 +4048,9 @@
       "kind": "faction",
       "version": "1.1.0",
       "name_zh": "战略部",
-      "description_zh": "将精力恢复、施法时间与战略部署转化为产出。"
+      "description_zh": "将精力恢复、施法时间与战略部署转化为产出。",
+      "image_path": "assets/images/content-icons/factions/angel.svg",
+      "image_status": "done"
     },
     {
       "id": "undead",
@@ -3990,7 +4058,9 @@
       "kind": "faction",
       "version": "1.1.0",
       "name_zh": "运维部",
-      "description_zh": "强化数字员工、离线产出与持续运行能力。"
+      "description_zh": "强化数字员工、离线产出与持续运行能力。",
+      "image_path": "assets/images/content-icons/factions/undead.svg",
+      "image_status": "done"
     },
     {
       "id": "demon",
@@ -3998,7 +4068,9 @@
       "kind": "faction",
       "version": "1.1.0",
       "name_zh": "执行部",
-      "description_zh": "以高阶设施、奖杯和高压执行推动产出。"
+      "description_zh": "以高阶设施、奖杯和红温极限压榨推动产出。",
+      "image_path": "assets/images/content-icons/factions/demon.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-1",
@@ -4007,7 +4079,8 @@
       "version": "1.0.2",
       "name_zh": "需求培养土",
       "description_zh": "见习工位、茶水间与打印维修间基础产出 +600，三设施价格增长系数分别降低 0.02。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t1-1.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-1.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-2",
@@ -4016,16 +4089,18 @@
       "version": "1.0.2",
       "name_zh": "产品新人",
       "description_zh": "按数字员工数量使见习工位、茶水间与打印维修间产出提高 {effect:fairy-2}%。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t1-2.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-2.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-3",
       "original_item_id": "upgrades.fairy-upgrade3@3205",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "善意默认值",
+      "name_zh": "人性化默认值",
       "description_zh": "按低阶三设施总数，每秒精力恢复 +{effect:fairy-3}。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t1-3.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-3.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-pact",
@@ -4034,16 +4109,18 @@
       "version": "1.0.2",
       "name_zh": "产品部协作协议",
       "description_zh": "消耗对应部门影响力，解锁 Tier 2 部门强化。",
-      "image_path": "assets/images/content-icons/factions/fairy-contract-tier2.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-pact.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-4",
       "original_item_id": "upgrades.fairy-upgrade4@3210",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "团队补给站",
+      "name_zh": "轻量组件库",
       "description_zh": "每个激活技能每秒自动点击一次。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t2-1.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-4.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-5",
@@ -4052,16 +4129,18 @@
       "version": "1.0.2",
       "name_zh": "黄金需求池",
       "description_zh": "将低阶三设施产出的 100% 加入基础点击收入（当前 +{effect:fairy-5}），影响力发现率 +20 个百分点。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t2-2.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-5.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-6",
       "original_item_id": "upgrades.fairy-upgrade6@3220",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "技能封装术",
+      "name_zh": "敏捷响应小组",
       "description_zh": "按低阶三设施总数增加 {effect:fairy-6} 名数字员工。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t2-3.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-6.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-alliance",
@@ -4070,16 +4149,18 @@
       "version": "1.0.2",
       "name_zh": "产品部战略协议",
       "description_zh": "消耗对应部门影响力，解锁 Tier 3 部门强化。",
-      "image_path": "assets/images/content-icons/factions/fairy-contract-tier3.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-alliance.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-7",
       "original_item_id": "upgrades.fairy-upgrade7@3225",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "星屑组件库",
+      "name_zh": "高颜值UI套件",
       "description_zh": "按本轮头脑风暴活动时间，每份期权产出加成 +{effect:fairy-7}%。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t3-1.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-7.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-8",
@@ -4088,16 +4169,18 @@
       "version": "1.0.2",
       "name_zh": "全端需求联动",
       "description_zh": "按低阶三设施总数使全部设施产出提高 {effect:fairy-8}%。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t3-2.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-8.svg",
+      "image_status": "done"
     },
     {
       "id": "fairy-9",
       "original_item_id": "upgrades.fairy-upgrade9@3235",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "群脑评审",
+      "name_zh": "同理心评审",
       "description_zh": "按理想设施总数增加 {effect:fairy-9} 点最大精力。",
-      "image_path": "assets/images/content-icons/factions/fairy-upgrade-t3-3.svg"
+      "image_path": "assets/images/content-icons/factions/fairy-9.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-1",
@@ -4106,25 +4189,28 @@
       "version": "1.0.2",
       "name_zh": "强势现金流",
       "description_zh": "按本 Era 部门影响力增加 {effect:goblin-1} 名数字员工。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t1-1.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-1.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-2",
       "original_item_id": "upgrades.goblin-upgrade2@3533",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "外包交易",
+      "name_zh": "人力外包结算",
       "description_zh": "按务实设施数量使全部设施产出提高 {effect:goblin-2}%。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t1-2.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-2.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-3",
       "original_item_id": "upgrades.goblin-upgrade3@3538",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "低成本物料",
+      "name_zh": "极简成本控制",
       "description_zh": "按设施总数使工资结算时间 +{effect:goblin-3} 秒。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t1-3.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-3.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-pact",
@@ -4133,16 +4219,18 @@
       "version": "1.0.2",
       "name_zh": "财务部协作协议",
       "description_zh": "消耗对应部门影响力，解锁 Tier 2 部门强化。",
-      "image_path": "assets/images/content-icons/factions/goblin-contract-tier2.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-pact.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-4",
       "original_item_id": "upgrades.goblin-upgrade4@3543",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "灰色采购市",
+      "name_zh": "虚增估值模型",
       "description_zh": "按本次职业内夜间作战室的历史最高数量，影响力发现率 +{effect:goblin-4} 个百分点。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t2-1.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-4.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-5",
@@ -4151,16 +4239,18 @@
       "version": "1.0.2",
       "name_zh": "财务精算师",
       "description_zh": "按当前工资使精力恢复提高 {effect:goblin-5}%。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t2-2.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-5.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-6",
       "original_item_id": "upgrades.goblin-upgrade6@3553",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "成本角斗场",
+      "name_zh": "预算砍刀手",
       "description_zh": "按工资结算时间使全部设施产出提高 {effect:goblin-6}%。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t2-3.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-6.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-alliance",
@@ -4169,7 +4259,8 @@
       "version": "1.0.2",
       "name_zh": "财务部战略协议",
       "description_zh": "消耗对应部门影响力，解锁 Tier 3 部门强化。",
-      "image_path": "assets/images/content-icons/factions/goblin-contract-tier3.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-alliance.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-7",
@@ -4178,25 +4269,28 @@
       "version": "1.0.2",
       "name_zh": "集团资金池",
       "description_zh": "每次施放其他技能时，按最大精力免费追加 {maxManaTaxTimes} 次工资结算。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t3-1.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-7.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-8",
       "original_item_id": "upgrades.goblin-upgrade8@3563",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "账面富贵",
+      "name_zh": "离岸空壳账目",
       "description_zh": "期权产出倍率提高 {effect:goblin-8-gems}%，离线产出提高 {effect:goblin-8-offline}%。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t3-2.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-8.svg",
+      "image_status": "done"
     },
     {
       "id": "goblin-9",
       "original_item_id": "upgrades.goblin-upgrade9@3568",
       "kind": "upgrade",
       "version": "1.0.2",
-      "name_zh": "全绿预算折扣",
+      "name_zh": "审计豁免折扣",
       "description_zh": "每 120 秒随机获得 1–1500 秒复合产出快照奖励；离线结算只抽取一次 21–101 倍产出倍率。",
-      "image_path": "assets/images/content-icons/factions/goblin-upgrade-t3-3.svg"
+      "image_path": "assets/images/content-icons/factions/goblin-9.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-1",
@@ -4204,23 +4298,29 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "点击编译器",
-      "description_zh": "影响力发现率乘算 +100%；每秒自动点击 3 次。"
+      "description_zh": "影响力发现率乘算 +100%；每秒自动点击 3 次。",
+      "image_path": "assets/images/content-icons/factions/elven-1.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-2",
       "original_item_id": "upgrades.elven-upgrade2@3301",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "连击缓存",
-      "description_zh": "全部设施实际每秒产出的 50% 加入基础点击收入（当前 +{effect:elven-2}）。"
+      "name_zh": "冗余连击栈",
+      "description_zh": "全部设施实际每秒产出的 50% 加入基础点击收入（当前 +{effect:elven-2}）。",
+      "image_path": "assets/images/content-icons/factions/elven-2.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-3",
       "original_item_id": "upgrades.elven-upgrade3@3306",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "传统输入手法",
-      "description_zh": "按本次职业有效点击数，每秒精力恢复 +{effect:elven-3}。"
+      "name_zh": "旧式穿孔指法",
+      "description_zh": "按本次职业有效点击数，每秒精力恢复 +{effect:elven-3}。",
+      "image_path": "assets/images/content-icons/factions/elven-3.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-4",
@@ -4228,23 +4328,29 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "技术特派员",
-      "description_zh": "按理想设施数量乘算点击收入 +{effect:elven-4-click}%；离线影响力获取 ×3。"
+      "description_zh": "按理想设施数量乘算点击收入 +{effect:elven-4-click}%；离线影响力获取 ×3。",
+      "image_path": "assets/images/content-icons/factions/elven-4.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-5",
       "original_item_id": "upgrades.elven-upgrade5@3316",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "精英效率",
-      "description_zh": "按本 Era 累计发现的影响力提高统筹调拨加成。"
+      "name_zh": "高并发工效",
+      "description_zh": "按本 Era 累计发现的影响力提高统筹调拨加成。",
+      "image_path": "assets/images/content-icons/factions/elven-5.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-6",
       "original_item_id": "upgrades.elven-upgrade6@3324",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "秘传连击技巧",
-      "description_zh": "按本次职业有效点击数使全部设施产出提高 {effect:elven-6}%。"
+      "name_zh": "秘传盲打心法",
+      "description_zh": "按本次职业有效点击数使全部设施产出提高 {effect:elven-6}%。",
+      "image_path": "assets/images/content-icons/factions/elven-6.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-7",
@@ -4252,15 +4358,19 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "跨部门接口",
-      "description_zh": "按本轮影响力提高有效点击计数，不增加真实点击事件。"
+      "description_zh": "按本轮影响力提高有效点击计数，不增加真实点击事件。",
+      "image_path": "assets/images/content-icons/factions/elven-7.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-8",
       "original_item_id": "upgrades.elven-upgrade8@3334",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "技术幸运",
-      "description_zh": "点击和数字员工可触发技术幸运，获得额外工资与随机部门影响力。"
+      "name_zh": "机房玄学签",
+      "description_zh": "点击和数字员工可触发技术幸运，获得额外工资与随机部门影响力。",
+      "image_path": "assets/images/content-icons/factions/elven-8.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-9",
@@ -4268,7 +4378,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "自动输入阵列",
-      "description_zh": "按奖杯数，影响力发现率 +{effect:elven-9} 个百分点。"
+      "description_zh": "按奖杯数，影响力发现率 +{effect:elven-9} 个百分点。",
+      "image_path": "assets/images/content-icons/factions/elven-9.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-1",
@@ -4276,7 +4388,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "晨会钟声",
-      "description_zh": "按有效设施总数，每秒精力恢复 +{effect:angel-1}。"
+      "description_zh": "按有效设施总数，每秒精力恢复 +{effect:angel-1}。",
+      "image_path": "assets/images/content-icons/factions/angel-1.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-2",
@@ -4284,15 +4398,19 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "战略定力",
-      "description_zh": "按本 Era 施法数使全部设施产出提高 {effect:angel-2}%。"
+      "description_zh": "按本 Era 施法数使全部设施产出提高 {effect:angel-2}%。",
+      "image_path": "assets/images/content-icons/factions/angel-2.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-3",
       "original_item_id": "upgrades.angel-upgrade3@3417",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "精力授权",
-      "description_zh": "按当前激活技能数，影响力发现率 +{effect:angel-3} 个百分点。"
+      "name_zh": "顶层精力配额",
+      "description_zh": "按当前激活技能数，影响力发现率 +{effect:angel-3} 个百分点。",
+      "image_path": "assets/images/content-icons/factions/angel-3.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-4",
@@ -4300,31 +4418,39 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "决策护航",
-      "description_zh": "当前 Tier 7 设施基础产出 +98,000，产出提高 {effect:angel-4-production}%。"
+      "description_zh": "当前 Tier 7 设施基础产出 +98,000，产出提高 {effect:angel-4-production}%。",
+      "image_path": "assets/images/content-icons/factions/angel-4.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-5",
       "original_item_id": "upgrades.angel-upgrade5@3431",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "战略智慧",
-      "description_zh": "法术持续 +50%，精力恢复 ×1.5，并按离线精力恢复修正离线施法。"
+      "name_zh": "太一战略推演",
+      "description_zh": "法术持续 +50%，精力恢复 ×1.5，并按离线精力恢复修正离线施法。",
+      "image_path": "assets/images/content-icons/factions/angel-5.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-6",
       "original_item_id": "upgrades.angel-upgrade6@3440",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "高层精力池",
-      "description_zh": "按当前精力恢复使全部设施产出提高 {effect:angel-6}%。"
+      "name_zh": "总师精力特批",
+      "description_zh": "按当前精力恢复使全部设施产出提高 {effect:angel-6}%。",
+      "image_path": "assets/images/content-icons/factions/angel-6.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-7",
       "original_item_id": "upgrades.angel-upgrade7@3445",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "跨层资源通道",
-      "description_zh": "按本次职业理想立场时间，最大精力 +{effect:angel-7}。"
+      "name_zh": "跨层审批通道",
+      "description_zh": "按本次职业理想立场时间，最大精力 +{effect:angel-7}。",
+      "image_path": "assets/images/content-icons/factions/angel-7.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-8",
@@ -4332,87 +4458,109 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "战略主导权",
-      "description_zh": "按战略赋能的 Era 活动时间提高每份期权加成 {effect:angel-8-gems}%；全法术精力消耗减半。"
+      "description_zh": "按战略赋能的 Era 活动时间提高每份期权加成 {effect:angel-8-gems}%；全法术精力消耗减半。",
+      "image_path": "assets/images/content-icons/factions/angel-8.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-9",
       "original_item_id": "upgrades.angel-upgrade9@3455",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "自由授权",
-      "description_zh": "按最长法术持续时间使全部设施产出提高 {effect:angel-9}%。"
+      "name_zh": "全权委托书",
+      "description_zh": "按最长法术持续时间使全部设施产出提高 {effect:angel-9}%。",
+      "image_path": "assets/images/content-icons/factions/angel-9.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-1",
       "original_item_id": "upgrades.undead-upgrade1@3623",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "系统唤醒",
-      "description_zh": "按有效数字员工数，影响力发现率 +{effect:undead-1} 个百分点。"
+      "name_zh": "零点进程唤醒",
+      "description_zh": "按有效数字员工数，影响力发现率 +{effect:undead-1} 个百分点。",
+      "image_path": "assets/images/content-icons/factions/undead-1.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-2",
       "original_item_id": "upgrades.undead-upgrade2@3628",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "疲劳管理",
-      "description_zh": "按本次职业历史项目坟场最高数量，全部设施产出提高 {effect:undead-2}%。"
+      "name_zh": "痛觉神经屏蔽",
+      "description_zh": "按本次职业历史项目坟场最高数量，全部设施产出提高 {effect:undead-2}%。",
+      "image_path": "assets/images/content-icons/factions/undead-2.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-3",
       "original_item_id": "upgrades.undead-upgrade3@3633",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "午夜运维台",
-      "description_zh": "按本次职业历史项目坟场最高数量，每秒精力恢复 +{effect:undead-3}。"
+      "name_zh": "地下值守机房",
+      "description_zh": "按本次职业历史项目坟场最高数量，每秒精力恢复 +{effect:undead-3}。",
+      "image_path": "assets/images/content-icons/factions/undead-3.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-4",
       "original_item_id": "upgrades.undead-upgrade4@3638",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "非标准排班",
-      "description_zh": "按本 Era 运维部影响力延长通宵赶工持续时间。"
+      "name_zh": "不眠轮班制",
+      "description_zh": "按本 Era 运维部影响力延长午夜静默运维持续时间。",
+      "image_path": "assets/images/content-icons/factions/undead-4.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-5",
       "original_item_id": "upgrades.undead-upgrade5@3643",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "人力后备库",
-      "description_zh": "按本 Era 游戏时间增加 {effect:undead-5} 名数字员工。"
+      "name_zh": "冷备人才库",
+      "description_zh": "按本 Era 游戏时间增加 {effect:undead-5} 名数字员工。",
+      "image_path": "assets/images/content-icons/factions/undead-5.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-6",
       "original_item_id": "upgrades.undead-upgrade6@3648",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "设施疲劳传染",
-      "description_zh": "按本 Era 最高法术活动时间提高全部设施产出 {effect:undead-6}%，并将 Era 离线时间计入通宵赶工活动。"
+      "name_zh": "机柜负荷传导",
+      "description_zh": "按本 Era 最高法术活动时间提高全部设施产出 {effect:undead-6}%，并将 Era 离线时间计入午夜静默运维活动。",
+      "image_path": "assets/images/content-icons/factions/undead-6.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-7",
       "original_item_id": "upgrades.undead-upgrade7@3653",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "永不打烊楼层",
-      "description_zh": "全部设施与法术活动的有效计数提高 75%，真实采购和门槛不变。"
+      "name_zh": "无人值守机区",
+      "description_zh": "全部设施与法术活动的有效计数提高 75%，真实采购和门槛不变。",
+      "image_path": "assets/images/content-icons/factions/undead-7.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-8",
       "original_item_id": "upgrades.undead-upgrade8@3662",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "不知疲倦员工",
-      "description_zh": "按当前精力恢复乘算数字员工产出 +{effect:undead-8}%。"
+      "name_zh": "无休在线节点",
+      "description_zh": "按当前精力恢复乘算数字员工产出 +{effect:undead-8}%。",
+      "image_path": "assets/images/content-icons/factions/undead-8.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-9",
       "original_item_id": "upgrades.undead-upgrade9@3667",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "持续运行韧性",
-      "description_zh": "按 Era 离线时间提高在线产出 {effect:undead-9-online}%，离线产出提高 {effect:undead-9-offline}%。"
+      "name_zh": "禁断超频规程",
+      "description_zh": "按 Era 离线时间提高在线产出 {effect:undead-9-online}%，离线产出提高 {effect:undead-9-offline}%。",
+      "image_path": "assets/images/content-icons/factions/undead-9.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-1",
@@ -4420,71 +4568,89 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "员工谈心室",
-      "description_zh": "按有效数字员工数使当前 Tier 9 设施产出提高 {effect:demon-1}%。"
+      "description_zh": "按有效数字员工数使当前 Tier 9 设施产出提高 {effect:demon-1}%。",
+      "image_path": "assets/images/content-icons/factions/demon-1.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-2",
       "original_item_id": "upgrades.demon-upgrade2@3730",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "执行暴君",
-      "description_zh": "按当前 Tier 10 有效设施数，每秒精力恢复 +{effect:demon-2}。"
+      "name_zh": "高压催化算法",
+      "description_zh": "按当前 Tier 10 有效设施数，每秒精力恢复 +{effect:demon-2}。",
+      "image_path": "assets/images/content-icons/factions/demon-2.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-3",
       "original_item_id": "upgrades.demon-upgrade3@3739",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "燃烧执行团",
-      "description_zh": "按本次职业 Tier 10 设施最高数量增加 {effect:demon-3} 名数字员工。"
+      "name_zh": "燃尽攻坚队",
+      "description_zh": "按本次职业 Tier 10 设施最高数量增加 {effect:demon-3} 名数字员工。",
+      "image_path": "assets/images/content-icons/factions/demon-3.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-4",
       "original_item_id": "upgrades.demon-upgrade4@3744",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "热点需求池",
-      "description_zh": "Tier 9 设施基础产出 +900,000，Tier 10 设施基础产出 +8,800,000。"
+      "name_zh": "过载废热池",
+      "description_zh": "Tier 9 设施基础产出 +900,000，Tier 10 设施基础产出 +8,800,000。",
+      "image_path": "assets/images/content-icons/factions/demon-4.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-5",
       "original_item_id": "upgrades.demon-upgrade5@3749",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "执行监工",
-      "description_zh": "按奖杯数使当前最高三阶设施产出提高 {effect:demon-5}%。"
+      "name_zh": "末位督导官",
+      "description_zh": "按奖杯数使当前最高三阶设施产出提高 {effect:demon-5}%。",
+      "image_path": "assets/images/content-icons/factions/demon-5.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-6",
       "original_item_id": "upgrades.demon-upgrade6@3754",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "高压存在感",
-      "description_zh": "按本次职业务实法术施放数，最大精力 +{effect:demon-6}。"
+      "name_zh": "全天候督战",
+      "description_zh": "按本次职业务实法术施放数，最大精力 +{effect:demon-6}。",
+      "image_path": "assets/images/content-icons/factions/demon-6.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-7",
       "original_item_id": "upgrades.demon-upgrade7@3763",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "炼狱推送算法",
-      "description_zh": "按本次职业务实立场时间提高最高三阶设施产出 {effect:demon-7}%，其有效数量 ×2。"
+      "name_zh": "夺命连环推送",
+      "description_zh": "按本次职业务实立场时间提高最高三阶设施产出 {effect:demon-7}%，其有效数量 ×2。",
+      "image_path": "assets/images/content-icons/factions/demon-7.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-8",
       "original_item_id": "upgrades.demon-upgrade8@3768",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "高压征服者",
-      "description_zh": "按本次职业全天候工作井最高数量，全部设施产出提高 {effect:demon-8}%。"
+      "name_zh": "指标收割者",
+      "description_zh": "按本次职业全天候工作井最高数量，全部设施产出提高 {effect:demon-8}%。",
+      "image_path": "assets/images/content-icons/factions/demon-8.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-9",
       "original_item_id": "upgrades.demon-upgrade9@3773",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "狼性团队",
-      "description_zh": "按高压执行在本次职业的活动时间，当前 Tier 10 设施产出提高 {effect:demon-9}%。"
+      "name_zh": "极致狼性铁军",
+      "description_zh": "按红温极限压榨在本次职业的活动时间，当前 Tier 10 设施产出提高 {effect:demon-9}%。",
+      "image_path": "assets/images/content-icons/factions/demon-9.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-pact",
@@ -4492,7 +4658,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "技术部协作协议",
-      "description_zh": "消耗技术部影响力，解锁 Tier 2 部门强化。"
+      "description_zh": "消耗技术部影响力，解锁 Tier 2 部门强化。",
+      "image_path": "assets/images/content-icons/factions/elven-pact.svg",
+      "image_status": "done"
     },
     {
       "id": "elven-alliance",
@@ -4500,7 +4668,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "技术部战略协议",
-      "description_zh": "消耗技术部影响力，解锁 Tier 3 部门强化。"
+      "description_zh": "消耗技术部影响力，解锁 Tier 3 部门强化。",
+      "image_path": "assets/images/content-icons/factions/elven-alliance.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-pact",
@@ -4508,7 +4678,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "战略部协作协议",
-      "description_zh": "消耗战略部影响力，解锁 Tier 2 部门强化。"
+      "description_zh": "消耗战略部影响力，解锁 Tier 2 部门强化。",
+      "image_path": "assets/images/content-icons/factions/angel-pact.svg",
+      "image_status": "done"
     },
     {
       "id": "angel-alliance",
@@ -4516,7 +4688,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "战略部战略协议",
-      "description_zh": "消耗战略部影响力，解锁 Tier 3 部门强化。"
+      "description_zh": "消耗战略部影响力，解锁 Tier 3 部门强化。",
+      "image_path": "assets/images/content-icons/factions/angel-alliance.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-pact",
@@ -4524,7 +4698,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "运维部协作协议",
-      "description_zh": "消耗运维部影响力，解锁 Tier 2 部门强化。"
+      "description_zh": "消耗运维部影响力，解锁 Tier 2 部门强化。",
+      "image_path": "assets/images/content-icons/factions/undead-pact.svg",
+      "image_status": "done"
     },
     {
       "id": "undead-alliance",
@@ -4532,7 +4708,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "运维部战略协议",
-      "description_zh": "消耗运维部影响力，解锁 Tier 3 部门强化。"
+      "description_zh": "消耗运维部影响力，解锁 Tier 3 部门强化。",
+      "image_path": "assets/images/content-icons/factions/undead-alliance.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-pact",
@@ -4540,7 +4718,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "执行部协作协议",
-      "description_zh": "消耗执行部影响力，解锁 Tier 2 部门强化。"
+      "description_zh": "消耗执行部影响力，解锁 Tier 2 部门强化。",
+      "image_path": "assets/images/content-icons/factions/demon-pact.svg",
+      "image_status": "done"
     },
     {
       "id": "demon-alliance",
@@ -4548,7 +4728,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "执行部战略协议",
-      "description_zh": "消耗执行部影响力，解锁 Tier 3 部门强化。"
+      "description_zh": "消耗执行部影响力，解锁 Tier 3 部门强化。",
+      "image_path": "assets/images/content-icons/factions/demon-alliance.svg",
+      "image_status": "done"
     },
     {
       "id": "royalMarket",
@@ -4556,7 +4738,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "统筹调拨",
-      "description_zh": "打开统筹调拨窗口，使用各部门影响力进行调拨。"
+      "description_zh": "打开统筹调拨窗口，使用各部门影响力进行调拨。",
+      "image_path": "assets/images/content-icons/exchange/royalMarket.svg",
+      "image_status": "done"
     },
     {
       "id": "gemPower",
@@ -4637,7 +4821,7 @@
       "original_item_id": "upgrades.clicking-production@6663",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "充实的产值",
+      "name_zh": "达标创收指标",
       "description_zh": "点击收入与全部设施产出 ×1.25。"
     },
     {
@@ -4645,7 +4829,7 @@
       "original_item_id": "upgrades.clicking-production@6673",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "丰厚的产值",
+      "name_zh": "丰厚创收指标",
       "description_zh": "点击收入与全部设施产出 ×1.25。"
     },
     {
@@ -4653,7 +4837,7 @@
       "original_item_id": "upgrades.clicking-production@6684",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "富庶的产值",
+      "name_zh": "超额创收指标",
       "description_zh": "点击收入与全部设施产出 ×1.25。"
     },
     {
@@ -4661,7 +4845,7 @@
       "original_item_id": "upgrades.clicking-production@6695",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "奢华的产值",
+      "name_zh": "巨额创收指标",
       "description_zh": "点击收入与全部设施产出 ×1.25。"
     },
     {
@@ -4669,7 +4853,7 @@
       "original_item_id": "upgrades.clicking-production@6706",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "溢出的产值",
+      "name_zh": "溢出创收指标",
       "description_zh": "点击收入与全部设施产出 ×1.25。"
     },
     {
@@ -4677,7 +4861,7 @@
       "original_item_id": "upgrades.clicking-total-production@6717",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "珍贵的产值",
+      "name_zh": "一期资本沉淀",
       "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction1}）。"
     },
     {
@@ -4685,7 +4869,7 @@
       "original_item_id": "upgrades.clicking-total-production@6732",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "华丽的产值",
+      "name_zh": "扩充资本沉淀",
       "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction2}）。"
     },
     {
@@ -4693,7 +4877,7 @@
       "original_item_id": "upgrades.clicking-total-production@6745",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "镶饰的产值",
+      "name_zh": "离岸资本沉淀",
       "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction3}）。"
     },
     {
@@ -4701,7 +4885,7 @@
       "original_item_id": "upgrades.clicking-total-production@6760",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "精雕的产值",
+      "name_zh": "重资产资本池",
       "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction4}）。"
     },
     {
@@ -4709,7 +4893,7 @@
       "original_item_id": "upgrades.clicking-total-production@6771",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "辉煌的产值",
+      "name_zh": "主权级资本池",
       "description_zh": "将当前全部设施每秒产出的 1% 加入基础点击收入（当前 +{effect:clickingTotalProduction5}）。"
     },
     {
@@ -4717,24 +4901,30 @@
       "original_item_id": "upgrades.gem-upgrade@1689",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "期权增值",
-      "description_zh": "每份期权提供的产出加成 +1 个百分点。"
+      "name_zh": "期权行权增值",
+      "description_zh": "每份期权提供的产出加成 +1 个百分点。",
+      "image_path": "assets/images/content-icons/misc/gemUpgrade1.svg",
+      "image_status": "done"
     },
     {
       "id": "gemUpgrade2",
       "original_item_id": "upgrades.gem-upgrade@1700",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "期权控制",
-      "description_zh": "每份期权提供的产出加成 +1 个百分点。"
+      "name_zh": "期权池控盘",
+      "description_zh": "每份期权提供的产出加成 +1 个百分点。",
+      "image_path": "assets/images/content-icons/misc/gemUpgrade2.svg",
+      "image_status": "done"
     },
     {
       "id": "gemUpgrade3",
       "original_item_id": "upgrades.gem-upgrade@1715",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "期权主权",
-      "description_zh": "每份期权提供的产出加成 +1 个百分点。"
+      "name_zh": "绝对期权主权",
+      "description_zh": "每份期权提供的产出加成 +1 个百分点。",
+      "image_path": "assets/images/content-icons/misc/gemUpgrade3.svg",
+      "image_status": "done"
     },
     {
       "id": "assistantUpgrade1",
@@ -4742,7 +4932,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "数字员工工会",
-      "description_zh": "每名有效数字员工使全部设施产出提高 1%。"
+      "description_zh": "每名有效数字员工使全部设施产出提高 1%。",
+      "image_path": "assets/images/content-icons/misc/assistantUpgrade1.svg",
+      "image_status": "done"
     },
     {
       "id": "assistantUpgrade2",
@@ -4750,7 +4942,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "数字员工联合",
-      "description_zh": "每名有效数字员工使全部设施产出提高 1%。"
+      "description_zh": "每名有效数字员工使全部设施产出提高 1%。",
+      "image_path": "assets/images/content-icons/misc/assistantUpgrade2.svg",
+      "image_status": "done"
     },
     {
       "id": "assistantUpgrade3",
@@ -4758,7 +4952,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "数字员工垄断",
-      "description_zh": "每名有效数字员工使全部设施产出提高 1%。"
+      "description_zh": "每名有效数字员工使全部设施产出提高 1%。",
+      "image_path": "assets/images/content-icons/misc/assistantUpgrade3.svg",
+      "image_status": "done"
     },
     {
       "id": "clickingBase1",
@@ -4789,7 +4985,7 @@
       "original_item_id": "upgrades.clicking-base@6622",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "坚韧的工牌",
+      "name_zh": "三线出入证",
       "description_zh": "基础点击收入 +500000；离线时每秒额外自动点击 1 次。"
     },
     {
@@ -4797,7 +4993,7 @@
       "original_item_id": "upgrades.clicking-base@6639",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "不坏的工牌",
+      "name_zh": "防磁金属牌",
       "description_zh": "基础点击收入 +50000000；离线时每秒额外自动点击 1 次。"
     },
     {
@@ -4805,7 +5001,7 @@
       "original_item_id": "upgrades.clicking-base@6652",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "永恒的工牌",
+      "name_zh": "永恒零号牌",
       "description_zh": "基础点击收入 +50000000000；离线时每秒额外自动点击 1 次。"
     },
     {
@@ -4939,7 +5135,8 @@
       "version": "1.1.0",
       "name_zh": "产品部统筹调拨",
       "description_zh": "逐枚消耗产品部影响力，所有部门的统筹调拨共同强化全部设施。",
-      "image_status": "not_required"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/exchange/fairyExchange.svg"
     },
     {
       "id": "elvenExchange",
@@ -4948,7 +5145,8 @@
       "version": "1.1.0",
       "name_zh": "技术部统筹调拨",
       "description_zh": "逐枚消耗技术部影响力，所有部门的统筹调拨共同强化全部设施。",
-      "image_status": "not_required"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/exchange/elvenExchange.svg"
     },
     {
       "id": "angelExchange",
@@ -4957,7 +5155,8 @@
       "version": "1.1.0",
       "name_zh": "战略部统筹调拨",
       "description_zh": "逐枚消耗战略部影响力，所有部门的统筹调拨共同强化全部设施。",
-      "image_status": "not_required"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/exchange/angelExchange.svg"
     },
     {
       "id": "goblinExchange",
@@ -4966,7 +5165,8 @@
       "version": "1.1.0",
       "name_zh": "财务部统筹调拨",
       "description_zh": "逐枚消耗财务部影响力，所有部门的统筹调拨共同强化全部设施。",
-      "image_status": "not_required"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/exchange/goblinExchange.svg"
     },
     {
       "id": "undeadExchange",
@@ -4975,7 +5175,8 @@
       "version": "1.1.0",
       "name_zh": "运维部统筹调拨",
       "description_zh": "逐枚消耗运维部影响力，所有部门的统筹调拨共同强化全部设施。",
-      "image_status": "not_required"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/exchange/undeadExchange.svg"
     },
     {
       "id": "demonExchange",
@@ -4984,7 +5185,8 @@
       "version": "1.1.0",
       "name_zh": "执行部统筹调拨",
       "description_zh": "逐枚消耗执行部影响力，所有部门的统筹调拨共同强化全部设施。",
-      "image_status": "not_required"
+      "image_status": "done",
+      "image_path": "assets/images/content-icons/exchange/demonExchange.svg"
     },
     {
       "id": "taxCollection",
@@ -4993,7 +5195,8 @@
       "version": "1.0.2",
       "name_zh": "工资结算",
       "description_zh": "立即获得相当于当前 {taxSeconds} 秒设施与数字员工产出的工资。",
-      "image_path": "assets/images/cash.png"
+      "image_path": "assets/images/content-icons/spells/taxCollection.svg",
+      "image_status": "done"
     },
     {
       "id": "callToArms",
@@ -5002,7 +5205,8 @@
       "version": "1.0.2",
       "name_zh": "全员冲刺",
       "description_zh": "根据当前有效设施总数，在 {spellDuration} 秒内提高全部设施产出，当前提高 {activeGlobalPercent}%。",
-      "image_path": "assets/images/briefcase.png"
+      "image_path": "assets/images/content-icons/spells/callToArms.svg",
+      "image_status": "done"
     },
     {
       "id": "holyLight",
@@ -5011,16 +5215,18 @@
       "version": "1.0.2",
       "name_zh": "奋斗动员",
       "description_zh": "在 {spellDuration} 秒内提高点击收入，当前提高 1750%。",
-      "image_path": "assets/images/tower.png"
+      "image_path": "assets/images/content-icons/spells/holyLight.svg",
+      "image_status": "done"
     },
     {
       "id": "bloodFrenzy",
       "original_item_id": "spells.blood-frenzy@1211",
       "kind": "spell",
       "version": "1.0.2",
-      "name_zh": "务实冲刺",
+      "name_zh": "狼性狂热",
       "description_zh": "在 {spellDuration} 秒内提高全部设施产出，当前提高 1500%。",
-      "image_path": "assets/images/headphones.png"
+      "image_path": "assets/images/content-icons/spells/bloodFrenzy.svg",
+      "image_status": "done"
     },
     {
       "id": "fairyChanting",
@@ -5029,7 +5235,8 @@
       "version": "1.0.2",
       "name_zh": "头脑风暴",
       "description_zh": "根据见习工位、茶水间与打印维修间的有效总数，在 {spellDuration} 秒内提高这三类设施产出，当前倍率 ×{effect:fairyChanting}。",
-      "image_path": "assets/images/laptop.png"
+      "image_path": "assets/images/content-icons/spells/fairyChanting.svg",
+      "image_status": "done"
     },
     {
       "id": "goblinsGreed",
@@ -5038,7 +5245,8 @@
       "version": "1.0.2",
       "name_zh": "预算腾挪",
       "description_zh": "根据当前期权立即获得 {castAmount:0} 点待领取部门影响力；再根据本 Era 累计发现的影响力，在 {spellDuration} 秒内提高全部设施产出，当前提高 {effect:goblinsGreed}%。",
-      "image_path": "assets/images/coin.png"
+      "image_path": "assets/images/content-icons/spells/goblinsGreed.svg",
+      "image_status": "done"
     },
     {
       "id": "moonBlessing",
@@ -5046,7 +5254,9 @@
       "kind": "spell",
       "version": "1.1.0",
       "name_zh": "月光迭代",
-      "description_zh": "根据本次职业有效点击数，在 {spellDuration} 秒内提高全部设施产出，当前提高 {effect:moonBlessing}%。"
+      "description_zh": "根据本次职业有效点击数，在 {spellDuration} 秒内提高全部设施产出，当前提高 {effect:moonBlessing}%。",
+      "image_path": "assets/images/content-icons/spells/moonBlessing.svg",
+      "image_status": "done"
     },
     {
       "id": "godsHand",
@@ -5054,23 +5264,29 @@
       "kind": "spell",
       "version": "1.1.0",
       "name_zh": "战略赋能",
-      "description_zh": "根据当前精力恢复提高全部设施产出，当前提高 {effect:godsHand}%；持续时间随本次职业理想立场时间增加，当前持续 {spellDuration} 秒。"
+      "description_zh": "根据当前精力恢复提高全部设施产出，当前提高 {effect:godsHand}%；持续时间随本次职业理想立场时间增加，当前持续 {spellDuration} 秒。",
+      "image_path": "assets/images/content-icons/spells/godsHand.svg",
+      "image_status": "done"
     },
     {
       "id": "nightTime",
       "original_item_id": "spells.night-time@1271",
       "kind": "spell",
       "version": "1.1.0",
-      "name_zh": "通宵赶工",
-      "description_zh": "根据历史项目坟场的有效数量，在 {spellDuration} 秒内提高数字员工产出，当前基础加成 +{effect:nightTime} 个百分点。"
+      "name_zh": "午夜静默运维",
+      "description_zh": "根据历史项目坟场的有效数量，在 {spellDuration} 秒内提高数字员工产出，当前基础加成 +{effect:nightTime} 个百分点。",
+      "image_path": "assets/images/content-icons/spells/nightTime.svg",
+      "image_status": "done"
     },
     {
       "id": "hellfireBlast",
       "original_item_id": "spells.hellfire-blast@1276",
       "kind": "spell",
       "version": "1.1.0",
-      "name_zh": "高压执行",
-      "description_zh": "根据已解锁奖杯数，在 {spellDuration} 秒内提高高压事业部产出，当前提高 {activeProductionPercent}%；购入开场冲刺令后，同样强化全天候工作井与传奇档案馆。"
+      "name_zh": "红温极限压榨",
+      "description_zh": "根据已解锁奖杯数，在 {spellDuration} 秒内提高高压事业部产出，当前提高 {activeProductionPercent}%；购入开场冲刺令后，同样强化全天候工作井与传奇档案馆。",
+      "image_path": "assets/images/content-icons/spells/hellfireBlast.svg",
+      "image_status": "done"
     },
     {
       "id": "fairyChampion",
@@ -5078,7 +5294,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "产品部核心员工",
-      "description_zh": "在同一轮完成产品部条约、协作协议、战略协议与九项部门强化。"
+      "description_zh": "在同一轮完成产品部条约、协作协议、战略协议与九项部门强化。",
+      "image_path": "assets/images/content-icons/trophies/fairyChampion.svg",
+      "image_status": "done"
     },
     {
       "id": "elvenChampion",
@@ -5086,7 +5304,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "技术部核心员工",
-      "description_zh": "在同一轮完成技术部条约、协作协议、战略协议与九项部门强化。"
+      "description_zh": "在同一轮完成技术部条约、协作协议、战略协议与九项部门强化。",
+      "image_path": "assets/images/content-icons/trophies/elvenChampion.svg",
+      "image_status": "done"
     },
     {
       "id": "angelChampion",
@@ -5094,7 +5314,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "战略部核心员工",
-      "description_zh": "在同一轮完成战略部条约、协作协议、战略协议与九项部门强化。"
+      "description_zh": "在同一轮完成战略部条约、协作协议、战略协议与九项部门强化。",
+      "image_path": "assets/images/content-icons/trophies/angelChampion.svg",
+      "image_status": "done"
     },
     {
       "id": "goblinChampion",
@@ -5102,7 +5324,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "财务部核心员工",
-      "description_zh": "在同一轮完成财务部条约、协作协议、战略协议与九项部门强化。"
+      "description_zh": "在同一轮完成财务部条约、协作协议、战略协议与九项部门强化。",
+      "image_path": "assets/images/content-icons/trophies/goblinChampion.svg",
+      "image_status": "done"
     },
     {
       "id": "undeadChampion",
@@ -5110,7 +5334,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "运维部核心员工",
-      "description_zh": "在同一轮完成运维部条约、协作协议、战略协议与九项部门强化。"
+      "description_zh": "在同一轮完成运维部条约、协作协议、战略协议与九项部门强化。",
+      "image_path": "assets/images/content-icons/trophies/undeadChampion.svg",
+      "image_status": "done"
     },
     {
       "id": "demonChampion",
@@ -5118,7 +5344,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "执行部核心员工",
-      "description_zh": "在同一轮完成执行部条约、协作协议、战略协议与九项部门强化。"
+      "description_zh": "在同一轮完成执行部条约、协作协议、战略协议与九项部门强化。",
+      "image_path": "assets/images/content-icons/trophies/demonChampion.svg",
+      "image_status": "done"
     },
     {
       "id": "fairyChoir",
@@ -5126,15 +5354,19 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "群体脑暴",
-      "description_zh": "施放头脑风暴时拥有至少 50 名真实数字员工。"
+      "description_zh": "施放头脑风暴时拥有至少 50 名真实数字员工。",
+      "image_path": "assets/images/content-icons/trophies/fairyChoir.svg",
+      "image_status": "done"
     },
     {
       "id": "sunBlessing",
       "original_item_id": "trophies.secret-sun-blessing@17961",
       "kind": "trophy",
       "version": "1.1.0",
-      "name_zh": "日光自动迭代",
-      "description_zh": "本 Era 触发至少 5 次技术幸运。"
+      "name_zh": "白昼自动编译",
+      "description_zh": "本 Era 触发至少 5 次技术幸运。",
+      "image_path": "assets/images/content-icons/trophies/sunBlessing.svg",
+      "image_status": "done"
     },
     {
       "id": "godsRest",
@@ -5142,15 +5374,19 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "周日战略休会",
-      "description_zh": "最大精力达到 1500，且每秒精力恢复达到 75。"
+      "description_zh": "最大精力达到 1500，且每秒精力恢复达到 75。",
+      "image_path": "assets/images/content-icons/trophies/godsRest.svg",
+      "image_status": "done"
     },
     {
       "id": "greedDrive",
       "original_item_id": "trophies.secret-greed-drive@17971",
       "kind": "trophy",
       "version": "1.1.0",
-      "name_zh": "预算连算",
-      "description_zh": "预算腾挪生效期间拥有至少 100 次统筹调拨。"
+      "name_zh": "跨期套利引擎",
+      "description_zh": "预算腾挪生效期间拥有至少 100 次统筹调拨。",
+      "image_path": "assets/images/content-icons/trophies/greedDrive.svg",
+      "image_status": "done"
     },
     {
       "id": "trueNight",
@@ -5158,7 +5394,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "永久夜班制",
-      "description_zh": "离线产出加成达到 200%。"
+      "description_zh": "离线产出加成达到 200%。",
+      "image_path": "assets/images/content-icons/trophies/trueNight.svg",
+      "image_status": "done"
     },
     {
       "id": "hellRush",
@@ -5166,7 +5404,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "开场冲刺令",
-      "description_zh": "在本轮真实时间 60 秒前施放高压执行。"
+      "description_zh": "在本轮真实时间 60 秒前施放红温极限压榨。",
+      "image_path": "assets/images/content-icons/trophies/hellRush.svg",
+      "image_status": "done"
     },
     {
       "id": "farm-building-trophy-1",
@@ -8470,7 +8710,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "全设施各一",
-      "description_zh": "当前立场可用的每种设施真实数量都严格等于 1。"
+      "description_zh": "当前立场可用的每种设施真实数量都严格等于 1。",
+      "image_path": "assets/images/content-icons/trophies/unitaryTrophy.svg",
+      "image_status": "done"
     },
     {
       "id": "mathematicianTrophy",
@@ -8478,7 +8720,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "组织数学家",
-      "description_zh": "当前立场 Tier 11 至 Tier 1 的设施真实数量依次为 1、2、4、8……1024。"
+      "description_zh": "当前立场 Tier 11 至 Tier 1 的设施真实数量依次为 1、2、4、8……1024。",
+      "image_path": "assets/images/content-icons/trophies/mathematicianTrophy.svg",
+      "image_status": "done"
     },
     {
       "id": "spellfuryTrophy",
@@ -8486,7 +8730,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "多线并发",
-      "description_zh": "施放工资结算时，另有至少三个技能处于激活状态。"
+      "description_zh": "施放工资结算时，另有至少三个技能处于激活状态。",
+      "image_path": "assets/images/content-icons/trophies/spellfuryTrophy.svg",
+      "image_status": "done"
     },
     {
       "id": "assistantGroup",
@@ -8494,7 +8740,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "数字员工小组",
-      "description_zh": "同时拥有至少 20 名真实数字员工。"
+      "description_zh": "同时拥有至少 20 名真实数字员工。",
+      "image_path": "assets/images/content-icons/trophies/assistantGroup.svg",
+      "image_status": "done"
     },
     {
       "id": "assistantSquad",
@@ -8502,7 +8750,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "数字员工班组",
-      "description_zh": "同时拥有至少 100 名真实数字员工。"
+      "description_zh": "同时拥有至少 100 名真实数字员工。",
+      "image_path": "assets/images/content-icons/trophies/assistantSquad.svg",
+      "image_status": "done"
     },
     {
       "id": "assistantLegion",
@@ -8510,7 +8760,9 @@
       "kind": "trophy",
       "version": "1.1.0",
       "name_zh": "数字员工编队",
-      "description_zh": "同时拥有至少 300 名真实数字员工。"
+      "description_zh": "同时拥有至少 300 名真实数字员工。",
+      "image_path": "assets/images/content-icons/trophies/assistantLegion.svg",
+      "image_status": "done"
     },
     {
       "id": "fairyHeritage",
@@ -8518,7 +8770,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "产品部传承手册",
-      "description_zh": "全部设施产出按低阶三设施有效数量提高 {effect:fairyHeritage}%。"
+      "description_zh": "全部设施产出按低阶三设施有效数量提高 {effect:fairyHeritage}%。",
+      "image_path": "assets/images/content-icons/factions/fairyHeritage.svg",
+      "image_status": "done"
     },
     {
       "id": "elvenHeritage",
@@ -8526,7 +8780,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "技术部传承手册",
-      "description_zh": "影响力发现率 +5 个百分点，点击收入提高 {effect:elvenHeritage-click}%，每秒自动点击 1 次。"
+      "description_zh": "影响力发现率 +5 个百分点，点击收入提高 {effect:elvenHeritage-click}%，每秒自动点击 1 次。",
+      "image_path": "assets/images/content-icons/factions/elvenHeritage.svg",
+      "image_status": "done"
     },
     {
       "id": "angelicHeritage",
@@ -8534,7 +8790,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "战略部传承手册",
-      "description_zh": "精力恢复 ×1.10。"
+      "description_zh": "精力恢复 ×1.10。",
+      "image_path": "assets/images/content-icons/factions/angelicHeritage.svg",
+      "image_status": "done"
     },
     {
       "id": "goblinHeritage",
@@ -8542,7 +8800,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "财务部传承手册",
-      "description_zh": "按当前期权使全部设施产出提高 {effect:goblinHeritage}%。"
+      "description_zh": "按当前期权使全部设施产出提高 {effect:goblinHeritage}%。",
+      "image_path": "assets/images/content-icons/factions/goblinHeritage.svg",
+      "image_status": "done"
     },
     {
       "id": "undeadHeritage",
@@ -8550,7 +8810,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "运维部传承手册",
-      "description_zh": "按本次职业离线时间提高离线产出 {effect:undeadHeritage}%。"
+      "description_zh": "按本次职业离线时间提高离线产出 {effect:undeadHeritage}%。",
+      "image_path": "assets/images/content-icons/factions/undeadHeritage.svg",
+      "image_status": "done"
     },
     {
       "id": "demonicHeritage",
@@ -8558,7 +8820,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "执行部传承手册",
-      "description_zh": "每座有效传奇档案馆使全部设施产出提高 0.3%（当前 {effect:demonicHeritage}%）。"
+      "description_zh": "每座有效传奇档案馆使全部设施产出提高 0.3%（当前 {effect:demonicHeritage}%）。",
+      "image_path": "assets/images/content-icons/factions/demonicHeritage.svg",
+      "image_status": "done"
     },
     {
       "id": "fairyChoirUpgrade",
@@ -8566,15 +8830,19 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "群体脑暴",
-      "description_zh": "头脑风暴期间有效数字员工 ×3；解锁判定仍读真实数量。"
+      "description_zh": "头脑风暴期间有效数字员工 ×3；解锁判定仍读真实数量。",
+      "image_path": "assets/images/content-icons/factions/fairyChoirUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "sunBlessingUpgrade",
       "original_item_id": "upgrades.sun-blessing@11029",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "日光自动迭代",
-      "description_zh": "月光迭代期间每秒自动点击 15 次。"
+      "name_zh": "白昼自动编译",
+      "description_zh": "月光迭代期间每秒自动点击 15 次。",
+      "image_path": "assets/images/content-icons/factions/sunBlessingUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "godsRestUpgrade",
@@ -8582,15 +8850,19 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "周日战略休会",
-      "description_zh": "战略赋能期间，施放其他法术会向一个合格部门发放影响力。"
+      "description_zh": "战略赋能期间，施放其他法术会向一个合格部门发放影响力。",
+      "image_path": "assets/images/content-icons/factions/godsRestUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "greedDriveUpgrade",
       "original_item_id": "upgrades.greed-drive@11039",
       "kind": "upgrade",
       "version": "1.1.0",
-      "name_zh": "预算连算",
-      "description_zh": "预算腾挪期间，工资结算精力消耗 ×0.9。"
+      "name_zh": "跨期套利引擎",
+      "description_zh": "预算腾挪期间，工资结算精力消耗 ×0.9。",
+      "image_path": "assets/images/content-icons/factions/greedDriveUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "trueNightUpgrade",
@@ -8598,7 +8870,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "永久夜班制",
-      "description_zh": "通宵赶工期间按真实活动时间强化数字员工，并提高离线时间有效计数。"
+      "description_zh": "午夜静默运维期间按真实活动时间强化数字员工，并提高离线时间有效计数。",
+      "image_path": "assets/images/content-icons/factions/trueNightUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "hellRushUpgrade",
@@ -8606,7 +8880,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "开场冲刺令",
-      "description_zh": "高压执行额外强化全天候工作井与传奇档案馆。"
+      "description_zh": "红温极限压榨额外强化全天候工作井与传奇档案馆。",
+      "image_path": "assets/images/content-icons/factions/hellRushUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "unitaryUpgrade",
@@ -8614,7 +8890,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "全设施各一",
-      "description_zh": "全部设施产出提高 11.11111111%。"
+      "description_zh": "全部设施产出提高 11.11111111%。",
+      "image_path": "assets/images/content-icons/misc/unitaryUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "mathematicianUpgrade",
@@ -8622,7 +8900,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "组织数学家",
-      "description_zh": "各设施按 Tier 获得独立产出倍率；Tier 1 为 ×2.1，Tier 11 为 ×1.1。"
+      "description_zh": "各设施按 Tier 获得独立产出倍率；Tier 1 为 ×2.1，Tier 11 为 ×1.1。",
+      "image_path": "assets/images/content-icons/misc/mathematicianUpgrade.svg",
+      "image_status": "done"
     },
     {
       "id": "spellfuryUpgrade",
@@ -8630,7 +8910,9 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "多线并发",
-      "description_zh": "精力恢复 ×1.05。"
+      "description_zh": "精力恢复 ×1.05。",
+      "image_path": "assets/images/content-icons/misc/spellfuryUpgrade.svg",
+      "image_status": "done"
     }
   ]
 }

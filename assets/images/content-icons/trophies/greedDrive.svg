@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>跨期套利引擎（Greed Drive）</title>
+  <desc>财务部升级技能与法术成就：阶梯递增金柱与斜向上破框红橙箭头，低多边形风格。</desc>
+  <g id="greedDrive-icon">
+    <polygon points="12,38 22,38 22,52 12,52" fill="#D1B15C"/>
+    <polygon points="26,28 36,28 36,52 26,52" fill="#E7CA74"/>
+    <polygon points="40,18 50,18 50,52 40,52" fill="#F5E4A8"/>
+    <polygon points="10,52 54,52 52,56 12,56" fill="#65402F"/>
+    <polygon points="12,33 34,19 31,15 47,12 40,26 37,22 15,37" fill="#DF9A6C"/>
+    <polygon points="34,19 31,15 47,12 40,26 37,22" fill="#C4764D"/>
+  </g>
+</svg>

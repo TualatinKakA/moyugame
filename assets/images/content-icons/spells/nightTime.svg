@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>午夜静默运维（Night Time）</title>
+  <desc>运维部派系法术：暗夜雷达屏与鼠尾草绿平滑心电波，低多边形风格。</desc>
+  <g id="nightTime-icon">
+    <polygon points="10,16 54,16 54,48 10,48" fill="#46504F"/>
+    <polygon points="54,16 57,19 57,51 54,48" fill="#333B3A"/>
+    <polygon points="10,48 54,48 57,51 13,51" fill="#333B3A"/>
+    <polygon points="14,20 50,20 50,40 14,40" fill="#252A27"/>
+    <polygon points="16,29 24,29 27,23 31,36 35,27 48,27 48,30.5 37,30.5 31,40 27,28 25,32 16,32" fill="#91B77A"/>
+    <polygon points="15,43 22,43 22,45.5 15,45.5" fill="#DF9A6C"/>
+    <polygon points="26,43 49,43 49,45.5 26,45.5" fill="#899492"/>
+  </g>
+</svg>

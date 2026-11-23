@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>技术部协作协议（Elven 协作协议）</title>
+  <desc>技术部协作协议：机械键盘键帽主体，右下方叠加协作协议，合约中央写有数字2。</desc>
+  <g id="elven-pact-base" transform="translate(-2.5, -2.5) scale(0.92)">
+    <polygon points="9,41 30,51.5 53,40 32,29.5" fill="#697473"/>
+    <polygon points="9,41 30,51.5 30,56 9,45.5" fill="#46504F"/>
+    <polygon points="30,51.5 53,40 53,44.5 30,56" fill="#333B3A"/>
+    <polygon points="13,36.5 30,45 49,35.5 32,27" fill="#91B77A"/>
+    <polygon points="30,45 49,35.5 49,38.5 30,48" fill="#697473"/>
+    <polygon points="13,36.5 30,45 30,48 13,39.5" fill="#B4CDA3"/>
+    <polygon points="18,16.5 32,23.5 30,41.5 13.5,33" fill="#D9E2E2"/>
+    <polygon points="32,23.5 45,17 48.5,32 30,41.5" fill="#AAB8B8"/>
+    <polygon points="18,16.5 31,10 45,17 32,23.5" fill="#EEF3F2"/>
+    <polygon points="18.5,27 26.5,31 26,34 18,30" fill="#91B77A"/>
+  </g>
+  <g id="contract-tier-2">
+    <path d="M35 26H54L63 35V62H35Z" fill="#111311" opacity=".45"/>
+    <path d="M34 25H53L62 34V60H34Z" fill="#C9D1D9" stroke="#38424D" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M53 25V34H62Z" fill="#E6ECF2"/>
+    <path d="M53 25 62 34H53Z" fill="#8C99A6"/>
+    <path d="M39 31H48M39 35H51M39 39H46" fill="none" stroke="#63707E" stroke-width="2" stroke-linecap="square"/>
+    <text x="49" y="55" text-anchor="middle" fill="#2D3640" font-family="Consolas, monospace" font-size="20" font-weight="700">2</text>
+  </g>
+</svg>

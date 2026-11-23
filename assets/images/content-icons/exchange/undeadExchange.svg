@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>运维部统筹调拨（Undead Exchange）</title>
+  <desc>运维部统筹调拨：双向循环调拨箭头与中央冷战立式双盘磁带机，低多边形风格。</desc>
+  <g id="undeadExchange-tray">
+    <polygon points="7,42 32,32 57,42 32,52" fill="#697473"/>
+    <polygon points="7,42 32,52 32,56.5 7,46.5" fill="#46504F"/>
+    <polygon points="32,52 57,42 57,46.5 32,56.5" fill="#333B3A"/>
+    <polygon points="15,12 24,7 24,10.5 45,10.5 45,14.5 24,14.5 24,18" fill="#EEF3F2"/>
+    <polygon points="15,12 24,18 24,19.5 15,13.5" fill="#899492"/>
+    <polygon points="24,14.5 45,14.5 45,16 24,16" fill="#AAB8B8"/>
+    <polygon points="49,50 40,55 40,51.5 19,51.5 19,47.5 40,47.5 40,44" fill="#DF9A6C"/>
+    <polygon points="49,50 40,55 40,56.5 49,51.5" fill="#835039"/>
+    <polygon points="19,51.5 40,51.5 40,53 19,53" fill="#C4764D"/>
+  </g>
+  <g id="undeadExchange-emblem" transform="translate(15.5, 16.5) scale(0.52)">
+    <polygon points="10,16 24,10 53,21.5 39,27.5" fill="#899492"/>
+    <polygon points="10,16 39,27.5 39,55 10,43.5" fill="#46504F"/>
+    <polygon points="39,27.5 53,21.5 53,49 39,55" fill="#333B3A"/>
+    <polygon points="12.5,20 36.5,29.5 36.5,43 12.5,33.5" fill="#333B3A"/>
+    <polygon points="18,22.2 22.8,24.1 24.5,28.5 22.8,32.2 18,30.3 16.3,25.9" fill="#EEF3F2"/>
+    <polygon points="19.5,25.4 21.5,26.2 21.5,29 19.5,28.2" fill="#333B3A"/>
+    <polygon points="28.5,26.4 33.3,28.3 35,32.7 33.3,36.4 28.5,34.5 26.8,30.1" fill="#D9E2E2"/>
+    <polygon points="30,29.6 32,30.4 32,33.2 30,32.4" fill="#333B3A"/>
+    <polygon points="12.5,36 36.5,45.5 36.5,51.8 12.5,42.3" fill="#697473"/>
+    <polygon points="15,39.2 20.5,41.4 20.5,44.2 15,42" fill="#91B77A"/>
+    <polygon points="22.5,42.2 27,44 27,46.8 22.5,45" fill="#DF9A6C"/>
+    <polygon points="29.5,45 34.5,47 34.5,48.8 29.5,46.8" fill="#EEF3F2"/>
+  </g>
+</svg>

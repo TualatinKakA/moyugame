@@ -32,6 +32,9 @@ export const CHAMPION_TROPHY_DEFINITIONS = factionData.map(([faction, name, sour
     event: 'upgrade.purchased', priority: 20,
     when: { all: [selected(faction), owned(`${faction}-pact`), owned(`${faction}-alliance`), ...Array.from({ length: 9 }, (_, index) => owned(`${faction}-${index + 1}`))] },
   }],
+})).map(definition => ({
+  ...definition,
+  ui: { ...definition.ui, icon: `assets/images/content-icons/trophies/${definition.id}.svg` },
 }));
 
 export const HERITAGE_DEFINITIONS = [
@@ -76,17 +79,17 @@ export const HERITAGE_DEFINITIONS = [
     requires: [{ op: 'notOwned', id: definition.id }, owned(definition.champion)],
   },
   grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction: definition.faction, icon: redCross },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction: definition.faction, icon: `assets/images/content-icons/factions/${definition.id}.svg` },
 }));
 
 const spellUpgrades = [
   ['fairyChoir', 'fairy', '群体脑暴', 'Fairy Choir', '头脑风暴期间有效数字员工 ×3；解锁判定仍读真实数量。', ['effectiveAssistants'], []],
-  ['sunBlessing', 'elven', '日光自动迭代', 'Sun Blessing', '月光迭代期间每秒自动点击 15 次。', ['autoClick'], []],
+  ['sunBlessing', 'elven', '白昼自动编译', 'Sun Blessing', '月光迭代期间每秒自动点击 15 次。', ['autoClick'], []],
   ['godsRest', 'angel', '周日战略休会', "God's Rest", '战略赋能期间，施放其他法术会向一个合格部门发放影响力。', ['godsRest'], []],
-  ['greedDrive', 'goblin', '预算连算', 'Greed Drive', '预算腾挪期间，工资结算精力消耗 ×0.9。', ['spellCost'], []],
-  ['trueNight', 'undead', '永久夜班制', 'True Night', '通宵赶工期间按真实活动时间强化数字员工，并提高离线时间有效计数。', ['offlineTime'],
+  ['greedDrive', 'goblin', '跨期套利引擎', 'Greed Drive', '预算腾挪期间，工资结算精力消耗 ×0.9。', ['spellCost'], []],
+  ['trueNight', 'undead', '永久夜班制', 'True Night', '午夜静默运维期间按真实活动时间强化数字员工，并提高离线时间有效计数。', ['offlineTime'],
     [effect('trueNight-assistants', 'global', 'assistants.production', 'addPercent', { formula: '0.4 * x ^ 0.6', variables: { x: 'derived.nightTimeActivity' } }, active('nightTime'))]],
-  ['hellRush', 'demon', '开场冲刺令', 'Hell Rush', '高压执行额外强化全天候工作井与传奇档案馆。', ['hellfireTargets'], []],
+  ['hellRush', 'demon', '开场冲刺令', 'Hell Rush', '红温极限压榨额外强化全天候工作井与传奇档案馆。', ['hellfireTargets'], []],
 ];
 
 export const SPELL_TROPHY_DEFINITIONS = [
@@ -95,7 +98,7 @@ export const SPELL_TROPHY_DEFINITIONS = [
     reactions: [{ event: 'spell.cast', when: { all: [{ op: 'eventDataEquals', path: 'spellId', value: 'fairyChanting' }, { op: 'statAtLeast', path: 'derived.realAssistants', value: 50 }] } }],
   }),
   trophy({
-    id: 'sunBlessing', name: '日光自动迭代', sourceName: 'Sun Blessing', description: '本 Era 触发至少 5 次技术幸运。',
+    id: 'sunBlessing', name: '白昼自动编译', sourceName: 'Sun Blessing', description: '本 Era 触发至少 5 次技术幸运。',
     reactions: [{ event: 'elvenLuck.triggered', when: { op: 'statAtLeast', path: 'stats.ascension.elvenLuck', value: 5 } }],
   }),
   trophy({
@@ -106,7 +109,7 @@ export const SPELL_TROPHY_DEFINITIONS = [
     ],
   }),
   trophy({
-    id: 'greedDrive', name: '预算连算', sourceName: 'Greed Drive', description: '预算腾挪生效期间拥有至少 100 次统筹调拨。',
+    id: 'greedDrive', name: '跨期套利引擎', sourceName: 'Greed Drive', description: '预算腾挪生效期间拥有至少 100 次统筹调拨。',
     reactions: [
       { event: 'spell.cast', when: { all: [{ op: 'eventDataEquals', path: 'spellId', value: 'goblinsGreed' }, active('goblinsGreed'), { op: 'statAtLeast', path: 'derived.exchangeCount', value: 100 }] } },
       { event: 'exchange.purchased', when: { all: [active('goblinsGreed'), { op: 'statAtLeast', path: 'derived.exchangeCount', value: 100 }] } },
@@ -121,10 +124,13 @@ export const SPELL_TROPHY_DEFINITIONS = [
     ],
   }),
   trophy({
-    id: 'hellRush', name: '开场冲刺令', sourceName: 'Hell Rush', description: '在本轮真实时间 60 秒前施放高压执行。',
+    id: 'hellRush', name: '开场冲刺令', sourceName: 'Hell Rush', description: '在本轮真实时间 60 秒前施放红温极限压榨。',
     reactions: [{ event: 'spell.cast', when: { all: [{ op: 'eventDataEquals', path: 'spellId', value: 'hellfireBlast' }, { op: 'statLessThan', path: 'stats.run.time', value: 60 }] } }],
   }),
-];
+].map(definition => ({
+  ...definition,
+  ui: { ...definition.ui, icon: `assets/images/content-icons/trophies/${definition.id}.svg` },
+}));
 
 export const SPELL_UPGRADE_DEFINITIONS = spellUpgrades.map(([trophyId, faction, name, sourceName, description, mechanics, effects]) => {
   const id = `${trophyId}Upgrade`;
@@ -134,6 +140,6 @@ export const SPELL_UPGRADE_DEFINITIONS = spellUpgrades.map(([trophyId, faction, 
     visible: { all: [owned(trophyId), selected(faction)] }, unlock: { op: 'always' },
     purchase: { costs: legacyCoinCosts(1e6), requires: [{ op: 'notOwned', id }, owned(trophyId), selected(faction)] },
     effects, grants: [], reactions: [], scope: 'run',
-    ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: redCross },
+    ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'faction', faction, icon: `assets/images/content-icons/factions/${id}.svg` },
   };
 });

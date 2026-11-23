@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>理想路线</title>
+  <desc>一座宏伟、神圣的灰白色办公塔楼群，顶端散发着柔和的金色光晕与放射状光束，象征着宏大的愿景与精神指引。</desc>
+  
+  <g id="tower-body">
+    <polygon fill="#EEF3F2" points="32,10 48,20 48,54 32,64 16,54 16,20" />
+    <polygon fill="#D9E2E2" points="32,10 48,20 42,24 32,18" />
+    <polygon fill="#AAB8B8" points="16,20 32,10 32,18 22,24" />
+    <polygon fill="#899492" points="32,64 48,54 42,50 32,56" />
+    <polygon fill="#AAB8B8" points="16,54 32,64 32,56 22,50" />
+    
+    <line x1="24" y1="28" x2="24" y2="48" stroke="#697473" stroke-width="0.5" />
+    <line x1="32" y1="24" x2="32" y2="44" stroke="#697473" stroke-width="0.5" />
+    <line x1="40" y1="28" x2="40" y2="48" stroke="#697473" stroke-width="0.5" />
+  </g>
+  
+  <g id="ideal-core">
+    <circle cx="32" cy="10" r="8" fill="#F5E4A8" opacity="0.6" />
+    <circle cx="32" cy="10" r="4" fill="#E7CA74" />
+    
+    <line x1="32" y1="2" x2="32" y2="0" stroke="#F5E4A8" stroke-width="1" stroke-linecap="round" />
+    <line x1="39" y1="5" x2="41" y2="3" stroke="#F5E4A8" stroke-width="1" stroke-linecap="round" />
+    <line x1="25" y1="5" x2="23" y2="3" stroke="#F5E4A8" stroke-width="1" stroke-linecap="round" />
+  </g>
+  
+  <polygon fill="#DF9A6C" points="30,8 34,8 35,12 33,14 31,12" />
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>红温极限压榨（Hellfire Blast）</title>
+  <desc>执行部派系法术：三峰红温过载火焰柱与白热内芯，低多边形风格。</desc>
+  <g id="hellfireBlast-icon">
+    <polygon points="12,48 52,48 48,54 16,54" fill="#46504F"/>
+    <polygon points="16,48 14,32 22,22 25,34 32,10 40,32 44,20 50,34 48,48" fill="#C4764D"/>
+    <polygon points="21,48 21,34 26,28 29,37 32,18 37,35 41,27 43,38 43,48" fill="#DF9A6C"/>
+    <polygon points="27,48 28,37 32,27 36,37 37,48" fill="#F5E4A8"/>
+  </g>
+</svg>

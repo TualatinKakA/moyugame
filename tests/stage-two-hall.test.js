@@ -59,20 +59,21 @@ test('all 414 numbered facility upgrades match the authoritative CSV ids names t
   }
 });
 
-test('Hall body and six bonuses match their CSV costs and use the shared red cross', async () => {
+test('Hall body and six bonuses match their CSV costs and use ID-matched images', async () => {
   const facilityRows = parseCsv(await readFile(new URL('../original_verification/remaining_1.1.0/data/facilities-and-upgrades-414.csv', import.meta.url), 'utf8'));
   const hall = graph.definitionsById.get('hallOfLegends');
   const row = facilityRows.find(item => item['记录类型'] === 'facility' && item['内容ID'] === 'hallOfLegends');
   assert.equal(hall.tier, 11);
   assert.equal(hall.purchase.costs[0].amount.constant, Number(row['成本']));
-  assert.equal(hall.ui.icon, 'assets/images/content-icons/red-cross.svg');
+  assert.equal(hall.ui.icon, 'assets/images/content-icons/buildings/hallOfLegends.svg');
+  assert.equal(hall.ui.collectionIcon, 'assets/images/content-icons/upgrades/hallOfLegends-collection.svg');
   const bonusRows = parseCsv(await readFile(new URL('../original_verification/remaining_1.1.0/data/hall-bonus-6.csv', import.meta.url), 'utf8'));
   assert.equal(bonusRows.length, 6);
   for (const bonusRow of bonusRows) {
     const definition = graph.definitionsById.get(bonusRow['内容ID']);
     assert.ok(definition);
     assert.equal(definition.purchase.costs[0].amount.constant, Number(bonusRow['成本']));
-    assert.equal(definition.ui.icon, 'assets/images/content-icons/red-cross.svg');
+    assert.equal(definition.ui.icon, `assets/images/content-icons/upgrades/${definition.id}.svg`);
     assert.ok(definition.effects.length > 0, `${definition.id} has a real effect`);
   }
 });

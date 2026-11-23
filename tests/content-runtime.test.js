@@ -56,11 +56,11 @@ test('content graph contains six playable factions', async () => {
   await game.start();
 });
 
-test('facility artwork resolves to 17 bodies and 391 numbered upgrades with identical bodies and gold-to-purple tiers', async () => {
-  const buildings = CONTENT.definitions.filter(item => item.kind === 'building' && item.id !== 'hallOfLegends');
-  const upgrades = CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.ui.category === 'building' && item.buildingId !== 'hallOfLegends');
-  assert.equal(buildings.length, 17);
-  assert.equal(upgrades.length, 391);
+test('facility artwork resolves to 18 bodies and 414 numbered upgrades with identical bodies and gold-to-purple tiers', async () => {
+  const buildings = CONTENT.definitions.filter(item => item.kind === 'building');
+  const upgrades = CONTENT.definitions.filter(item => item.kind === 'upgrade' && item.ui.category === 'building');
+  assert.equal(buildings.length, 18);
+  assert.equal(upgrades.length, 414);
   const bodyOf = svg => svg.match(/  <g id="[^"]+-body">[\s\S]*?  <\/g>/)?.[0];
   const mix = (left, right, t) => {
     const a = left.match(/\w\w/g).map(value => parseInt(value, 16));
@@ -419,14 +419,23 @@ test('Gem Power unlock applies production and FC bonuses then resets with the ru
 test('player-facing names match the workplace naming reference without changing stable IDs', () => {
   const graph = compileContentGraph(CONTENT);
   const expected = {
-    good: '理想', evil: '务实', holyLight: '奋斗动员', bloodFrenzy: '务实冲刺',
-    'fairy-1': '需求培养土', 'fairy-2': '产品新人', 'fairy-3': '善意默认值',
-    'goblin-1': '强势现金流', 'goblin-2': '外包交易', 'goblin-3': '低成本物料',
+    good: '理想路线', evil: '务实路线', holyLight: '奋斗动员', bloodFrenzy: '狼性狂热',
+    'fairy-1': '需求培养土', 'fairy-2': '产品新人', 'fairy-3': '人性化默认值',
+    'goblin-1': '强势现金流', 'goblin-2': '人力外包结算', 'goblin-3': '极简成本控制',
     'farm-tier1': '工位轮换', 'inn-tier1': '精品咖啡', 'blacksmith-tier1': '重型订书锤',
-    warriorBarracks: '奋斗培训室', 'warriorBarracks-tier1': '青铜任务卡', 'heavensGate-tier1': '黄金钥匙',
+    warriorBarracks: '奋斗培训室', 'warriorBarracks-tier1': '青铜任务卡', 'heavensGate-tier1': '高维权限密钥',
     gemPower: '期权激励',
   };
   for (const [id, name] of Object.entries(expected)) assert.equal(graph.definitionsById.get(id).name, name, id);
+});
+
+test('all production Chinese names match runtime definitions', async () => {
+  const document = JSON.parse(await readFile(new URL('../data/production/production_items.json', import.meta.url), 'utf8'));
+  const graph = compileContentGraph(CONTENT);
+  assert.equal(document.items.length, 1018);
+  for (const item of document.items) {
+    assert.equal(graph.definitionsById.get(item.id)?.name, item.name_zh, item.id);
+  }
 });
 
 test('mana regeneration override applies immediately and persists through the setting command', async () => {
@@ -588,17 +597,10 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
   assertClose(game.select('derived').production, 0.05 * 1.5 * 1.02);
 });
 
-test('spell descriptions resolve effect targets through current building names', () => {
+test('spell descriptions resolve the current Fairy Chanting text', () => {
   const spell = CONTENT.definitions.find(item => item.id === 'fairyChanting');
   const graph = compileContentGraph(CONTENT);
-  assert.equal(formatDescription(spell, graph), '10 秒内使见习工位、茶水间与打印维修间产出 ×{effect:fairyChanting}。');
-  const renamed = {
-    packs: CONTENT.packs,
-    definitions: CONTENT.definitions.map(item => item.id === 'farm' ? { ...item, name: '附魔工位' } : item),
-  };
-  const renamedGraph = compileContentGraph(renamed);
-  const renamedSpell = renamedGraph.definitionsById.get('fairyChanting');
-  assert.equal(formatDescription(renamedSpell, renamedGraph), '10 秒内使附魔工位、茶水间与打印维修间产出 ×{effect:fairyChanting}。');
+  assert.equal(formatDescription(spell, graph), '根据见习工位、茶水间与打印维修间的有效总数，在 {spellDuration} 秒内提高这三类设施产出，当前倍率 ×{effect:fairyChanting}。');
 });
 
 test('assistant count and production modifiers compose through generic additive and multiplicative channels', async () => {
@@ -1141,44 +1143,89 @@ test('new sparse spell and building maximum stats are backward compatible', () =
 });
 
 
-test('Fairy and Goblin contracts and upgrades use 24 self-contained SVG icons with confirmed stacking', async () => {
+test('six factions use ID-matched pure vector SVG icons with confirmed stacking', async () => {
   const graph = compileContentGraph(CONTENT);
   const paths = new Set();
-  for (const faction of ['fairy', 'goblin']) {
+  const layouts = {
+    1: ['translate(1.5, 1.5) scale(0.95)'],
+    2: ['translate(12, 2.5) scale(0.76)', 'translate(1.5, 8.5) scale(0.76)'],
+    3: ['translate(9.5, -0.5) scale(0.68)', 'translate(18, 14) scale(0.68)', 'translate(1.5, 16) scale(0.68)'],
+  };
+  for (const faction of ['fairy', 'goblin', 'elven', 'angel', 'undead', 'demon']) {
     const factionDefinition = graph.definitionsById.get(faction);
-    assert.equal(factionDefinition.ui.icon, `assets/images/content-icons/factions/${faction}-contract-tier1.svg`);
+    assert.equal(factionDefinition.ui.icon, `assets/images/content-icons/factions/${faction}.svg`);
     const entries = [factionDefinition, graph.definitionsById.get(`${faction}-pact`), graph.definitionsById.get(`${faction}-alliance`)];
     for (let number = 1; number <= 9; number++) entries.push(graph.definitionsById.get(`${faction}-${number}`));
     assert.equal(entries.length, 12);
     for (const entry of entries) {
-      assert.match(entry.ui.icon, /^assets\/images\/content-icons\/factions\//);
+      assert.equal(entry.ui.icon, `assets/images/content-icons/factions/${entry.id}.svg`);
       paths.add(entry.ui.icon);
       const svg = await readFile(new URL(`../${entry.ui.icon}`, import.meta.url), 'utf8');
       assert.match(svg, /<svg[^>]+width="64"[^>]+height="64"/);
-      assert.match(svg, /data:image\/png;base64,/);
-      assert.doesNotMatch(svg, /<script|<foreignObject|<animate|filter=/);
+      assert.match(svg, /<polygon/);
+      assert.doesNotMatch(svg, /<image|base64|<script|<foreignObject|<animate|filter=/);
+      if (entry.kind === 'faction') assert.doesNotMatch(svg, /contract-tier/);
     }
     for (let tier = 1; tier <= 3; tier++) {
       for (let variant = 1; variant <= 3; variant++) {
         const id = `${faction}-${(tier - 1) * 3 + variant}`;
         const svg = await readFile(new URL(`../${graph.definitionsById.get(id).ui.icon}`, import.meta.url), 'utf8');
-        const transforms = [...svg.matchAll(/<use[^>]+transform="([^"]+)"/g)].map(match => match[1]);
-        assert.equal(transforms.length, variant);
-        if (variant === 2) {
-          assert.match(transforms[0], /translate\(18 8\)/);
-          assert.match(transforms[1], /translate\(-2 8\)/);
-        }
-        if (variant === 3) {
-          assert.match(transforms[0], /translate\(8 0\)/);
-          assert.match(transforms[1], /translate\(18 18\)/);
-          assert.match(transforms[2], /translate\(-2 18\)/);
-        }
+        const transforms = [...svg.matchAll(/<g id="[^"]+" transform="([^"]+)"/g)].map(match => match[1]);
+        assert.deepEqual(transforms, layouts[variant]);
       }
     }
   }
-  assert.equal(paths.size, 24);
+  assert.equal(paths.size, 72);
 });
 
+test('all 130 department spell exchange and misc images use ID-matched pure vector resources', async () => {
+  const prefix = 'assets/images/content-icons/';
+  const entries = CONTENT.definitions.filter(item => /^(factions|exchange|spells|trophies|misc)\//.test(item.ui?.icon?.slice(prefix.length) || ''));
+  const paths = new Set();
+  assert.equal(entries.length, 130);
+  for (const entry of entries) {
+    const directory = entry.ui.icon.slice(prefix.length).split('/')[0];
+    assert.equal(entry.ui.icon, `${prefix}${directory}/${entry.id}.svg`);
+    paths.add(entry.ui.icon);
+    const svg = await readFile(new URL(`../${entry.ui.icon}`, import.meta.url), 'utf8');
+    assert.match(svg, /<svg[^>]+width="64"[^>]+height="64"/);
+    const title = svg.match(/<title>(.*?)<\/title>/)?.[1];
+    assert.ok(title?.includes(entry.name), `${entry.id} title matches the current entry name`);
+    assert.match(svg, /<desc>.*<\/desc>/);
+    assert.doesNotMatch(svg, /<image|base64|<script|<foreignObject|<animate|filter=/);
+  }
+  assert.equal(paths.size, 130);
+});
+
+test('upgraded spells reuse trophy artwork shared with their linked upgrades', async () => {
+  const links = {
+    fairyChanting: 'fairyChoir', moonBlessing: 'sunBlessing', godsHand: 'godsRest',
+    goblinsGreed: 'greedDrive', nightTime: 'trueNight', hellfireBlast: 'hellRush',
+  };
+  for (const [spellId, trophyId] of Object.entries(links)) {
+    const spell = CONTENT.definitions.find(item => item.id === spellId);
+    assert.equal(spell.ui.icon, `assets/images/content-icons/spells/${spellId}.svg`);
+    assert.equal(spell.ui.upgradeId, `${trophyId}Upgrade`);
+    assert.equal(spell.ui.upgradedIcon, `assets/images/content-icons/trophies/${trophyId}.svg`);
+    const trophyArt = await readFile(new URL(`../${spell.ui.upgradedIcon}`, import.meta.url), 'utf8');
+    const upgradeArt = await readFile(new URL(`../assets/images/content-icons/factions/${trophyId}Upgrade.svg`, import.meta.url), 'utf8');
+    assert.equal(upgradeArt, trophyArt, `${trophyId} upgrade and upgraded spell share the trophy artwork`);
+  }
+});
+
+test('Champion trophies reuse their Heritage vector artwork without changing the drawings', async () => {
+  const links = {
+    fairyChampion: 'fairyHeritage', elvenChampion: 'elvenHeritage', angelChampion: 'angelicHeritage',
+    goblinChampion: 'goblinHeritage', undeadChampion: 'undeadHeritage', demonChampion: 'demonicHeritage',
+  };
+  for (const [trophyId, heritageId] of Object.entries(links)) {
+    const trophy = CONTENT.definitions.find(item => item.id === trophyId);
+    assert.equal(trophy.ui.icon, `assets/images/content-icons/trophies/${trophyId}.svg`);
+    const trophySvg = await readFile(new URL(`../${trophy.ui.icon}`, import.meta.url), 'utf8');
+    const heritageSvg = await readFile(new URL(`../assets/images/content-icons/factions/${heritageId}.svg`, import.meta.url), 'utf8');
+    assert.equal(trophySvg.slice(trophySvg.indexOf('<g')), heritageSvg.slice(heritageSvg.indexOf('<g')), trophyId);
+  }
+});
 
 test('assistant FC rate ignores click multipliers and offline settlement remains pending', async () => {
   const makeAssistantSave = () => {
@@ -1284,6 +1331,7 @@ test('all 391 building upgrades match names, unlocks, dynamic costs and shared a
   };
   const source = await readFile(new URL('../docs/原版设施建筑升级独特建筑与奖杯全量清单.md', import.meta.url), 'utf8');
   const nameSource = await readFile(new URL('../docs/无限工时-全量Upgrades与奖杯职场换皮名称对照.md', import.meta.url), 'utf8');
+  const finalNameSource = await readFile(new URL('../docs/1.0.2 与 1.1.0 全版本条目译名修订与定稿清单.md', import.meta.url), 'utf8');
   const original = new Map();
   for (const line of source.split('\n')) {
     const parts = line.split('|').slice(1, -1).map(part => part.trim());
@@ -1298,16 +1346,26 @@ test('all 391 building upgrades match names, unlocks, dynamic costs and shared a
     const match = parts[1].match(/^building:(.+):(\d+):(.+)$/);
     if (match) translatedNames.set(`${parts[2]}:${Number(match[2])}`, parts[4]);
   }
-  assert.equal(original.size, 391);
-  const percent = text => Number(text.match(/by ([\d.]+)%/)?.[1]);
   const graph = compileContentGraph(CONTENT);
+  const buildingNames = new Set([...graph.definitionsById.values()].filter(item => item.kind === 'building').map(item => item.name));
+  const finalizedNames = new Map();
+  for (const line of finalNameSource.split('## 第二部分')[0].split('\n')) {
+    const parts = line.split('|').slice(1, -1).map(part => part.trim());
+    if (parts.length !== 5 || !buildingNames.has(parts[0])) continue;
+    finalizedNames.set(`${parts[0]}:${parts[2]}`, parts[3].replaceAll('**', ''));
+  }
+  assert.equal(original.size, 391);
+  assert.equal(finalizedNames.size, 212);
+  const percent = text => Number(text.match(/by ([\d.]+)%/)?.[1]);
   for (const [id, [plural, singular]] of Object.entries(facilityNames)) {
     for (const tier of Array.from({ length: 23 }, (_, index) => index + 1)) {
       const upgrade = graph.definitionsById.get(`${id}-tier${tier}`);
       const originalRow = original.get(`${id}:${tier}`);
       assert.ok(upgrade, `${id} tier ${tier} exists`);
       assert.ok(originalRow, `${id} tier ${tier} has a source row`);
-      assert.equal(upgrade.name, translatedNames.get(`${singular}:${tier}`));
+      const translatedName = translatedNames.get(`${singular}:${tier}`);
+      const expectedName = finalizedNames.get(`${graph.definitionsById.get(id).name}:${translatedName}`) || translatedName;
+      assert.equal(upgrade.name, expectedName);
       assert.equal(upgrade.sourceName, originalRow[2]);
       assert.equal(upgrade.tier, tier);
       assert.equal(upgrade.era.minR, tier === 23 ? 100 : tier >= 20 ? 40 : 0);

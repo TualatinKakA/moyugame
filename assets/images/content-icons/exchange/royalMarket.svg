@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>统筹调拨（Royal Market）</title>
+  <desc>统筹调拨入口：六边形调度托盘与双向循环调拨箭头，纯矢量低多边形风格。</desc>
+  <g id="royalMarket-icon">
+    <polygon points="7,38 32,28 57,38 32,48" fill="#697473"/>
+    <polygon points="7,38 32,48 32,56 7,46" fill="#46504F"/>
+    <polygon points="32,48 57,38 57,46 32,56" fill="#333B3A"/>
+    <polygon points="10,18 21,11 21,15 45,15 45,21 21,21 21,25" fill="#EEF3F2"/>
+    <polygon points="10,18 21,25 21,28 10,21" fill="#899492"/>
+    <polygon points="21,21 45,21 45,23 21,23" fill="#AAB8B8"/>
+    <polygon points="54,46 43,53 43,49 19,49 19,43 43,43 43,39" fill="#DF9A6C"/>
+    <polygon points="54,46 43,53 43,56 54,49" fill="#835039"/>
+    <polygon points="19,43 43,43 43,45 19,45" fill="#C4764D"/>
+    <polygon points="25,31 32,27 39,31 32,35" fill="#E7CA74"/>
+  </g>
+</svg>

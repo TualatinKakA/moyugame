@@ -6,11 +6,11 @@ const globalTarget = { type: 'global' };
 const displayNames = {
   goodProduction1: '理想员工认证', goodProduction2: '理想员工复核', goodProduction3: '理想员工表彰', goodProduction4: '理想员工公告',
   evilProduction1: '务实团队认证', evilProduction2: '务实团队复核', evilProduction3: '务实团队表彰', evilProduction4: '务实团队公告',
-  clickingProduction1: '充实的产值', clickingProduction2: '丰厚的产值', clickingProduction3: '富庶的产值', clickingProduction4: '奢华的产值', clickingProduction5: '溢出的产值',
-  clickingTotalProduction1: '珍贵的产值', clickingTotalProduction2: '华丽的产值', clickingTotalProduction3: '镶饰的产值', clickingTotalProduction4: '精雕的产值', clickingTotalProduction5: '辉煌的产值',
-  gemUpgrade1: '期权增值', gemUpgrade2: '期权控制', gemUpgrade3: '期权主权',
+  clickingProduction1: '达标创收指标', clickingProduction2: '丰厚创收指标', clickingProduction3: '超额创收指标', clickingProduction4: '巨额创收指标', clickingProduction5: '溢出创收指标',
+  clickingTotalProduction1: '一期资本沉淀', clickingTotalProduction2: '扩充资本沉淀', clickingTotalProduction3: '离岸资本沉淀', clickingTotalProduction4: '重资产资本池', clickingTotalProduction5: '主权级资本池',
+  gemUpgrade1: '期权行权增值', gemUpgrade2: '期权池控盘', gemUpgrade3: '绝对期权主权',
   assistantUpgrade2: '数字员工联合', assistantUpgrade3: '数字员工垄断',
-  clickingBase1: '结实的工牌', clickingBase2: '耐用的工牌', clickingBase3: '加固的工牌', clickingBase4: '坚韧的工牌', clickingBase5: '不坏的工牌', clickingBase6: '永恒的工牌',
+  clickingBase1: '结实的工牌', clickingBase2: '耐用的工牌', clickingBase3: '加固的工牌', clickingBase4: '三线出入证', clickingBase5: '防磁金属牌', clickingBase6: '永恒零号牌',
   offlineUpgrade1: '缺席打卡', offlineUpgrade2: '失踪考勤', offlineUpgrade3: '不存在工号',
   grindingDedication: '均衡奉献', neutralUnavailable1: '均衡协作协议', neutralUnavailable2: '真正均衡',
   neutralUnavailable3: '均衡认证', neutralUnavailable4: '均衡验证', neutralUnavailable5: '均衡确认', neutralUnavailable6: '均衡公告',
@@ -85,6 +85,9 @@ const gemUpgrades = [
   id, name, sourceName, description: '每份期权提供的产出加成 +1 个百分点。', cost,
   visible: visibleAtLeast('resources.gems', requirement), era: { minR: 0, maxA: 3 },
   effects: [effect(id, 'global', 'gem.power', 'add', { constant: 1 })],
+})).map(definition => ({
+  ...definition,
+  ui: { ...definition.ui, icon: `assets/images/content-icons/misc/${definition.id}.svg` },
 }));
 
 const assistantUpgrades = [
@@ -95,6 +98,9 @@ const assistantUpgrades = [
   id, name, sourceName, description: '每名有效数字员工使全部设施产出提高 1%。', cost,
   visible: owned(trophyId), era: { minR: 0, maxA: 3 },
   effects: [effect(id, 'global', 'global.production', 'addPercent', { formula: 'x', variables: { x: 'derived.assistants' } })],
+})).map(definition => ({
+  ...definition,
+  ui: { ...definition.ui, icon: `assets/images/content-icons/misc/${definition.id}.svg` },
 }));
 
 const clickingBase = [

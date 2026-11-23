@@ -669,6 +669,8 @@ body.royal-market-open { overflow: hidden; }
 .royal-market-table { margin: 0 20px 20px; border: 1px solid #3d4638; }
 .royal-market-row { display: grid; grid-template-columns: minmax(150px, 1.25fr) minmax(80px, .65fr) minmax(145px, 1fr) minmax(100px, .7fr); align-items: center; gap: 12px; min-height: 58px; padding: 8px 12px; border-bottom: 1px solid #30382d; }
 .royal-market-row:last-child { border-bottom: 0; }
+.royal-market-faction { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.royal-market-icon { width: 32px; height: 32px; flex: 0 0 32px; }
 .royal-market-row-head { min-height: 42px; background: #191e17; color: var(--text); font-weight: 700; }
 .royal-market-row:not(.royal-market-row-head) > span:nth-child(2), .royal-market-row:not(.royal-market-row-head) > span:nth-child(3) { color: #d5dccd; font-family: Consolas, "Microsoft YaHei", monospace; }
 .royal-market-row .royal-market-buy { width: 100%; min-height: 42px; border: 1px solid var(--green); border-radius: 4px; background: var(--green); color: #17200f; font: 700 14px "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; }

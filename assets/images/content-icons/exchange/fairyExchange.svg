@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>产品部统筹调拨（Fairy Exchange）</title>
+  <desc>产品部统筹调拨：双向循环调拨箭头与中央纯白翻盖笔记本电脑，低多边形风格。</desc>
+  <g id="fairyExchange-tray">
+    <polygon points="7,42 32,32 57,42 32,52" fill="#697473"/>
+    <polygon points="7,42 32,52 32,56.5 7,46.5" fill="#46504F"/>
+    <polygon points="32,52 57,42 57,46.5 32,56.5" fill="#333B3A"/>
+    <polygon points="15,12 24,7 24,10.5 45,10.5 45,14.5 24,14.5 24,18" fill="#EEF3F2"/>
+    <polygon points="15,12 24,18 24,19.5 15,13.5" fill="#899492"/>
+    <polygon points="24,14.5 45,14.5 45,16 24,16" fill="#AAB8B8"/>
+    <polygon points="49,50 40,55 40,51.5 19,51.5 19,47.5 40,47.5 40,44" fill="#DF9A6C"/>
+    <polygon points="49,50 40,55 40,56.5 49,51.5" fill="#835039"/>
+    <polygon points="19,51.5 40,51.5 40,53 19,53" fill="#C4764D"/>
+  </g>
+  <g id="fairyExchange-emblem" transform="translate(15.5, 16.5) scale(0.52)">
+    <polygon points="18,11 47,14.5 43,35 14,31.5" fill="#D9E2E2"/>
+    <polygon points="47,14.5 49.5,15.8 45.5,36.3 43,35" fill="#899492"/>
+    <polygon points="20,14 44,17 41,32 17,29" fill="#EEF3F2"/>
+    <polygon points="21.5,18 31.5,19.2 30.5,24.5 20.5,23.3" fill="#DF9A6C"/>
+    <polygon points="33.5,19.5 40.5,20.4 39,28 32,27.1" fill="#D9E2E2"/>
+    <polygon points="14,31.5 43,35 34.5,50 5.5,46" fill="#AAB8B8"/>
+    <polygon points="5.5,46 34.5,50 34.5,53 5.5,49" fill="#899492"/>
+    <polygon points="34.5,50 43,35 43,38 34.5,53" fill="#46504F"/>
+    <polygon points="15,34 38,36.8 33.5,43.8 10.5,40.8" fill="#46504F"/>
+    <polygon points="16.5,42.5 25.5,43.7 24,46.8 15,45.6" fill="#697473"/>
+  </g>
+</svg>

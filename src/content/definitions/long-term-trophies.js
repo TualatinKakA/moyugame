@@ -111,7 +111,10 @@ export const SECRET_TROPHY_DEFINITIONS = [
       { op: 'statAtLeast', path: 'derived.activeSpells', value: 3 },
     ] } }], trophyType: 'secret-trophy', group: 'secrets',
   }),
-];
+].map(definition => ({
+  ...definition,
+  ui: { ...definition.ui, icon: `assets/images/content-icons/trophies/${definition.id}.svg` },
+}));
 
 export const ASSISTANT_TROPHY_DEFINITIONS = [
   ['assistantGroup', '数字员工小组', 'Assistant Group', 20],
@@ -127,7 +130,10 @@ export const ASSISTANT_TROPHY_DEFINITIONS = [
       { event: 'game.reconcile', when, priority: 25 },
     ], trophyType: 'assistant-trophy', group: 'assistants',
   });
-});
+}).map(definition => ({
+  ...definition,
+  ui: { ...definition.ui, icon: `assets/images/content-icons/trophies/${definition.id}.svg` },
+}));
 
 const oldCoinCosts = cost => [
   { resource: 'coins', amount: { constant: cost }, when: { op: 'statLessThan', path: 'progression.ascension', value: 1 } },
@@ -139,7 +145,7 @@ const secretUpgrade = ({ id, trophyId, name, sourceName, description, cost, era 
   visible: owned(trophyId), unlock: { op: 'always' },
   purchase: { costs: oldCoinCosts(cost), requires: [{ op: 'notOwned', id }, owned(trophyId)] },
   effects, grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'general', icon: redCross },
+  ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'general', icon: `assets/images/content-icons/misc/${id}.svg` },
 });
 
 export const SECRET_UPGRADE_DEFINITIONS = [

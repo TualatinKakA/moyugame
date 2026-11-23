@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>末位督导官（执行部升级 5）</title>
+  <desc>执行部第5项升级（末位督导官）：银阶2件高压压力表与截止阀门阵列，低多边形风格。</desc>
+  <g id="demon-5-back" transform="translate(12, 2.5) scale(0.76)">
+    <polygon points="11,43 27,36 53,46.5 37,53.5" fill="#8E9C9C"/>
+    <polygon points="11,43 37,53.5 37,58 11,47.5" fill="#697473"/>
+    <polygon points="37,53.5 53,46.5 53,51 37,58" fill="#333B3A"/>
+    <polygon points="22,38 28,40.5 28,46 22,43.5" fill="#697473"/>
+    <polygon points="28,40.5 33,38.3 33,43.8 28,46" fill="#333B3A"/>
+    <polygon points="25,11 32,8 42,12 46,22 42,32 35,35 35,25 31,15" fill="#697473"/>
+    <polygon points="25,11 35,15 39,25 35,35 25,39 15,35 11,25 15,15" fill="#AAB8B8"/>
+    <polygon points="25,14.5 32.5,17.5 35.5,25 32.5,32.5 25,35.5 17.5,32.5 14.5,25 17.5,17.5" fill="#EEF3F2"/>
+    <polygon points="25,14.5 32.5,17.5 35.5,25 31.5,25 29.5,20 25,18" fill="#8E9C9C"/>
+    <polygon points="23,26.5 33,18.5 26.5,28.5" fill="#8E9C9C"/>
+    <polygon points="23,23.5 27,25 27,28.5 23,27" fill="#333B3A"/>
+    <polygon points="41,37 46,35 46,43 41,45" fill="#697473"/>
+    <polygon points="44,25 51,28 53,35 51,41 44,38 42,31" fill="#D9E2E2"/>
+    <polygon points="44,28 49,30 50.5,34.5 49,38.5 44,36.5 42.5,32" fill="#333B3A"/>
+    <polygon points="46,27 48,27.8 48,39 46,38.2" fill="#8E9C9C"/>
+    <polygon points="42.5,31.5 52.5,35.5 52.5,37.5 42.5,33.5" fill="#8E9C9C"/>
+  </g>
+  <g id="demon-5-front" transform="translate(1.5, 8.5) scale(0.76)">
+    <polygon points="11,43 27,36 53,46.5 37,53.5" fill="#8E9C9C"/>
+    <polygon points="11,43 37,53.5 37,58 11,47.5" fill="#697473"/>
+    <polygon points="37,53.5 53,46.5 53,51 37,58" fill="#333B3A"/>
+    <polygon points="22,38 28,40.5 28,46 22,43.5" fill="#697473"/>
+    <polygon points="28,40.5 33,38.3 33,43.8 28,46" fill="#333B3A"/>
+    <polygon points="25,11 32,8 42,12 46,22 42,32 35,35 35,25 31,15" fill="#697473"/>
+    <polygon points="25,11 35,15 39,25 35,35 25,39 15,35 11,25 15,15" fill="#AAB8B8"/>
+    <polygon points="25,14.5 32.5,17.5 35.5,25 32.5,32.5 25,35.5 17.5,32.5 14.5,25 17.5,17.5" fill="#EEF3F2"/>
+    <polygon points="25,14.5 32.5,17.5 35.5,25 31.5,25 29.5,20 25,18" fill="#8E9C9C"/>
+    <polygon points="23,26.5 33,18.5 26.5,28.5" fill="#8E9C9C"/>
+    <polygon points="23,23.5 27,25 27,28.5 23,27" fill="#333B3A"/>
+    <polygon points="41,37 46,35 46,43 41,45" fill="#697473"/>
+    <polygon points="44,25 51,28 53,35 51,41 44,38 42,31" fill="#D9E2E2"/>
+    <polygon points="44,28 49,30 50.5,34.5 49,38.5 44,36.5 42.5,32" fill="#333B3A"/>
+    <polygon points="46,27 48,27.8 48,39 46,38.2" fill="#8E9C9C"/>
+    <polygon points="42.5,31.5 52.5,35.5 52.5,37.5 42.5,33.5" fill="#8E9C9C"/>
+  </g>
+</svg>

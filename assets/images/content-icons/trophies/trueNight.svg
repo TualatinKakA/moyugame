@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>永久夜班制（True Night）</title>
+  <desc>运维部升级技能与法术成就：指针锁定零点 12 时的暗夜挂钟，低多边形风格。</desc>
+  <g id="trueNight-icon">
+    <polygon points="32,8 46,12 54,24 54,40 46,52 32,56 18,52 10,40 10,24 18,12" fill="#46504F"/>
+    <polygon points="32,8 46,12 54,24 54,40 46,52 32,56 32,8" fill="#333B3A"/>
+    <polygon points="32,13 43,16 49,26 49,38 43,48 32,51 21,48 15,38 15,26 21,16" fill="#252A27"/>
+    <polygon points="30.5,16 33.5,16 33.5,33 30.5,33" fill="#91B77A"/>
+    <polygon points="30.5,21 33.5,21 33.5,33 30.5,33" fill="#B4CDA3"/>
+    <polygon points="29.5,29.5 34.5,29.5 34.5,34.5 29.5,34.5" fill="#DF9A6C"/>
+    <polygon points="31,14 33,14 33,16.5 31,16.5" fill="#EEF3F2"/>
+    <polygon points="31,47.5 33,47.5 33,50 31,50" fill="#697473"/>
+    <polygon points="16,31 18.5,31 18.5,33 16,33" fill="#697473"/>
+    <polygon points="45.5,31 48,31 48,33 45.5,33" fill="#697473"/>
+  </g>
+</svg>

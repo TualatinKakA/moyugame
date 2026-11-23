@@ -403,13 +403,16 @@ function quickSkillIds(limit = quickLimit()) {
   const configured = Array.isArray(state().settings.quickSkills) ? state().settings.quickSkills : available.map(item => item.id);
   return configured.filter(id => ids.has(id)).slice(0, limit);
 }
+function spellIcon(item) {
+  return item.ui.upgradeId && state().owned.run[item.ui.upgradeId] ? item.ui.upgradedIcon : item.ui.icon;
+}
 function skillButton(item) {
-  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</b><small>${description(item)}</small><em></em></button>`;
+  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${spellIcon(item)}" alt="">${item.name}</b><small>${description(item)}</small><em></em></button>`;
 }
 function renderQuickSkills() {
   const available = visible('spell');
   const quick = quickSkillIds().map(definition);
-  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}|${quick.map(description).join('|')}`;
+  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}|${quick.map(item => `${description(item)}|${spellIcon(item)}`).join('|')}`;
   if (signature === quickStructure) return;
   quickStructure = signature;
   $('skillMount').innerHTML = available.length ? `<section class="skill-shortcuts" aria-label="快捷技能"><div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButton).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}</section>` : '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
@@ -523,7 +526,7 @@ function renderRoyalMarket() {
     const quantity = model.quantity || 0;
     const total = model.costs[0]?.value || 0;
     const disabled = model.status !== 'PURCHASABLE';
-    return `<div class="royal-market-row" role="row" data-exchange-card="${item.id}"><span role="cell">${item.name}（${formatNumber(model.viewModel.count)}）</span><span role="cell">10%</span><span role="cell">${quantity}× ${formatNumber(total)}</span><span role="cell"><button class="royal-market-buy primary" data-action="purchase" data-id="${item.id}" aria-label="${item.name} ${quantity} 次，成本 ${formatNumber(total)} 点影响力" ${disabled ? 'disabled' : ''}>调拨</button></span></div>`;
+    return `<div class="royal-market-row" role="row" data-exchange-card="${item.id}"><span class="royal-market-faction" role="cell"><img class="royal-market-icon" src="${item.ui.icon}" alt=""><span>${item.name}（${formatNumber(model.viewModel.count)}）</span></span><span role="cell">10%</span><span role="cell">${quantity}× ${formatNumber(total)}</span><span role="cell"><button class="royal-market-buy primary" data-action="purchase" data-id="${item.id}" aria-label="${item.name} ${quantity} 次，成本 ${formatNumber(total)} 点影响力" ${disabled ? 'disabled' : ''}>调拨</button></span></div>`;
   }).join('');
   if (focusedId) $('royalMarketRows').querySelector(`[data-id="${focusedId}"]`)?.focus({ preventScroll: true });
 }
@@ -553,7 +556,7 @@ function skillsPanel() {
   const quick = quickSkillIds(6);
   return `<div class="panel-head"><div><h2>全部技能</h2><p>设置常用技能，或在这里直接释放。</p></div></div><div class="skill-library">${available.map(item => {
     const index = quick.indexOf(item.id); const isQuick = index >= 0;
-    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${item.ui.icon}" alt="">${item.name}</h3><p>${description(item)}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
+    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${spellIcon(item)}" alt="">${item.name}</h3><p>${description(item)}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
   }).join('')}</div>`;
 }
 const statRow = (label, path, format = 'number') => `<tr><td>${label}</td><td data-stat="${path}" data-format="${format}">0</td></tr>`;

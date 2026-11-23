@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>秘传盲打心法（技术部升级 6）</title>
+  <desc>技术部第6项升级（秘传盲打心法）：银阶3件机械键盘键帽阵列，低多边形风格。</desc>
+  <g id="elven-6-top" transform="translate(9.5, -0.5) scale(0.68)">
+    <polygon points="9,41 30,51.5 53,40 32,29.5" fill="#697473"/>
+    <polygon points="9,41 30,51.5 30,56 9,45.5" fill="#46504F"/>
+    <polygon points="30,51.5 53,40 53,44.5 30,56" fill="#333B3A"/>
+    <polygon points="13,36.5 30,45 49,35.5 32,27" fill="#8E9C9C"/>
+    <polygon points="30,45 49,35.5 49,38.5 30,48" fill="#697473"/>
+    <polygon points="13,36.5 30,45 30,48 13,39.5" fill="#C3CECE"/>
+    <polygon points="18,16.5 32,23.5 30,41.5 13.5,33" fill="#D9E2E2"/>
+    <polygon points="32,23.5 45,17 48.5,32 30,41.5" fill="#AAB8B8"/>
+    <polygon points="18,16.5 31,10 45,17 32,23.5" fill="#EEF3F2"/>
+    <polygon points="18.5,27 26.5,31 26,34 18,30" fill="#8E9C9C"/>
+  </g>
+  <g id="elven-6-right" transform="translate(18, 14) scale(0.68)">
+    <polygon points="9,41 30,51.5 53,40 32,29.5" fill="#697473"/>
+    <polygon points="9,41 30,51.5 30,56 9,45.5" fill="#46504F"/>
+    <polygon points="30,51.5 53,40 53,44.5 30,56" fill="#333B3A"/>
+    <polygon points="13,36.5 30,45 49,35.5 32,27" fill="#8E9C9C"/>
+    <polygon points="30,45 49,35.5 49,38.5 30,48" fill="#697473"/>
+    <polygon points="13,36.5 30,45 30,48 13,39.5" fill="#C3CECE"/>
+    <polygon points="18,16.5 32,23.5 30,41.5 13.5,33" fill="#D9E2E2"/>
+    <polygon points="32,23.5 45,17 48.5,32 30,41.5" fill="#AAB8B8"/>
+    <polygon points="18,16.5 31,10 45,17 32,23.5" fill="#EEF3F2"/>
+    <polygon points="18.5,27 26.5,31 26,34 18,30" fill="#8E9C9C"/>
+  </g>
+  <g id="elven-6-left" transform="translate(1.5, 16) scale(0.68)">
+    <polygon points="9,41 30,51.5 53,40 32,29.5" fill="#697473"/>
+    <polygon points="9,41 30,51.5 30,56 9,45.5" fill="#46504F"/>
+    <polygon points="30,51.5 53,40 53,44.5 30,56" fill="#333B3A"/>
+    <polygon points="13,36.5 30,45 49,35.5 32,27" fill="#8E9C9C"/>
+    <polygon points="30,45 49,35.5 49,38.5 30,48" fill="#697473"/>
+    <polygon points="13,36.5 30,45 30,48 13,39.5" fill="#C3CECE"/>
+    <polygon points="18,16.5 32,23.5 30,41.5 13.5,33" fill="#D9E2E2"/>
+    <polygon points="32,23.5 45,17 48.5,32 30,41.5" fill="#AAB8B8"/>
+    <polygon points="18,16.5 31,10 45,17 32,23.5" fill="#EEF3F2"/>
+    <polygon points="18.5,27 26.5,31 26,34 18,30" fill="#8E9C9C"/>
+  </g>
+</svg>

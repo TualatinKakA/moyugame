@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">核心方阵名录 · 第7段</title>
+  <desc id="desc">与传奇档案馆完全相同的设施主体，右上角数字7表示第7段升级。</desc>
+  <g id="hallOfLegends-body">
+    <!-- Ground Platform & Base Plinth -->
+    <polygon points="5,45 25,36 59,46 39,57" fill="#D9E2E2"/>
+    <polygon points="5,45 39,57 39,60 5,48" fill="#899492"/>
+    <polygon points="39,57 59,46 59,49 39,60" fill="#46504F"/>
+    <!-- Recessed Dark Colonnade Interior -->
+    <polygon points="10,22 24,16 55,25 55,46 39,52 10,43" fill="#252A27"/>
+    <polygon points="11,23 38,27 38,51 11,43" fill="#333B3A"/>
+    <!-- Hanging Institutional Banners Between Columns -->
+    <polygon points="14.5,23.5 17.5,24 17.5,35 14.5,34.5" fill="#C4764D"/>
+    <polygon points="21.5,24.5 24.5,25 24.5,36.5 21.5,36" fill="#697473"/>
+    <polygon points="28.5,25.5 31.5,26 31.5,37.5 28.5,37" fill="#C4764D"/>
+    <!-- Archive Boxes Stacked on Porch -->
+    <polygon points="13,40 16,39 18,40 15,41" fill="#DF9A6C"/>
+    <polygon points="13,40 15,41 15,44 13,43" fill="#A5684A"/>
+    <polygon points="15,41 18,40 18,43 15,44" fill="#65402F"/>
+    <polygon points="30,43 33,42 35,43 32,44" fill="#EEF3F2"/>
+    <polygon points="30,43 32,44 32,47 30,46" fill="#AAB8B8"/>
+    <polygon points="32,44 35,43 35,46 32,47" fill="#697473"/>
+    <!-- Right Wing Colonnade Wall & Pilasters -->
+    <polygon points="38,26 55,21 55,46 38,52" fill="#697473"/>
+    <polygon points="42,25 44,24.4 44,49.8 42,50.5" fill="#AAB8B8"/>
+    <polygon points="48.5,23.2 50.5,22.6 50.5,47.5 48.5,48.2" fill="#AAB8B8"/>
+    <polygon points="53.5,21.8 55.5,21.2 55.5,45.8 53.5,46.5" fill="#899492"/>
+    <!-- Front 4 Classical Columns -->
+    <polygon points="10,22 12,22.3 12,44.5 10,44" fill="#EEF3F2"/>
+    <polygon points="12,22.3 13.5,22.5 13.5,44.8 12,44.5" fill="#AAB8B8"/>
+    <polygon points="18,23.2 20,23.5 20,46.5 18,46" fill="#EEF3F2"/>
+    <polygon points="20,23.5 21.5,23.7 21.5,46.8 20,46.5" fill="#AAB8B8"/>
+    <polygon points="26,24.4 28,24.7 28,48.5 26,48" fill="#EEF3F2"/>
+    <polygon points="28,24.7 29.5,24.9 29.5,48.8 28,48.5" fill="#AAB8B8"/>
+    <polygon points="34,25.6 36,25.9 36,50.8 34,50.3" fill="#EEF3F2"/>
+    <polygon points="36,25.9 37.8,26.1 37.8,51.2 36,50.8" fill="#899492"/>
+    <!-- Front 3-Tier Staircase -->
+    <polygon points="14,46 27,42 33,44 20,48" fill="#EEF3F2"/>
+    <polygon points="14,46 20,48 20,49.5 14,47.5" fill="#899492"/>
+    <polygon points="11,49 25,44.5 31,46.5 17,51" fill="#EEF3F2"/>
+    <polygon points="11,49 17,51 17,52.5 11,50.5" fill="#899492"/>
+    <polygon points="8,52 23,47 29,49 14,54" fill="#EEF3F2"/>
+    <polygon points="8,52 14,54 14,56 8,54" fill="#697473"/>
+    <polygon points="14,54 29,49 29,51 14,56" fill="#46504F"/>
+    <!-- Sloped Side Roof -->
+    <polygon points="23,7 58,17 39,25 7,19" fill="#697473"/>
+    <polygon points="23,7 58,17 58,19 23,9" fill="#AAB8B8"/>
+    <polygon points="39,25 58,17 58,19.5 39,27.5" fill="#46504F"/>
+    <!-- Front Triangular Pediment -->
+    <polygon points="7,19 23,7 39,25 39,27.5 7,21.5" fill="#EEF3F2"/>
+    <polygon points="11.5,19.2 23,10.2 34.5,23.8" fill="#899492"/>
+    <polygon points="13,19.3 23,11.6 33,23.3" fill="#D9E2E2"/>
+    <!-- Pediment Central Gold Seal -->
+    <polygon points="23,15.5 25,17.8 23,20 21,17.8" fill="#E7CA74"/>
+  </g>
+  <g id="upgrade-tier-7">
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#252A27" opacity=".35" transform="translate(1 1)"/>
+    <path d="M46 3h11l5 5v12l-5 5H46l-5-5V8Z" fill="#DAB988"/>
+    <path d="M46 3h11l5 5v3l-5-5H46l-5 5V8Z" fill="#EEDBB6"/>
+    <path d="M46 25h11l5-5v-3l-3 5H44Z" fill="#A48760"/>
+    <path d="M1 0H5 M5 0V5 M5 5V10" fill="none" stroke="#252A27" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter" transform="translate(48 7)"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>月光迭代（Moon Blessing）</title>
+  <desc>技术部派系法术：暗夜新月与鼠尾草绿阶梯脉冲波，低多边形风格。</desc>
+  <g id="moonBlessing-icon">
+    <polygon points="32,10 47,16 54,32 47,48 32,54 17,48 10,32 17,16" fill="#333B3A"/>
+    <polygon points="32,10 47,16 54,32 47,48 32,54 32,10" fill="#252A27"/>
+    <polygon points="28,17 21,22 19,32 21,42 28,47 24.5,40 23.5,32 24.5,24" fill="#EEF3F2"/>
+    <polygon points="29,35 34,35 34,29 40,29 40,23 47,23 47,26.5 43.5,26.5 43.5,32.5 37.5,32.5 37.5,38.5 29,38.5" fill="#91B77A"/>
+    <polygon points="41,20 48,24.5 41,29" fill="#B4CDA3"/>
+  </g>
+</svg>

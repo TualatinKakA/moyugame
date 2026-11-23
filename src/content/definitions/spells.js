@@ -1,16 +1,24 @@
-const SPELL_ICONS = { taxCollection: 'cash', callToArms: 'briefcase', holyLight: 'tower', bloodFrenzy: 'headphones', fairyChanting: 'laptop', goblinsGreed: 'coin' };
-const spell = ({ id, name, description, cost, duration = 0, visible, effects = [], castActions = [], rngStream, rngPersistence, icon, alignment }) => ({
-  id, kind: 'spell', contentVersion: 'base-v1', name, description,
-  ...(rngStream !== undefined ? { rngStream, rngPersistence } : {}),
-  ...(alignment ? { alignment } : {}),
-  era: { minR: 0 }, visible, unlock: visible,
-  cast: { costs: [{ resource: 'mana', amount: { constant: cost } }], requires: [visible] },
-  duration, effects, grants: [], reactions: [], castActions, scope: 'run',
-  ui: { kind: 'spellCard', panel: 'spells', icon: icon || `assets/images/${SPELL_ICONS[id]}.png` },
-});
+const SPELL_UPGRADE_TROPHIES = {
+  fairyChanting: 'fairyChoir', moonBlessing: 'sunBlessing', godsHand: 'godsRest',
+  goblinsGreed: 'greedDrive', nightTime: 'trueNight', hellfireBlast: 'hellRush',
+};
+const spell = ({ id, name, description, cost, duration = 0, visible, effects = [], castActions = [], rngStream, rngPersistence, alignment }) => {
+  const trophyId = SPELL_UPGRADE_TROPHIES[id];
+  return {
+    id, kind: 'spell', contentVersion: 'base-v1', name, description,
+    ...(rngStream !== undefined ? { rngStream, rngPersistence } : {}),
+    ...(alignment ? { alignment } : {}),
+    era: { minR: 0 }, visible, unlock: visible,
+    cast: { costs: [{ resource: 'mana', amount: { constant: cost } }], requires: [visible] },
+    duration, effects, grants: [], reactions: [], castActions, scope: 'run',
+    ui: {
+      kind: 'spellCard', panel: 'spells', icon: `assets/images/content-icons/spells/${id}.svg`,
+      ...(trophyId ? { upgradeId: `${trophyId}Upgrade`, upgradedIcon: `assets/images/content-icons/trophies/${trophyId}.svg` } : {}),
+    },
+  };
+};
 const effect = (group, phase, stat, target, operation, value) => ({ group, phase, stat, target, operation, value, stacking: operation === 'add' || operation === 'addPercent' ? 'add' : 'multiply' });
 const globalTarget = { type: 'global' };
-const redCross = 'assets/images/content-icons/red-cross.svg';
 
 export const SPELL_DEFINITIONS = [
   spell({
@@ -29,7 +37,7 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('holyLight', 'click', 'click.reward', globalTarget, 'multiplyPercent', { constant: 1750 })],
   }),
   spell({
-    id: 'bloodFrenzy', name: '务实冲刺', description: '在 {spellDuration} 秒内提高全部设施产出，当前提高 1500%。', cost: 600, duration: 20, alignment: 'evil',
+    id: 'bloodFrenzy', name: '狼性狂热', description: '在 {spellDuration} 秒内提高全部设施产出，当前提高 1500%。', cost: 600, duration: 20, alignment: 'evil',
     visible: { op: 'selected', key: 'alignment', value: 'evil' },
     effects: [effect('bloodFrenzy', 'global', 'global.production', globalTarget, 'addPercent', { constant: 1500 })],
   }),
@@ -47,22 +55,22 @@ export const SPELL_DEFINITIONS = [
     effects: [effect('goblinsGreed', 'global', 'global.production', globalTarget, 'addPercent', { formula: '30 + 3 * ln(1 + x) ^ 3', variables: { x: 'stats.ascension.factionCoins' } })],
   }),
   spell({
-    id: 'moonBlessing', name: '月光迭代', description: '根据本次职业有效点击数，在 {spellDuration} 秒内提高全部设施产出，当前提高 {effect:moonBlessing}%。', cost: 700, duration: 20, alignment: 'good', icon: redCross,
+    id: 'moonBlessing', name: '月光迭代', description: '根据本次职业有效点击数，在 {spellDuration} 秒内提高全部设施产出，当前提高 {effect:moonBlessing}%。', cost: 700, duration: 20, alignment: 'good',
     visible: { op: 'spellSource', id: 'moonBlessing' },
     effects: [effect('moonBlessing', 'global', 'global.production', globalTarget, 'addPercent', { formula: '1.3 * x ^ 0.7', variables: { x: 'effective.r.clicks' } })],
   }),
   spell({
-    id: 'godsHand', name: '战略赋能', description: '根据当前精力恢复提高全部设施产出，当前提高 {effect:godsHand}%；持续时间随本次职业理想立场时间增加，当前持续 {spellDuration} 秒。', cost: 900, duration: 10, alignment: 'good', icon: redCross,
+    id: 'godsHand', name: '战略赋能', description: '根据当前精力恢复提高全部设施产出，当前提高 {effect:godsHand}%；持续时间随本次职业理想立场时间增加，当前持续 {spellDuration} 秒。', cost: 900, duration: 10, alignment: 'good',
     visible: { op: 'spellSource', id: 'godsHand' },
     effects: [effect('godsHand', 'global', 'global.production', globalTarget, 'addPercent', { formula: '10 * ln(1 + x) ^ 4', variables: { x: 'derived.manaRegen' } })],
   }),
   spell({
-    id: 'nightTime', name: '通宵赶工', description: '根据历史项目坟场的有效数量，在 {spellDuration} 秒内提高数字员工产出，当前基础加成 +{effect:nightTime} 个百分点。', cost: 800, duration: 20, alignment: 'evil', icon: redCross,
+    id: 'nightTime', name: '午夜静默运维', description: '根据历史项目坟场的有效数量，在 {spellDuration} 秒内提高数字员工产出，当前基础加成 +{effect:nightTime} 个百分点。', cost: 800, duration: 20, alignment: 'evil',
     visible: { op: 'spellSource', id: 'nightTime' },
     effects: [effect('nightTime', 'global', 'assistants.production', globalTarget, 'addPercent', { formula: '50 + 50 * x', variables: { x: 'buildings.necropolis' } })],
   }),
   spell({
-    id: 'hellfireBlast', name: '高压执行', description: '根据已解锁奖杯数，在 {spellDuration} 秒内提高高压事业部产出，当前提高 {activeProductionPercent}%；购入开场冲刺令后，同样强化全天候工作井与传奇档案馆。', cost: 900, duration: 20, alignment: 'evil', icon: redCross,
+    id: 'hellfireBlast', name: '红温极限压榨', description: '根据已解锁奖杯数，在 {spellDuration} 秒内提高高压事业部产出，当前提高 {activeProductionPercent}%；购入开场冲刺令后，同样强化全天候工作井与传奇档案馆。', cost: 900, duration: 20, alignment: 'evil',
     visible: { op: 'spellSource', id: 'hellfireBlast' },
     effects: [effect('hellfireBlast', 'buildingLocal', 'building.production', { type: 'hellfire' }, 'addPercent', { formula: '120 * x ^ 0.8', variables: { x: 'trophies.original' } })],
   }),

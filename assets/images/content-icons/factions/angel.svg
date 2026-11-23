@@ -1,14 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">战略部</title>
-  <desc id="desc">灰白与浅蓝折叠战略地图，中央叠加金色四角指北星，代表战略部。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>战略部</title>
+  <desc>战略部核心图标：黄铜晨会桌铃，无协议角标，纯矢量低多边形风格。</desc>
   <g id="angel-body">
-    <path d="M6 18 20 13 37 17 56 11 58 47 39 54 21 49 7 54Z" fill="#D9E2E2"/>
-    <path d="M20 13 37 17 39 54 21 49Z" fill="#A9C2CF"/>
-    <path d="M37 17 56 11 58 47 39 54Z" fill="#C2D4DC"/>
-    <path d="M7 54 21 49 39 54 58 47 39 59 20 54Z" fill="#7D9CB3"/>
-    <path d="M13 40 23 31 31 39 45 24 52 29" fill="none" stroke="#7D9CB3" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter"/>
-    <path d="M35 13 39 25 51 29 39 33 35 45 31 33 19 29 31 25Z" fill="#E7CA74"/>
-    <path d="M35 13 39 25 51 29 39 33 35 45 31 33 19 29 31 25Z" fill="#F5E4A8" transform="translate(35 29) scale(.55) translate(-35 -29)"/>
-    <path d="m35 24 5 5-5 5-5-5Z" fill="#46504F"/>
+    <polygon points="11,42 32,33.5 53,42 32,50.5" fill="#835039"/>
+    <polygon points="11,42 32,50.5 32,55.5 11,47" fill="#46504F"/>
+    <polygon points="32,50.5 53,42 53,47 32,55.5" fill="#333B3A"/>
+    <polygon points="14,41 32,48 32,35.5 17.5,30" fill="#E7CA74"/>
+    <polygon points="32,48 50,41 46.5,30 32,35.5" fill="#C4764D"/>
+    <polygon points="17.5,30 32,35.5 32,21 23.5,23" fill="#F5E4A8"/>
+    <polygon points="32,35.5 46.5,30 40.5,23 32,21" fill="#DF9A6C"/>
+    <polygon points="23.5,23 32,19.5 40.5,23 32,26.5" fill="#EEF3F2"/>
+    <polygon points="30,14 32,14 32,22 30,22" fill="#AAB8B8"/>
+    <polygon points="32,14 34,14 34,22 32,22" fill="#697473"/>
+    <polygon points="26,12 32,9.5 38,12 32,14.5" fill="#EEF3F2"/>
+    <polygon points="26,12 32,14.5 32,16.5 26,14" fill="#DF9A6C"/>
+    <polygon points="32,14.5 38,12 38,14 32,16.5" fill="#C4764D"/>
   </g>
 </svg>

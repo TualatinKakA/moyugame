@@ -6,7 +6,7 @@ export const GENERAL_UPGRADE_DEFINITIONS = [
     description: '打开统筹调拨窗口，使用各部门影响力进行调拨。',
     era: { minR: 0 }, visible: { op: 'always' }, unlock: { op: 'always' },
     purchase: { costs: [], requires: [] }, effects: [], grants: [], reactions: [], scope: 'run',
-    ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'general', icon: 'assets/images/content-icons/red-cross.svg' },
+    ui: { kind: 'upgradeCard', panel: 'upgrades', category: 'general', icon: 'assets/images/content-icons/exchange/royalMarket.svg' },
   },
   {
     id: 'gemPower', kind: 'upgrade', contentVersion: 'base-v1', name: '期权激励',

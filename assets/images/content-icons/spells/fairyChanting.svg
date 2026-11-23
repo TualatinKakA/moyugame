@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>头脑风暴（Fairy Chanting）</title>
+  <desc>产品部派系法术：低多边形切面灵感灯泡与鼠尾草绿思维火花。</desc>
+  <g id="fairyChanting-icon">
+    <polygon points="32,14 43,19 46,30 39,40 25,40 18,30 21,19" fill="#EEF3F2"/>
+    <polygon points="32,14 43,19 46,30 39,40 32,40 32,14" fill="#D9E2E2"/>
+    <polygon points="28,26 32,21 36,26 32,34" fill="#E7CA74"/>
+    <polygon points="25,40 39,40 37,46 27,46" fill="#899492"/>
+    <polygon points="27,46 37,46 35,51 29,51" fill="#46504F"/>
+    <polygon points="30.5,6 33.5,6 33.5,11 30.5,11" fill="#91B77A"/>
+    <polygon points="13,13 17,11 20,15 16,17" fill="#91B77A"/>
+    <polygon points="51,13 47,11 44,15 48,17" fill="#B4CDA3"/>
+    <polygon points="10,27 15,26 15,29 10,30" fill="#B4CDA3"/>
+    <polygon points="54,27 49,26 49,29 54,30" fill="#91B77A"/>
+  </g>
+</svg>

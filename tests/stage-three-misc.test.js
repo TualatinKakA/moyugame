@@ -37,7 +37,6 @@ test('all 46 Misc entries match CSV names costs status and opening boundaries', 
       assert.equal(definition.kind, 'alignment');
     }
     if (index >= 36) assert.equal(definition.visible.not.op, 'always', `${id} remains closed`);
-    else if (id !== 'gemPower') assert.equal(definition.ui.icon, 'assets/images/content-icons/red-cross.svg', id);
   });
 });
 

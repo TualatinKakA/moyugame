@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>全权委托书（战略部升级 9）</title>
+  <desc>战略部第9项升级（全权委托书）：金阶3件黄铜晨会桌铃阵列，低多边形风格。</desc>
+  <g id="angel-9-top" transform="translate(9.5, -0.5) scale(0.68)">
+    <polygon points="11,42 32,33.5 53,42 32,50.5" fill="#835039"/>
+    <polygon points="11,42 32,50.5 32,55.5 11,47" fill="#65402F"/>
+    <polygon points="32,50.5 53,42 53,47 32,55.5" fill="#333B3A"/>
+    <polygon points="14,41 32,48 32,35.5 17.5,30" fill="#E7CA74"/>
+    <polygon points="32,48 50,41 46.5,30 32,35.5" fill="#B09552"/>
+    <polygon points="17.5,30 32,35.5 32,21 23.5,23" fill="#F5E4A8"/>
+    <polygon points="32,35.5 46.5,30 40.5,23 32,21" fill="#D1B15C"/>
+    <polygon points="23.5,23 32,19.5 40.5,23 32,26.5" fill="#EEF3F2"/>
+    <polygon points="30,14 32,14 32,22 30,22" fill="#E7CA74"/>
+    <polygon points="32,14 34,14 34,22 32,22" fill="#B09552"/>
+    <polygon points="26,12 32,9.5 38,12 32,14.5" fill="#F5E4A8"/>
+    <polygon points="26,12 32,14.5 32,16.5 26,14" fill="#E7CA74"/>
+    <polygon points="32,14.5 38,12 38,14 32,16.5" fill="#B09552"/>
+  </g>
+  <g id="angel-9-right" transform="translate(18, 14) scale(0.68)">
+    <polygon points="11,42 32,33.5 53,42 32,50.5" fill="#835039"/>
+    <polygon points="11,42 32,50.5 32,55.5 11,47" fill="#65402F"/>
+    <polygon points="32,50.5 53,42 53,47 32,55.5" fill="#333B3A"/>
+    <polygon points="14,41 32,48 32,35.5 17.5,30" fill="#E7CA74"/>
+    <polygon points="32,48 50,41 46.5,30 32,35.5" fill="#B09552"/>
+    <polygon points="17.5,30 32,35.5 32,21 23.5,23" fill="#F5E4A8"/>
+    <polygon points="32,35.5 46.5,30 40.5,23 32,21" fill="#D1B15C"/>
+    <polygon points="23.5,23 32,19.5 40.5,23 32,26.5" fill="#EEF3F2"/>
+    <polygon points="30,14 32,14 32,22 30,22" fill="#E7CA74"/>
+    <polygon points="32,14 34,14 34,22 32,22" fill="#B09552"/>
+    <polygon points="26,12 32,9.5 38,12 32,14.5" fill="#F5E4A8"/>
+    <polygon points="26,12 32,14.5 32,16.5 26,14" fill="#E7CA74"/>
+    <polygon points="32,14.5 38,12 38,14 32,16.5" fill="#B09552"/>
+  </g>
+  <g id="angel-9-left" transform="translate(1.5, 16) scale(0.68)">
+    <polygon points="11,42 32,33.5 53,42 32,50.5" fill="#835039"/>
+    <polygon points="11,42 32,50.5 32,55.5 11,47" fill="#65402F"/>
+    <polygon points="32,50.5 53,42 53,47 32,55.5" fill="#333B3A"/>
+    <polygon points="14,41 32,48 32,35.5 17.5,30" fill="#E7CA74"/>
+    <polygon points="32,48 50,41 46.5,30 32,35.5" fill="#B09552"/>
+    <polygon points="17.5,30 32,35.5 32,21 23.5,23" fill="#F5E4A8"/>
+    <polygon points="32,35.5 46.5,30 40.5,23 32,21" fill="#D1B15C"/>
+    <polygon points="23.5,23 32,19.5 40.5,23 32,26.5" fill="#EEF3F2"/>
+    <polygon points="30,14 32,14 32,22 30,22" fill="#E7CA74"/>
+    <polygon points="32,14 34,14 34,22 32,22" fill="#B09552"/>
+    <polygon points="26,12 32,9.5 38,12 32,14.5" fill="#F5E4A8"/>
+    <polygon points="26,12 32,14.5 32,16.5 26,14" fill="#E7CA74"/>
+    <polygon points="32,14.5 38,12 38,14 32,16.5" fill="#B09552"/>
+  </g>
+</svg>

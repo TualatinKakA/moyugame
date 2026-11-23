@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>运维部核心员工</title>
+  <desc>运维部核心员工：复用运维部传承手册的纯矢量画面，表示核心员工 Trophy 与对应传承的直接关联。</desc>
+  <g id="undeadHeritage-icon">
+    <polygon points="14,10 47,16 51,19 44,54 11,48 11,45" fill="#65402F"/>
+    <polygon points="44,51 51,19 51,22 44,54" fill="#46504F"/>
+    <polygon points="11,45 44,51 44,54 11,48" fill="#835039"/>
+    <polygon points="14,10 47,16 40,49 7,43" fill="#A5684A"/>
+    <polygon points="40,14.7 47,16 40,49 33,47.7" fill="#835039"/>
+    <polygon points="41.5,19 45.8,19.8 45.4,21.5 41.1,20.7" fill="#EEF3F2"/>
+    <polygon points="39.8,26.8 44.1,27.6 43.7,29.3 39.4,28.5" fill="#EEF3F2"/>
+    <polygon points="38.1,34.6 42.4,35.4 42,37.1 37.7,36.3" fill="#EEF3F2"/>
+    <polygon points="36.4,42.4 40.7,43.2 40.3,44.9 36,44.1" fill="#EEF3F2"/>
+    <polygon points="14.5,15.5 34.5,19.2 30.5,38.5 10.5,34.8" fill="#D9E2E2"/>
+  </g>
+  <g id="undeadHeritage-emblem" transform="translate(12, 17) scale(0.35)">
+    <polygon points="10,16 24,10 53,21.5 39,27.5" fill="#899492"/>
+    <polygon points="10,16 39,27.5 39,55 10,43.5" fill="#46504F"/>
+    <polygon points="39,27.5 53,21.5 53,49 39,55" fill="#333B3A"/>
+    <polygon points="12.5,20 36.5,29.5 36.5,43 12.5,33.5" fill="#333B3A"/>
+    <polygon points="18,22.2 22.8,24.1 24.5,28.5 22.8,32.2 18,30.3 16.3,25.9" fill="#EEF3F2"/>
+    <polygon points="19.5,25.4 21.5,26.2 21.5,29 19.5,28.2" fill="#333B3A"/>
+    <polygon points="28.5,26.4 33.3,28.3 35,32.7 33.3,36.4 28.5,34.5 26.8,30.1" fill="#D9E2E2"/>
+    <polygon points="30,29.6 32,30.4 32,33.2 30,32.4" fill="#333B3A"/>
+    <polygon points="12.5,36 36.5,45.5 36.5,51.8 12.5,42.3" fill="#697473"/>
+    <polygon points="15,39.2 20.5,41.4 20.5,44.2 15,42" fill="#91B77A"/>
+    <polygon points="22.5,42.2 27,44 27,46.8 22.5,45" fill="#DF9A6C"/>
+    <polygon points="29.5,45 34.5,47 34.5,48.8 29.5,46.8" fill="#EEF3F2"/>
+  </g>
+</svg>

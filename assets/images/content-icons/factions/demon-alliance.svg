@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>执行部战略协议（Demon 战略协议）</title>
+  <desc>执行部战略协议：高压压力表与截止阀门主体，右下方叠加战略协议，合约中央写有数字3。</desc>
+  <g id="demon-alliance-base" transform="translate(-2.5, -2.5) scale(0.92)">
+    <polygon points="11,43 27,36 53,46.5 37,53.5" fill="#697473"/>
+    <polygon points="11,43 37,53.5 37,58 11,47.5" fill="#46504F"/>
+    <polygon points="37,53.5 53,46.5 53,51 37,58" fill="#333B3A"/>
+    <polygon points="22,38 28,40.5 28,46 22,43.5" fill="#46504F"/>
+    <polygon points="28,40.5 33,38.3 33,43.8 28,46" fill="#333B3A"/>
+    <polygon points="25,11 32,8 42,12 46,22 42,32 35,35 35,25 31,15" fill="#333B3A"/>
+    <polygon points="25,11 35,15 39,25 35,35 25,39 15,35 11,25 15,15" fill="#697473"/>
+    <polygon points="25,14.5 32.5,17.5 35.5,25 32.5,32.5 25,35.5 17.5,32.5 14.5,25 17.5,17.5" fill="#EEF3F2"/>
+    <polygon points="25,14.5 32.5,17.5 35.5,25 31.5,25 29.5,20 25,18" fill="#C4764D"/>
+    <polygon points="23,26.5 33,18.5 26.5,28.5" fill="#C4764D"/>
+    <polygon points="23,23.5 27,25 27,28.5 23,27" fill="#333B3A"/>
+    <polygon points="41,37 46,35 46,43 41,45" fill="#46504F"/>
+    <polygon points="44,25 51,28 53,35 51,41 44,38 42,31" fill="#DF9A6C"/>
+    <polygon points="44,28 49,30 50.5,34.5 49,38.5 44,36.5 42.5,32" fill="#333B3A"/>
+    <polygon points="46,27 48,27.8 48,39 46,38.2" fill="#C4764D"/>
+    <polygon points="42.5,31.5 52.5,35.5 52.5,37.5 42.5,33.5" fill="#C4764D"/>
+  </g>
+  <g id="contract-tier-3">
+    <path d="M35 26H54L63 35V62H35Z" fill="#111311" opacity=".45"/>
+    <path d="M34 25H53L62 34V60H34Z" fill="#E7CA74" stroke="#5E4B28" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M53 25V34H62Z" fill="#F4E4A9"/>
+    <path d="M53 25 62 34H53Z" fill="#B99545"/>
+    <path d="M39 31H48M39 35H51M39 39H46" fill="none" stroke="#9A7838" stroke-width="2" stroke-linecap="square"/>
+    <text x="49" y="55" text-anchor="middle" fill="#4D3B1E" font-family="Consolas, monospace" font-size="20" font-weight="700">3</text>
+  </g>
+</svg>

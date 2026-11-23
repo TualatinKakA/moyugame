@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>战略赋能（God's Hand）</title>
+  <desc>战略部派系法术：八角罗盘星与向下聚能指示箭头，低多边形风格。</desc>
+  <g id="godsHand-icon">
+    <polygon points="32,8 40,12 44,20 40,28 32,32 24,28 20,20 24,12" fill="#E7CA74"/>
+    <polygon points="32,8 40,12 44,20 40,28 32,32 32,20" fill="#DF9A6C"/>
+    <polygon points="29.5,14 34.5,14 34.5,33 29.5,33" fill="#EEF3F2"/>
+    <polygon points="23,32 32,32 32,44" fill="#EEF3F2"/>
+    <polygon points="32,32 41,32 32,44" fill="#C4764D"/>
+    <polygon points="20,49 32,44 44,49 32,54" fill="#E7CA74"/>
+    <polygon points="25,49 32,46.2 39,49 32,51.8" fill="#DF9A6C"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>周日战略休会（God's Rest）</title>
+  <desc>战略部升级技能与法术成就：红橙顶栏周日台历与静谧金色四角星徽，低多边形风格。</desc>
+  <g id="godsRest-icon">
+    <polygon points="12,16 52,16 52,52 12,52" fill="#EEF3F2"/>
+    <polygon points="52,16 55,19 55,55 52,52" fill="#AAB8B8"/>
+    <polygon points="12,52 52,52 55,55 15,55" fill="#899492"/>
+    <polygon points="12,16 52,16 52,26 12,26" fill="#C4764D"/>
+    <polygon points="18,11 22,11 22,19 18,19" fill="#46504F"/>
+    <polygon points="42,11 46,11 46,19 42,19" fill="#46504F"/>
+    <polygon points="32,29 35,36 42,39 35,42 32,49 29,42 22,39 29,36" fill="#E7CA74"/>
+    <polygon points="32,29 35,36 42,39 35,42 32,49 32,29" fill="#DF9A6C"/>
+  </g>
+</svg>

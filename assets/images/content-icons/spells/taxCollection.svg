@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>工资结算（Tax Collection）</title>
+  <desc>基础法术：斜叠薪资钞票与金色结算封条，低多边形风格。</desc>
+  <g id="taxCollection-icon">
+    <polygon points="10,27 46,19 54,40 18,48" fill="#899492"/>
+    <polygon points="12,24 48,16 55,37 19,45" fill="#D9E2E2"/>
+    <polygon points="12,21 48,14 54,34 18,41" fill="#EEF3F2"/>
+    <polygon points="18,41 54,34 54,38 18,45" fill="#AAB8B8"/>
+    <polygon points="27,18 36,16.2 42,36.2 33,38" fill="#E7CA74"/>
+    <polygon points="33,38 42,36.2 42,40.2 33,42" fill="#B09552"/>
+    <polygon points="21,26 26,25 27.5,30 22.5,31" fill="#91B77A"/>
+    <polygon points="41,22 46,21 47.5,26 42.5,27" fill="#91B77A"/>
+  </g>
+</svg>

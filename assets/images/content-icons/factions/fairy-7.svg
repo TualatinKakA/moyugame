@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>高颜值UI套件（产品部升级 7）</title>
+  <desc>产品部第7项升级（高颜值UI套件）：金阶1件纯白翻盖笔记本电脑阵列，低多边形风格。</desc>
+  <g id="fairy-7-icon" transform="translate(1.5, 1.5) scale(0.95)">
+    <polygon points="18,11 47,14.5 43,35 14,31.5" fill="#E7CA74"/>
+    <polygon points="47,14.5 49.5,15.8 45.5,36.3 43,35" fill="#B09552"/>
+    <polygon points="20,14 44,17 41,32 17,29" fill="#F5E4A8"/>
+    <polygon points="21.5,18 31.5,19.2 30.5,24.5 20.5,23.3" fill="#DF9A6C"/>
+    <polygon points="33.5,19.5 40.5,20.4 39,28 32,27.1" fill="#E7CA74"/>
+    <polygon points="14,31.5 43,35 34.5,50 5.5,46" fill="#D1B15C"/>
+    <polygon points="5.5,46 34.5,50 34.5,53 5.5,49" fill="#B09552"/>
+    <polygon points="34.5,50 43,35 43,38 34.5,53" fill="#65402F"/>
+    <polygon points="15,34 38,36.8 33.5,43.8 10.5,40.8" fill="#835039"/>
+    <polygon points="16.5,42.5 25.5,43.7 24,46.8 15,45.6" fill="#A5684A"/>
+  </g>
+</svg>

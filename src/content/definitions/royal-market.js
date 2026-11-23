@@ -10,5 +10,5 @@ export const ROYAL_EXCHANGE_DEFINITIONS = factions.map(([factionId, factionName]
   description: `逐枚消耗${factionName}影响力，所有部门的统筹调拨共同强化全部设施。`,
   era: { minR: 0 }, visible: { op: 'always' }, unlock: { op: 'always' },
   purchase: { costs: [], requires: [] }, effects: [], grants: [], reactions: [], scope: 'run',
-  ui: { kind: 'exchangeCard', panel: 'factions', icon: 'assets/images/content-icons/red-cross.svg' },
+  ui: { kind: 'exchangeCard', panel: 'factions', icon: `assets/images/content-icons/exchange/${factionId}Exchange.svg` },
 }));
