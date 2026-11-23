@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>通用荣誉奖杯</title>
+  <desc>供尚未制作独立图标的奖杯统一使用的低多边形金色荣誉奖杯，以杯身、双耳和阶梯底座表现成就解锁。</desc>
+  <g id="generic-trophy-master" stroke-linecap="square" stroke-linejoin="miter">
+    <polygon points="18,12 10,12 6,17 8,28 14,34 23,34 23,28 17,27 13,23 12,18 19,18" fill="#B09552"/>
+    <polygon points="46,12 54,12 58,17 56,28 50,34 41,34 41,28 47,27 51,23 52,18 45,18" fill="#8E6E38"/>
+    <polygon points="12,15 16,15 16,20 13,20" fill="#F5E4A8"/>
+    <polygon points="48,15 52,15 51,20 48,20" fill="#D1B15C"/>
+    <polygon points="18,8 32,8 32,42 27,42 21,34 18,23" fill="#F5E4A8"/>
+    <polygon points="32,8 46,8 46,23 43,34 37,42 32,42" fill="#E7CA74"/>
+    <polygon points="18,8 46,8 46,13 18,13" fill="#D1B15C"/>
+    <polygon points="21,9 32,9 32,12 21,12" fill="#FFF0BA"/>
+    <polygon points="22,34 32,40 32,42 27,42" fill="#E7CA74"/>
+    <polygon points="28,42 36,42 38,50 26,50" fill="#D1B15C"/>
+    <polygon points="28,42 32,42 32,50 26,50" fill="#F5E4A8"/>
+    <polygon points="21,49 43,49 48,55 16,55" fill="#B09552"/>
+    <polygon points="21,49 32,49 32,55 16,55" fill="#E7CA74"/>
+    <polygon points="13,55 51,55 54,60 10,60" fill="#65402F"/>
+    <polygon points="16,55 48,55 48,57 16,57" fill="#A5684A"/>
+  </g>
+</svg>
