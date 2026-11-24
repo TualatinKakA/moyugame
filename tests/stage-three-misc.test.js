@@ -120,7 +120,7 @@ test('golden 12: Gem Power upgrades and GB8 use the original per-Gem bonus and a
     * (1 + 0.01 * (seeded.resources.gems * 46)));
 });
 
-test('six ClickingBase upgrades add base click and six offline clicks per second', async () => {
+test('six ClickingBase upgrades aggregate offline clicks without replaying click events', async () => {
   const seeded = createSaveState({ now: 1000 });
   seeded.resources.coins = 1e17;
   seeded.stats.total.clicks = 100000;
@@ -130,15 +130,21 @@ test('six ClickingBase upgrades add base click and six offline clicks per second
     assert.equal(game.dispatch({ type: 'purchase', id: `clickingBase${index}` }).ok, true);
   }
   close(game.select('derived').clickReward, 50050505000);
+  const before = {
+    coins: game.select('state').resources.coins,
+    clickCoins: game.select('state').stats.run.clickCoins,
+    rng: JSON.stringify(game.select('state').rng),
+  };
   const facts = [];
   game.subscribe(message => facts.push(...message.facts));
-  const result = game.dispatch({ type: 'background.settle', seconds: 60 });
+  const result = game.dispatch({ type: 'background.settle', seconds: 5400 });
   assert.equal(result.ok, true, result.error?.stack);
-  assert.equal(game.select('state').stats.run.clicks, 360);
-  assert.equal(game.select('state').stats.total.clicks, 100360);
-  const clicks = facts.filter(fact => fact.type === 'work.clicked');
-  assert.equal(clicks.length, 360);
-  assert.ok(clicks.every(fact => fact.payload.automatic && /^clickingBase[1-6]$/.test(fact.payload.source)));
+  assert.equal(game.select('state').stats.run.clicks, 32400);
+  assert.equal(game.select('state').stats.total.clicks, 132400);
+  assert.equal(game.select('state').resources.coins, before.coins);
+  assert.equal(game.select('state').stats.run.clickCoins, before.clickCoins);
+  assert.equal(JSON.stringify(game.select('state').rng), before.rng);
+  assert.equal(facts.filter(fact => fact.type === 'work.clicked').length, 0);
   assert.equal(facts.some(fact => fact.type === 'spell.cast'), false);
 });
 

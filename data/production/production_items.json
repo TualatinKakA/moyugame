@@ -4998,7 +4998,7 @@
       "kind": "upgrade",
       "version": "1.1.1",
       "name_zh": "结实的工牌",
-      "description_zh": "基础点击收入 +4；每秒自动点击 1 次，在线与离线均生效。",
+      "description_zh": "基础点击收入 +4；每秒自动点击 1 次，在线产生搬砖收益，离线按总速率累计点击次数。",
       "image_path": "assets/images/content-icons/misc/clickingBase1.svg",
       "image_status": "done"
     },
@@ -5008,7 +5008,7 @@
       "kind": "upgrade",
       "version": "1.1.1",
       "name_zh": "耐用的工牌",
-      "description_zh": "基础点击收入 +45；每秒自动点击 1 次，在线与离线均生效。",
+      "description_zh": "基础点击收入 +45；每秒自动点击 1 次，在线产生搬砖收益，离线按总速率累计点击次数。",
       "image_path": "assets/images/content-icons/misc/clickingBase2.svg",
       "image_status": "done"
     },
@@ -5018,7 +5018,7 @@
       "kind": "upgrade",
       "version": "1.1.1",
       "name_zh": "加固的工牌",
-      "description_zh": "基础点击收入 +4950；每秒自动点击 1 次，在线与离线均生效。",
+      "description_zh": "基础点击收入 +4950；每秒自动点击 1 次，在线产生搬砖收益，离线按总速率累计点击次数。",
       "image_path": "assets/images/content-icons/misc/clickingBase3.svg",
       "image_status": "done"
     },
@@ -5028,7 +5028,7 @@
       "kind": "upgrade",
       "version": "1.1.1",
       "name_zh": "三线出入证",
-      "description_zh": "基础点击收入 +500000；每秒自动点击 1 次，在线与离线均生效。",
+      "description_zh": "基础点击收入 +500000；每秒自动点击 1 次，在线产生搬砖收益，离线按总速率累计点击次数。",
       "image_path": "assets/images/content-icons/misc/clickingBase4.svg",
       "image_status": "done"
     },
@@ -5038,7 +5038,7 @@
       "kind": "upgrade",
       "version": "1.1.1",
       "name_zh": "防磁金属牌",
-      "description_zh": "基础点击收入 +50000000；每秒自动点击 1 次，在线与离线均生效。",
+      "description_zh": "基础点击收入 +50000000；每秒自动点击 1 次，在线产生搬砖收益，离线按总速率累计点击次数。",
       "image_path": "assets/images/content-icons/misc/clickingBase5.svg",
       "image_status": "done"
     },
@@ -5048,7 +5048,7 @@
       "kind": "upgrade",
       "version": "1.1.1",
       "name_zh": "永恒零号牌",
-      "description_zh": "基础点击收入 +50000000000；每秒自动点击 1 次，在线与离线均生效。",
+      "description_zh": "基础点击收入 +50000000000；每秒自动点击 1 次，在线产生搬砖收益，离线按总速率累计点击次数。",
       "image_path": "assets/images/content-icons/misc/clickingBase6.svg",
       "image_status": "done"
     },

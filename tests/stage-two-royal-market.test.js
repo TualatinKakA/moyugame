@@ -104,17 +104,18 @@ test('automatic clicks retain FR4 and EL1 source labels without becoming manual 
 });
 
 
-test('EL1 offline autoclicks are aggregated with source labels and no online spell effects', async () => {
+test('EL1 offline autoclicks use aggregate counts without click events', async () => {
   const seeded = createSaveState({ now: 1000 });
   seeded.owned.run['elven-1'] = true;
   const game = await fixture(seeded);
+  const before = { coins: game.select('state').resources.coins, clickCoins: game.select('state').stats.run.clickCoins };
   const facts = [];
   game.subscribe(message => facts.push(...message.facts));
   const result = game.dispatch({ type: 'background.settle', seconds: 60 });
   assert.equal(result.ok, true, result.error?.stack || result.reason);
-  const clicks = facts.filter(fact => fact.type === 'work.clicked');
-  assert.equal(clicks.length, 180);
-  assert.ok(clicks.every(fact => fact.payload.automatic && fact.payload.source === 'elven-1'));
   assert.equal(game.select('state').stats.run.clicks, 180);
+  assert.equal(game.select('state').resources.coins, before.coins);
+  assert.equal(game.select('state').stats.run.clickCoins, before.clickCoins);
+  assert.equal(facts.filter(fact => fact.type === 'work.clicked').length, 0);
   assert.equal(facts.some(fact => fact.type === 'spell.cast'), false);
 });

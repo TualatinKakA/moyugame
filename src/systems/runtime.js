@@ -390,6 +390,11 @@ export function createGameRuntime({ content, saveAdapter, clock = systemClock, s
       const id = `clickingBase${index}`;
       if (tx.state.owned.run[id]) sources.push({ id, rate: 1 });
     }
+    if (!online) {
+      const clicks = sources.reduce((total, source) => total + source.rate, 0) * seconds;
+      for (const scope of ['run', 'r', 'ascension', 'total']) increment(tx, `stats.${scope}.clicks`, clicks);
+      return;
+    }
     if (online) {
       const activeIds = new Set(sources.map(source => source.id));
       for (const id of Object.keys(automaticClickRemainders)) {

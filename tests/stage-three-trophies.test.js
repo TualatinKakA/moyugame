@@ -36,7 +36,7 @@ test('all 412 facility trophies match authoritative CSV ids raw targets and thre
     assert.equal(definition.effects.length, 0);
     assert.equal(definition.sourceVersion, row['原版版本']);
     assert.equal(definition.verificationStatus, 'source-confirmed');
-    assert.equal(definition.ui.icon, 'assets/images/content-icons/red-cross.svg');
+    assert.equal(definition.ui.icon, 'assets/images/content-icons/trophies/generic-trophy.svg');
     const requirement = Number(row['条件'].match(/>=\s*(\d+)/)?.[1]);
     if (row['来源/类型'] === 'building-trophy') {
       const buildingId = row['条件'].match(/真实([A-Za-z]+)数量/)?.[1];

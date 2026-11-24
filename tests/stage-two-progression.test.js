@@ -133,7 +133,7 @@ test('Sun Blessing unlocks on the fifth era luck and purchased upgrade autoclick
   game.subscribe(message => facts.push(...message.facts));
   for (let index = 0; index < 3; index++) game.tick(1);
   const clicks = facts.filter(fact => fact.type === 'work.clicked' && fact.payload.source === 'sunBlessingUpgrade');
-  assert.equal(clicks.length, 15);
+  assert.equal(clicks.length, 45);
   assert.ok(clicks.every(fact => fact.payload.automatic));
 });
 
