@@ -406,7 +406,8 @@ function workView() {
     <button class="work-btn" data-action="work" aria-label="点击工位搬砖"><img class="workstation-img" src="assets/images/workstation-neon.svg" alt="霓虹夜班工作站，点击工位任意位置搬砖"></button>
     <div class="work-caption">今日待办：∞　　距离下班：--:--　　当前职级：R${state().progression.reincarnations}</div></section>`;
 }
-function quickLimit() { return innerWidth >= 1200 ? 6 : innerWidth >= 901 ? 4 : 3; }
+const QUICK_SKILL_LIMIT = 12;
+function quickLimit() { return innerWidth >= 1200 ? QUICK_SKILL_LIMIT : innerWidth >= 901 ? 8 : 4; }
 function quickSkillIds(limit = quickLimit()) {
   const available = visible('spell');
   const ids = new Set(available.map(item => item.id));
@@ -427,12 +428,13 @@ function spellDescription(item) {
   return upgrade ? `${description(item)} 升级：${description(upgrade)}` : description(item);
 }
 function skillButton(item) {
-  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${spellIcon(item)}" alt="">${spellName(item)}</b><small>${spellDescription(item)}</small><em></em></button>`;
+  const tooltipId = `skill-tooltip-${item.id}`;
+  return `<button class="skill-btn skill-card" data-skill-card="${item.id}" data-action="cast" data-id="${item.id}" aria-describedby="${tooltipId}"><span class="skill-card-icon"><img src="${spellIcon(item)}" alt=""></span><b>${spellName(item)}</b><small class="skill-card-description">${spellDescription(item)}</small><em></em><span class="upgrade-tooltip skill-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${spellName(item)}</b><span class="upgrade-tooltip-cost" data-skill-tooltip-status></span><span class="upgrade-tooltip-description">${spellDescription(item)}</span><small>点击释放 · 长按查看详情</small></span></button>`;
 }
 function renderQuickSkills() {
   const available = visible('spell');
   const quick = quickSkillIds().map(definition);
-  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}|${quick.map(item => `${spellName(item)}|${spellDescription(item)}|${spellIcon(item)}`).join('|')}`;
+  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(QUICK_SKILL_LIMIT).join(',')}|${quick.map(item => `${spellName(item)}|${spellDescription(item)}|${spellIcon(item)}`).join('|')}`;
   if (signature === quickStructure) return;
   quickStructure = signature;
   $('skillMount').innerHTML = available.length ? `<section class="skill-shortcuts" aria-label="快捷技能"><div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButton).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}</section>` : '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
@@ -449,6 +451,8 @@ function updateCastButtons() {
     const text = spellDescription(item);
     const small = button.querySelector('small'); if (small) small.textContent = text;
     const em = button.querySelector('em'); if (em) em.textContent = status;
+    const tooltipStatus = button.querySelector('[data-skill-tooltip-status]'); if (tooltipStatus) tooltipStatus.textContent = status;
+    const tooltipDescription = button.querySelector('.skill-tooltip .upgrade-tooltip-description'); if (tooltipDescription) tooltipDescription.textContent = text;
     const row = button.closest('[data-skill-row]');
     const rowStatus = row?.querySelector('[data-skill-status]'); if (rowStatus) rowStatus.textContent = status;
     const rowDescription = row?.querySelector('.skill-copy p'); if (rowDescription) rowDescription.textContent = text;
@@ -574,7 +578,7 @@ function closeRoyalMarket() {
 }
 function skillsPanel() {
   const available = visible('spell');
-  const quick = quickSkillIds(6);
+  const quick = quickSkillIds(QUICK_SKILL_LIMIT);
   return `<div class="panel-head"><div><h2>全部技能</h2><p>设置常用技能，或在这里直接释放。</p></div></div><div class="skill-library">${available.map(item => {
     const index = quick.indexOf(item.id); const isQuick = index >= 0;
     return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${spellIcon(item)}" alt="">${spellName(item)}</h3><p>${spellDescription(item)}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
@@ -943,9 +947,9 @@ let upgradeLongPress = null;
 let suppressedUpgradeClick = null;
 const upgradeLongPressDelay = 200;
 const upgradeLongPressMoveLimit = 12;
-const tooltipEntrySelector = '[data-upgrade-card], [data-building-card], [data-trophy-card]';
-const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card], #upgradeRail .upgrade-icon, [data-trophy-card] .trophy-icon-button';
-const tooltipElement = entry => entry?._floatingTrophyTooltip || entry?.querySelector('.upgrade-tooltip, .building-tooltip, .trophy-tooltip');
+const tooltipEntrySelector = '[data-upgrade-card], [data-building-card], [data-trophy-card], [data-skill-card]';
+const tooltipButtonSelector = '[data-upgrade-card] .upgrade-entry-button, [data-building-card], #upgradeRail .upgrade-icon, [data-trophy-card] .trophy-icon-button, [data-skill-card]';
+const tooltipElement = entry => entry?._floatingTrophyTooltip || entry?.querySelector('.upgrade-tooltip, .building-tooltip, .trophy-tooltip, .skill-tooltip');
 function positionUpgradeTooltip(entry) {
   const rect = entry.getBoundingClientRect();
   const tooltip = tooltipElement(entry);
@@ -975,23 +979,25 @@ function closeUpgradeTooltip() {
   activeUpgradeTooltip = null;
   touchUpgradeTooltip = null;
 }
-function openUpgradeTooltip(entry, touch = false) {
+function openUpgradeTooltip(entry, touch = false, x, y) {
   clearUnexpectedSelection();
   if (activeUpgradeTooltip && activeUpgradeTooltip !== entry) closeUpgradeTooltip();
   activeUpgradeTooltip = entry;
   touchUpgradeTooltip = touch ? entry : null;
   const tooltip = tooltipElement(entry);
+  const followsPointer = touch || (Number.isFinite(x) && Number.isFinite(y));
   if (entry.matches('[data-trophy-card]')) {
     entry._floatingTrophyTooltip = tooltip;
     document.body.appendChild(tooltip);
   }
   tooltip.classList.add('tooltip-open');
-  tooltip.classList.toggle('tooltip-following', touch);
-  tooltip.style.transition = touch ? 'none' : '';
+  tooltip.classList.toggle('tooltip-following', followsPointer);
+  tooltip.style.transition = followsPointer ? 'none' : '';
   entry.classList.add('tooltip-open');
-  entry.classList.toggle('tooltip-following', touch);
+  entry.classList.toggle('tooltip-following', followsPointer);
   tooltip.setAttribute('aria-hidden', 'false');
-  if (touch && upgradeLongPress) positionUpgradeTooltipAt(entry, upgradeLongPress.x, upgradeLongPress.y);
+  if (followsPointer && !touch) positionUpgradeTooltipAt(entry, x, y);
+  else if (touch && upgradeLongPress) positionUpgradeTooltipAt(entry, upgradeLongPress.x, upgradeLongPress.y);
   else positionUpgradeTooltip(entry);
 }
 function cancelUpgradeLongPress() {
@@ -1007,7 +1013,7 @@ document.addEventListener('pointerover', event => {
   }
   const entry = event.target.closest(tooltipEntrySelector);
   if (!entry || (event.relatedTarget && entry.contains(event.relatedTarget))) return;
-  if (entry !== dismissedUpgradeTooltip) openUpgradeTooltip(entry);
+  if (entry !== dismissedUpgradeTooltip) openUpgradeTooltip(entry, false, event.clientX, event.clientY);
 });
 document.addEventListener('pointerout', event => {
   if (event.pointerType !== 'mouse') return;
@@ -1102,6 +1108,11 @@ document.addEventListener('pointermove', event => {
         openFactionCoinTooltip(targetItem);
       }
     }
+  }
+
+  if (event.pointerType === 'mouse' && activeUpgradeTooltip && !touchUpgradeTooltip
+    && tooltipElement(activeUpgradeTooltip)?.classList.contains('tooltip-following')) {
+    positionUpgradeTooltipAt(activeUpgradeTooltip, event.clientX, event.clientY);
   }
 
   const press = upgradeLongPress;
@@ -1261,7 +1272,7 @@ document.addEventListener('click', event => {
   }
   if (action === 'cast') { commandResult(game.dispatch({ type: 'cast', id })); return; }
   if (action === 'buy-amount') { game.dispatch({ type: 'setting', key: 'buyAmount', value: button.dataset.value === 'max' ? 'max' : Number(button.dataset.value) }); return; }
-  if (action === 'toggle-quick-skill') { updateQuickSkill(id, quickSkillIds(6).includes(id) ? 'remove' : 'pin'); return; }
+  if (action === 'toggle-quick-skill') { updateQuickSkill(id, quickSkillIds(QUICK_SKILL_LIMIT).includes(id) ? 'remove' : 'pin'); return; }
   if (action === 'prioritize-skill') { updateQuickSkill(id, 'pin'); return; }
   if (action === 'toggle-faction-coins') { setFactionCoinPanel($('factionCoinToggle').getAttribute('aria-expanded') !== 'true'); return; }
   if (action === 'toggle-log') { setEventLogOpen($('eventLog').hidden); return; }
