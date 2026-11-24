@@ -429,7 +429,7 @@ function spellDescription(item) {
 }
 function skillButton(item) {
   const tooltipId = `skill-tooltip-${item.id}`;
-  return `<button class="skill-btn skill-card" data-skill-card="${item.id}" data-action="cast" data-id="${item.id}" aria-describedby="${tooltipId}"><span class="skill-card-icon"><img src="${spellIcon(item)}" alt=""></span><b>${spellName(item)}</b><small class="skill-card-description">${spellDescription(item)}</small><em></em><span class="upgrade-tooltip skill-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${spellName(item)}</b><span class="upgrade-tooltip-cost" data-skill-tooltip-status></span><span class="upgrade-tooltip-description">${spellDescription(item)}</span><small>点击释放 · 长按查看详情</small></span></button>`;
+  return `<button class="skill-btn skill-card" data-skill-card="${item.id}" data-action="cast" data-id="${item.id}" aria-describedby="${tooltipId}"><span class="skill-card-icon"><img src="${spellIcon(item)}" alt=""></span><b>${spellName(item)}</b><small class="skill-card-description">${spellDescription(item)}</small><em></em><span class="upgrade-tooltip skill-tooltip" id="${tooltipId}" role="tooltip" aria-hidden="true"><b>${spellName(item)}</b><span class="upgrade-tooltip-cost" data-skill-tooltip-status></span><span class="upgrade-tooltip-description">${spellDescription(item)}</span></span></button>`;
 }
 function renderQuickSkills() {
   const available = visible('spell');
