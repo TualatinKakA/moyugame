@@ -413,16 +413,26 @@ function quickSkillIds(limit = quickLimit()) {
   const configured = Array.isArray(state().settings.quickSkills) ? state().settings.quickSkills : available.map(item => item.id);
   return configured.filter(id => ids.has(id)).slice(0, limit);
 }
+function spellUpgrade(item) {
+  return item.ui.upgradeId && state().owned.run[item.ui.upgradeId] ? definition(item.ui.upgradeId) : null;
+}
 function spellIcon(item) {
-  return item.ui.upgradeId && state().owned.run[item.ui.upgradeId] ? item.ui.upgradedIcon : item.ui.icon;
+  return spellUpgrade(item) ? item.ui.upgradedIcon : item.ui.icon;
+}
+function spellName(item) {
+  return spellUpgrade(item)?.name || item.name;
+}
+function spellDescription(item) {
+  const upgrade = spellUpgrade(item);
+  return upgrade ? `${description(item)} 升级：${description(upgrade)}` : description(item);
 }
 function skillButton(item) {
-  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${spellIcon(item)}" alt="">${item.name}</b><small>${description(item)}</small><em></em></button>`;
+  return `<button class="skill-btn" data-action="cast" data-id="${item.id}"><b><img class="inline-icon" src="${spellIcon(item)}" alt="">${spellName(item)}</b><small>${spellDescription(item)}</small><em></em></button>`;
 }
 function renderQuickSkills() {
   const available = visible('spell');
   const quick = quickSkillIds().map(definition);
-  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}|${quick.map(item => `${description(item)}|${spellIcon(item)}`).join('|')}`;
+  const signature = `${quickLimit()}|${available.map(item => item.id).join(',')}|${quickSkillIds(6).join(',')}|${quick.map(item => `${spellName(item)}|${spellDescription(item)}|${spellIcon(item)}`).join('|')}`;
   if (signature === quickStructure) return;
   quickStructure = signature;
   $('skillMount').innerHTML = available.length ? `<section class="skill-shortcuts" aria-label="快捷技能"><div class="skill-bar-head"><small>快捷技能</small><button data-tab="skills" aria-controls="mainPanel">全部技能（${available.length}）</button></div>${quick.length ? `<div class="skill-bar" style="--quick-count: ${quick.length}">${quick.map(skillButton).join('')}</div>` : '<p class="notice skill-empty">快捷栏已清空，可在全部技能中重新添加。</p>'}</section>` : '<p class="notice skill-notice">选择部门立场或签署条约后解锁技能。</p>';
@@ -435,13 +445,14 @@ function updateCastButtons() {
     button.classList.toggle('active', model.viewModel.active);
     button.classList.toggle('insufficient', button.disabled);
     const status = model.viewModel.active ? `生效中 ${formatNumber(model.viewModel.remaining)} 秒` : `${formatNumber(model.costs[0]?.value || 0)} 精力`;
-    const text = description(definition(button.dataset.id));
+    const item = definition(button.dataset.id);
+    const text = spellDescription(item);
     const small = button.querySelector('small'); if (small) small.textContent = text;
     const em = button.querySelector('em'); if (em) em.textContent = status;
     const row = button.closest('[data-skill-row]');
     const rowStatus = row?.querySelector('[data-skill-status]'); if (rowStatus) rowStatus.textContent = status;
     const rowDescription = row?.querySelector('.skill-copy p'); if (rowDescription) rowDescription.textContent = text;
-    button.setAttribute('aria-label', `${model.viewModel.name}。${text}，${status}`);
+    button.setAttribute('aria-label', `${spellName(item)}。${text}，${status}`);
   });
 }
 function updateQuickSkill(id, mode) {
@@ -566,7 +577,7 @@ function skillsPanel() {
   const quick = quickSkillIds(6);
   return `<div class="panel-head"><div><h2>全部技能</h2><p>设置常用技能，或在这里直接释放。</p></div></div><div class="skill-library">${available.map(item => {
     const index = quick.indexOf(item.id); const isQuick = index >= 0;
-    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${spellIcon(item)}" alt="">${item.name}</h3><p>${description(item)}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
+    return `<article class="skill-row" data-skill-row="${item.id}"><div class="skill-copy"><h3><img class="inline-icon" src="${spellIcon(item)}" alt="">${spellName(item)}</h3><p>${spellDescription(item)}</p><small class="meta" data-skill-status></small></div><div class="skill-actions"><button class="primary" data-action="cast" data-id="${item.id}">释放</button>${isQuick && index > 0 ? `<button data-action="prioritize-skill" data-id="${item.id}">置顶</button>` : ''}<button data-action="toggle-quick-skill" data-id="${item.id}" aria-pressed="${isQuick}">${isQuick ? '移出快捷栏' : '设为常用'}</button></div></article>`;
   }).join('')}</div>`;
 }
 const statRow = (label, path, format = 'number') => `<tr><td>${label}</td><td data-stat="${path}" data-format="${format}">0</td></tr>`;
@@ -764,7 +775,7 @@ function factFeedback(facts, commandType = null) {
     else if (fact.type === 'faction.joined') notify(`已加入${definition(fact.payload.factionId).name}`);
     else if (fact.type === 'alignment.selected') notify(`已确认${definition(fact.payload.alignmentId).name}`);
     else if (fact.type === 'spell.cast') {
-      const name = definition(fact.payload.spellId).name;
+      const name = spellName(definition(fact.payload.spellId));
       notify(fact.payload.free ? `免费追加：${name} ×${formatNumber(fact.payload.times || 1)}` : `已释放：${name}`);
     }
     else if (fact.type === 'greenFingersDiscount.triggered') notify(`全绿预算折扣：${money(fact.payload.earned)}（${formatNumber(fact.payload.seconds)} 秒产出）`);
