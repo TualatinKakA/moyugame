@@ -84,26 +84,40 @@ test('treasure upgrades preserve separate click global and run-coins inputs', as
   }
 });
 
-test('golden 12: Gem Power three Gem upgrades and GB8 produce 5 then 11 percent per Gem', async () => {
+test('golden 12: Gem Power upgrades and GB8 use the original per-Gem bonus and ascension curve', async () => {
   const seeded = createSaveState({ now: 1000 });
   seeded.resources.gems = Math.exp(10) - 1;
   seeded.resources.coins = 1e110;
   const game = await fixture(seeded);
+  assert.equal(game.select('derived').globalMult, 1);
+  assert.equal(game.select('derived').fcChance, 10);
   assert.equal(game.dispatch({ type: 'purchase', id: 'gemPower' }).ok, true);
   assert.equal(game.select('derived').fcChance, 14);
-  close(game.select('derived').globalMult, 1 + seeded.resources.gems * 2 / 100);
+  close(game.select('derived').globalMult, 1 + 0.01 * (seeded.resources.gems * 2) ** 0.9);
   const upgradedState = createSaveState({ now: 1000 });
   upgradedState.resources.gems = seeded.resources.gems;
   upgradedState.stats.run.coins = 1e8;
   for (const id of ['gemPower', 'gemUpgrade1', 'gemUpgrade2', 'gemUpgrade3']) upgradedState.owned.run[id] = true;
   const upgraded = await fixture(upgradedState);
   assert.equal(upgraded.select('derived').fcChance, 17);
-  close(upgraded.select('derived').globalMult, 1 + seeded.resources.gems * 5 / 100);
+  close(upgraded.select('derived').globalMult, 1 + 0.01 * (seeded.resources.gems * 5) ** 0.9);
   upgradedState.owned.run['goblin-8'] = true;
   const blackMarket = await fixture(upgradedState);
-  close(blackMarket.select('derived').globalMult, 1 + seeded.resources.gems * 11 / 100);
+  close(blackMarket.select('derived').globalMult, 1 + 0.01 * (seeded.resources.gems * 11) ** 0.9);
   assert.equal(blackMarket.dispatch({ type: 'abdicate' }).ok, true);
   for (const id of ['gemPower', 'gemUpgrade1', 'gemUpgrade2', 'gemUpgrade3']) assert.equal(blackMarket.select('state').owned.run[id], undefined);
+  assert.equal(blackMarket.select('derived').globalMult, 1);
+  assert.equal(blackMarket.select('derived').fcChance, 10);
+
+  const a4State = createSaveState({ now: 1000 });
+  a4State.progression = { ...a4State.progression, reincarnations: 220, ascension: 4, ascensionStartR: 220 };
+  a4State.resources.gems = seeded.resources.gems;
+  a4State.owned.run.gemPower = true;
+  const a4 = await fixture(a4State);
+  const a4Derived = a4.select('derived');
+  close(a4Derived.gemPowerPerGem, 46);
+  close(a4Derived.globalMult, (1 + (a4Derived.rPower.productionPercent + a4Derived.rPower.timeProductionPercent) / 100)
+    * (1 + 0.01 * (seeded.resources.gems * 46)));
 });
 
 test('six ClickingBase upgrades add base click and six offline clicks per second', async () => {

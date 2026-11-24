@@ -409,7 +409,7 @@ test('Gem Power unlock applies production and FC bonuses then resets with the ru
   assert.equal(game.select('derived').production, 20);
   assert.equal(game.select('content', { id: 'gemPower' }).status, 'PURCHASABLE');
   assert.equal(game.dispatch({ type: 'purchase', id: 'gemPower' }).ok, true);
-  assert.equal(game.select('derived').production, 60);
+  assertClose(game.select('derived').production, 20 * (1 + 0.01 * (100 * 2) ** 0.9));
   assert.equal(game.select('derived').fcChance, 12);
   assert.equal(game.dispatch({ type: 'abdicate' }).ok, true);
   assert.equal(game.select('state').owned.run.gemPower, undefined);
@@ -508,23 +508,24 @@ test('assistants produce five percent of click reward each without producing rea
   assert.equal(game.select('state').stats.total.clickCoins, clickCoins, 'assistants do not increment click income');
 });
 
-test('click skills, global skills, Gem Power and spell expiry propagate to assistant production', async () => {
+test('click skills propagate to assistants while building-only multipliers stay on buildings', async () => {
   const seeded = initial(); seeded.buildings.farm = 5; seeded.resources.gems = 100;
   const { game } = fixture(seeded);
   await game.start();
   game.dispatch({ type: 'purchase', id: 'good' });
   game.dispatch({ type: 'purchase', id: 'farm-tier1' });
   game.dispatch({ type: 'purchase', id: 'gemPower' });
+  const gemMultiplier = 1 + 0.01 * (100 * 2) ** 0.9;
   let derived = game.select('derived');
   assert.equal(derived.assistants, 1);
-  assert.equal(derived.buildingProduction, 60);
-  assertClose(derived.assistantProduction, 0.15, 'Gem Power multiplies assistant production');
+  assertClose(derived.buildingProduction, 20 * gemMultiplier);
+  assertClose(derived.assistantProduction, 0.05, 'Gem Power does not multiply assistant production');
 
   game.dispatch({ type: 'cast', id: 'callToArms' });
   const globalActive = game.select('derived');
   const globalRatio = globalActive.buildingProduction / derived.buildingProduction;
   assert.ok(globalRatio > 1);
-  assertClose(globalActive.assistantProduction, derived.assistantProduction * globalRatio, 'global spell multiplier');
+  assertClose(globalActive.assistantProduction, derived.assistantProduction, 'global building spell excludes assistants');
   assert.equal(globalActive.clickReward, 1, 'global production does not inflate manual clicks');
 
   game.dispatch({ type: 'cast', id: 'holyLight' });
@@ -535,11 +536,26 @@ test('click skills, global skills, Gem Power and spell expiry propagate to assis
   game.tick(20);
   derived = game.select('derived');
   assert.equal(derived.clickReward, 1);
-  assertClose(derived.assistantProduction, 0.15, 'spell expiry restores base assistant output');
+  assertClose(derived.assistantProduction, 0.05, 'spell expiry restores base assistant output');
   game.dispatch({ type: 'work' });
   derived = game.select('derived');
   assert.equal(derived.clickReward, 1.05);
-  assertClose(derived.assistantProduction, 0.1575, 'permanent click reward upgrade propagates');
+  assertClose(derived.assistantProduction, 0.0525, 'permanent click reward upgrade propagates');
+});
+
+test('building production can affect assistants through click bonuses without a second global multiplication', async () => {
+  const seeded = initial();
+  seeded.buildings.farm = 10;
+  seeded.resources.gems = 100;
+  seeded.owned.run['farm-tier1'] = true;
+  seeded.owned.run['elven-2'] = true;
+  seeded.owned.run.gemPower = true;
+  const { game } = fixture(seeded);
+  await game.start();
+  const derived = game.select('derived');
+  assert.equal(derived.assistants, 1);
+  assertClose(derived.clickReward, 1 + 0.5 * derived.buildingProduction);
+  assertClose(derived.assistantProduction, 0.05 * derived.clickReward);
 });
 
 test('Goblin assistant count recalculates only when queued Greed coins enter era found', async () => {
@@ -593,8 +609,8 @@ test('reincarnation clears run-scoped assistant upgrades and their production', 
   assert.equal(game.select('derived').assistants, 2);
   assert.equal(game.dispatch({ type: 'reincarnate' }).ok, true);
   assert.equal(game.select('derived').assistants, 1);
-  assertClose(game.select('derived').assistantProduction, 0.05 * 1.5 * 1.02);
-  assertClose(game.select('derived').production, 0.05 * 1.5 * 1.02);
+  assertClose(game.select('derived').assistantProduction, 0.05 * 1.02);
+  assertClose(game.select('derived').production, 0.05 * 1.02);
 });
 
 test('spell descriptions resolve the current Fairy Chanting text', () => {
@@ -642,12 +658,12 @@ test('derived dependency fingerprints refresh assistant scaling without clearing
   let derived = game.select('derived');
   assert.equal(derived.assistants, 1);
   assertClose(derived.buildingProduction, 2.2);
-  assertClose(derived.assistantProduction, 0.055);
+  assertClose(derived.assistantProduction, 0.05);
   game.dispatch({ type: 'purchase', id: 'farm' });
   derived = game.select('derived');
   assert.equal(derived.assistants, 2);
   assertClose(derived.buildingProduction, 4.8, 'derived.assistants dependency must refresh from 1 to 2');
-  assertClose(derived.assistantProduction, 0.12);
+  assertClose(derived.assistantProduction, 0.1);
 });
 
 test('conditional effects and pre-cast derived conditions support the Fairy Choir boundary', async () => {
@@ -1022,7 +1038,7 @@ test('Goblin economy upgrades use natural logs, era casts and Black Market gem/o
   assertClose(derived.taxSeconds, taxSeconds);
   assertClose(derived.manaRegen, manaMultiplier);
   assertClose(derived.offlineMultiplier, 0.5 * (1 + Math.log(10) ** 2 / 100));
-  assertClose(derived.outputs.farm, 20 * (1 + globalPercent / 100) * (1 + 10 * 2 * blackMarketMultiplier / 100));
+  assertClose(derived.outputs.farm, 20 * (1 + globalPercent / 100) * (1 + 0.01 * (10 * 2 * blackMarketMultiplier) ** 0.9));
   const before = derived;
   assert.equal(game.dispatch({ type: 'cast', id: 'taxCollection' }).ok, true);
   assert.equal(game.select('state').stats.run.spellCasts.taxCollection, 100);
@@ -1294,11 +1310,13 @@ test('Fairy Chanting costs 800, scales at two building counts and records FR7 ac
     seeded.spellSources.fairyChanting = { fairy: true };
     seeded.buildings = buildings;
     seeded.resources.gems = 100;
+    seeded.owned.run.gemPower = true;
     seeded.owned.run['fairy-7'] = true;
     const { game } = fixture(seeded);
     await game.start();
     const before = game.select('derived');
     const low3 = Object.values(buildings).reduce((sum, value) => sum + value, 0);
+    const gemMultiplier = perGem => 1 + 0.01 * (100 * perGem) ** 0.9;
     assert.equal(game.dispatch({ type: 'cast', id: 'fairyChanting' }).ok, true);
     assert.equal(game.select('state').resources.mana, 9200);
     const active = game.select('derived');
@@ -1307,12 +1325,12 @@ test('Fairy Chanting costs 800, scales at two building counts and records FR7 ac
     game.tick(2);
     assert.equal(game.select('state').stats.run.spellActivity.fairyChanting, 2);
     assert.equal(game.select('state').stats.ascension.spellActivity.fairyChanting, 2);
-    const activityProduction = 1 + 0.35 * 2 ** 0.65;
+    const activityProduction = gemMultiplier(2 + 0.35 * 2 ** 0.65) / gemMultiplier(2);
     assertClose(game.select('derived').outputs.farm / active.outputs.farm, activityProduction, 'FR7 reads active time this era');
     game.tick(8);
     assert.equal(game.select('state').stats.run.spellActivity.fairyChanting, 10);
     assert.equal(game.select('state').timers.spells.fairyChanting, undefined);
-    assertClose(game.select('derived').outputs.farm, before.outputs.farm * (1 + 0.35 * 10 ** 0.65));
+    assertClose(game.select('derived').outputs.farm, before.outputs.farm * gemMultiplier(2 + 0.35 * 10 ** 0.65) / gemMultiplier(2));
     game.tick(2);
     assert.equal(game.select('state').stats.run.spellActivity.fairyChanting, 10, 'expired spells stop accumulating activity');
   }

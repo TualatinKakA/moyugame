@@ -41,6 +41,7 @@ test('Ascension thresholds and building growth use R40 R100 R160 and R220', asyn
 test('R1 applies every open interface including time production and Exchange', async () => {
   const state = atReincarnation(1);
   state.stats.r.time = 3600;
+  state.resources.gems = 1.4488e15;
   state.royalExchange.fairy = 1;
   const game = await fixture(state);
   const current = game.select('derived');
@@ -49,12 +50,30 @@ test('R1 applies every open interface including time production and Exchange', a
   close(current.manaMax, 1035);
   close(current.manaRegen, 3);
   close(current.assistants, 1);
-  close(current.assistantProduction, 0.05 * 1.51 * 1.02 * royalExchangeMultiplier(game.select('state')));
+  close(current.assistantProduction, 0.05 * 1.02);
   close(current.offlineMultiplier, 5.5);
   close(current.fcChance, 20);
   close(current.gemPowerPerGem, 0.2);
   close(royalExchangeBonus(game.select('state')), 10.5);
   close(royalExchangeMultiplier(game.select('state')), (1 + 0.01 * 10.5) ** (0.7 * 0.1 ** 0.7));
+});
+
+test('R1 huge Gem count requires Gem Power and follows the original production curve', async () => {
+  const state = atReincarnation(1);
+  state.stats.r.time = 231;
+  state.resources.gems = 1.4488e15;
+  state.resources.coins = 1;
+  state.permanentUnlocks['trophy.first_click'] = true;
+  const game = await fixture(state);
+  const buildingGlobalWithoutGems = 1.5 + (231 / 3600) ** 0.65 / 100;
+  close(game.select('derived').assistantProduction, 0.05355);
+  close(game.select('derived').fcChance, 20);
+
+  assert.equal(game.dispatch({ type: 'purchase', id: 'gemPower' }).ok, true);
+  const current = game.select('derived');
+  close(current.gemPowerPerGem, 2.2);
+  close(current.globalMult, buildingGlobalWithoutGems * (1 + 0.01 * (1.4488e15 * 2.2) ** 0.9));
+  close(current.assistantProduction, 0.05355);
 });
 
 test('R2 R3 R4 and R5 preserve independent additive and multiplicative interfaces', () => {

@@ -187,7 +187,10 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
       const outputs = {};
       const unitOutputs = {};
       const gemPowerPerGem = mods.gemPowerAdd * mods.gemPowerMult;
-      const gemPowerMultiplier = 1 + getEffectiveGems(state) * gemPowerPerGem / 100;
+      const gemPowerExponent = state.progression.ascension < 4 ? 0.9 : 1;
+      const gemPowerMultiplier = state.owned.run.gemPower
+        ? 1 + 0.01 * (getEffectiveGems(state) * gemPowerPerGem) ** gemPowerExponent
+        : 1;
       globalMult = (1 + mods.globalAdd / 100) * mods.globalMult * gemPowerMultiplier * royalExchangeMultiplier(state);
       let buildingProduction = 0;
       const rawBuildingTotal = buildings(graph).reduce((sum, item) => sum + (buildingOverrides[item.id] ?? state.buildings[item.id] ?? 0), 0);
@@ -210,7 +213,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
       Object.assign(context, { outputs, unitOutputs, buildingProduction, globalMult });
     }
     if (phase === 'factionCoin') {
-      const gemChance = mods.gemPowerAdd > 0
+      const gemChance = state.owned.run.gemPower
         ? Math.floor(0.5 * (1.25 + getGemUpgradeCount(state) / 4) * Math.log(1 + getEffectiveGems(state)) ** 0.9)
         : 0;
       context.fcChance = (10 + gemChance + mods.fcChanceAdd) * mods.fcChanceMult;
@@ -219,7 +222,7 @@ export function computeDerived(state, graph, groupCache = new Map(), buildingOve
   }
   const { outputs, unitOutputs, buildingProduction, assistants, realAssistants, clickReward, taxSeconds, manaMax, manaRegen } = context;
   const assistantProduction = Math.max(0, assistants * clickReward * 0.05
-    * (1 + mods.assistantProdAdd / 100) * mods.assistantProdMult * globalMult);
+    * (1 + mods.assistantProdAdd / 100) * mods.assistantProdMult);
   const production = buildingProduction + assistantProduction;
   return Object.freeze({
     outputs, unitOutputs, production, buildingProduction, assistantProduction, assistants, realAssistants, clickReward,
