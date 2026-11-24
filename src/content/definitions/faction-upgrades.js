@@ -48,7 +48,7 @@ export const ADDITIONAL_FACTION_UPGRADE_DEFINITIONS = [
   upgrade({ faction: 'elven', number: 6, sourceId: 'EL6', sourceName: 'Secret Clicking Techniques', name: '秘传盲打心法', description: '按本次职业有效点击数使全部设施产出提高 {effect:elven-6}%。', effects: [
     effect('elven-6', 'global', 'global.production', globalTarget, 'addPercent', { formula: '1.5 * x ^ 0.5', variables: { x: 'effective.r.clicks' } }),
   ] }),
-  upgrade({ faction: 'elven', number: 7, sourceId: 'EL7', sourceName: 'Elven Diplomacy', name: '跨部门接口', description: '按本轮影响力提高有效点击计数，不增加真实点击事件。', mechanics: ['effectiveClicks'] }),
+  upgrade({ faction: 'elven', number: 7, sourceId: 'EL7', sourceName: 'Elven Diplomacy', name: '跨部门接口', description: '按本轮影响力提高有效点击计数：当前增幅 +{elvenDiplomacyBonus}%，本次职业有效点击 {effectiveClicksR}。不增加真实点击事件。', mechanics: ['effectiveClicks'] }),
   upgrade({ faction: 'elven', number: 8, sourceId: 'EL8', sourceName: 'Elven Luck', name: '机房玄学签', description: '点击和数字员工可触发技术幸运，获得额外工资与随机部门影响力。', mechanics: ['elvenLuck'] }),
   upgrade({ faction: 'elven', number: 9, sourceId: 'EL9', sourceName: 'Elven Treasure Casing', name: '自动输入阵列', description: '按奖杯数，影响力发现率 +{effect:elven-9} 个百分点。', effects: [
     effect('elven-9', 'factionCoin', 'factionCoin.chance', globalTarget, 'add', { formula: '10 + 2.5 * x ^ 0.95', variables: { x: 'trophies.original' } }),

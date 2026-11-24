@@ -6,7 +6,7 @@ import { createStoryModal } from './story/story-modal.js';
 import { evaluateCondition, formatDescription, pathValue } from '../systems/content-registry.js';
 import { evaluateFormula } from '../systems/formula.js';
 import { resolveValuePath } from '../systems/derived.js';
-import { spellDuration } from '../systems/effective.js';
+import { effectiveClicksR, elvenDiplomacyBonus, spellDuration } from '../systems/effective.js';
 import { createTrustedTime } from '../core/trusted-time.js';
 
 const $ = id => document.getElementById(id);
@@ -189,6 +189,8 @@ const description = item => {
   });
   if (text.includes('{maxManaTaxTimes}')) text = text.replaceAll('{maxManaTaxTimes}', formatNumber(1 + Math.floor(1.5 * Math.log(1 + derived().manaMax / 1000) ** 1.5)));
   if (text.includes('{spellDuration}')) text = text.replaceAll('{spellDuration}', formatNumber(spellDuration(state(), graph, item, derived())));
+  if (text.includes('{elvenDiplomacyBonus}')) text = text.replaceAll('{elvenDiplomacyBonus}', formatNumber(elvenDiplomacyBonus(state())));
+  if (text.includes('{effectiveClicksR}')) text = text.replaceAll('{effectiveClicksR}', formatNumber(effectiveClicksR(state())));
   return text.includes('{taxSeconds}') ? text.replaceAll('{taxSeconds}', formatNumber(derived().taxSeconds)) : text;
 };
 const formatCost = (cost, targetId = null) => {

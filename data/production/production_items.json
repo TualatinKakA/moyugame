@@ -4358,7 +4358,7 @@
       "kind": "upgrade",
       "version": "1.1.0",
       "name_zh": "跨部门接口",
-      "description_zh": "按本轮影响力提高有效点击计数，不增加真实点击事件。",
+      "description_zh": "按本轮影响力提高有效点击计数：当前增幅 +{elvenDiplomacyBonus}%，本次职业有效点击 {effectiveClicksR}。不增加真实点击事件。",
       "image_path": "assets/images/content-icons/factions/elven-7.svg",
       "image_status": "done"
     },
